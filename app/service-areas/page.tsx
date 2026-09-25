@@ -1,0 +1,159 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import {
+  MapPin,
+  Clock3,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+  Phone,
+  Siren,
+  Sparkles,
+} from "lucide-react";
+import Container from "@/app/components/Container";
+import { getAllCities } from "@/lib/cities";
+import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
+
+export const metadata: Metadata = {
+  title: "Service Areas | HT Mobile Tires Dallas-Fort Worth",
+  description: "Explore our mobile tire service coverage areas across Dallas, Fort Worth, Plano, Arlington, Irving, Garland, and Frisco. 25-35 minute average mobile response.",
+  alternates: {
+    canonical: "https://mobiletire.clinic/service-areas",
+  },
+};
+
+export default function ServiceAreasPage() {
+  const cities = getAllCities();
+
+  return (
+    <div className="bg-background-light">
+      {/* Header */}
+      <section className="bg-secondary py-20 sm:py-24 border-b border-white/10 text-white">
+        <Container>
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3.5 py-1 text-xs font-bold text-primary border border-primary/30">
+              <Sparkles size={14} />
+              DFW Metroplex Coverage
+            </div>
+
+            <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+              Our Mobile Tire Service Areas
+            </h1>
+
+            <p className="mt-6 text-base leading-8 text-slate-300 sm:text-lg">
+              We bring professional tire repair, mounting, and laser balancing directly to your vehicle anywhere in the Dallas-Fort Worth metropolitan area.
+            </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* City Directory Grid */}
+      <section className="py-20 sm:py-24">
+        <Container>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {cities.map((city) => (
+              <div
+                key={city.slug}
+                className="group flex flex-col justify-between rounded-[24px] border border-border bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-primary hover:shadow-xl"
+              >
+                <div>
+                  {/* City Title & Pill */}
+                  <div className="flex items-center justify-between border-b border-border pb-4">
+                    <div>
+                      <h2 className="text-2xl font-extrabold text-foreground group-hover:text-primary transition">
+                        {city.name}, {city.state}
+                      </h2>
+                      <p className="mt-0.5 text-xs text-text-secondary">
+                        {city.neighborhoods.length} Primary Neighborhoods
+                      </p>
+                    </div>
+
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <MapPin size={20} />
+                    </div>
+                  </div>
+
+                  {/* Highlights */}
+                  <div className="mt-5 space-y-3 text-xs text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <Clock3 size={15} className="text-primary shrink-0" />
+                      <span>Average Arrival: <strong>{city.averageResponseTime}</strong></span>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <ShieldCheck size={15} className="text-green-600 shrink-0 mt-0.5" />
+                      <span>Key Areas: {city.neighborhoods.slice(0, 3).join(", ")}</span>
+                    </div>
+                  </div>
+
+                  {/* Zip code sample */}
+                  <div className="mt-5 flex flex-wrap gap-1.5">
+                    {city.zipCodes.slice(0, 4).map((zip) => (
+                      <span
+                        key={zip}
+                        className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-600"
+                      >
+                        {zip}
+                      </span>
+                    ))}
+                    {city.zipCodes.length > 4 && (
+                      <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-500">
+                        +{city.zipCodes.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* City Link Button */}
+                <div className="mt-8 pt-4 border-t border-border">
+                  <Link
+                    href={`/service-area/${city.slug}`}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-xs font-bold text-white transition-all group-hover:bg-primary"
+                  >
+                    <span>View {city.name} City Page</span>
+                    <ArrowRight size={15} />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Emergency Bottom Banner */}
+          <div className="mt-16 rounded-[24px] border border-primary/20 bg-secondary p-8 text-white sm:p-10">
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-red-600/30 px-3 py-1 text-xs font-bold text-red-400 border border-red-500/40">
+                  <Siren size={13} />
+                  24/7 Roadside Assistance
+                </div>
+                <h3 className="mt-3 text-2xl font-bold text-white sm:text-3xl">
+                  Stuck On A DFW Highway Right Now?
+                </h3>
+                <p className="mt-2 text-sm text-slate-300 max-w-xl">
+                  We dispatch emergency roadside tire vans with heavy-duty jacks, replacement tires, and laser balancing 24 hours a day, 7 days a week.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/emergency"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3.5 text-sm font-bold text-white shadow-md hover:bg-red-700"
+                >
+                  <Siren size={16} />
+                  Request Emergency Aid
+                </Link>
+                <a
+                  href={`tel:${BUSINESS_PHONE_RAW}`}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 px-6 py-3.5 text-sm font-bold text-white hover:bg-white/10"
+                >
+                  <Phone size={16} />
+                  Call {BUSINESS_PHONE_DISPLAY}
+                </a>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+    </div>
+  );
+}
