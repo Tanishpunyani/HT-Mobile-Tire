@@ -164,7 +164,7 @@ export async function sendQuoteEmail({
           </div>
 
           <div class="footer">
-            <p style="margin: 0 0 6px 0; font-weight: 700; color: #334155;">HT Mobile Tires — Fast Roadside & On-Site Tire Care</p>
+            <p style="margin: 0 0 6px 0; font-weight: 700; color: #334155;">HT Mobile Tires &mdash; Fast Roadside &amp; On-Site Tire Care</p>
             <p style="margin: 0;">Need immediate emergency assistance? Call ${BUSINESS_PHONE_DISPLAY}</p>
           </div>
         </div>
@@ -185,7 +185,7 @@ export async function sendQuoteEmail({
     const emailResponse = await resend.emails.send({
       from: FROM_EMAIL,
       to: customerEmail,
-      subject: `Your HT Mobile Tires Service Quote — Booking #${shortId}`,
+      subject: `Your HT Mobile Tires Service Quote - Booking #${shortId}`,
       html,
       attachments,
     });

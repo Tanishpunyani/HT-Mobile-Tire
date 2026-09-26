@@ -7,6 +7,7 @@ import { validateBookingTransition } from "@/lib/bookings/state-machine";
 import { checkSlotCapacity } from "@/lib/bookings/availability";
 import {
   sendBookingConfirmation,
+  sendAdminBookingCreatedAlert,
   sendAdminBookingCancelledAlert,
   sendCustomerBookingCancelledAlert,
 } from "@/lib/notifications";
@@ -217,29 +218,37 @@ export async function createBookingRequestAction(formData: {
     });
 
     // 5. Non-blocking Notification Dispatch with Preserved GPS Coordinates
+    const notificationPayload = {
+      id: booking.id,
+      status: "pending",
+      bookingDate: bookingDateObj,
+      bookingTime: scheduledTimeStr,
+      location: locStr,
+      formattedAddress: booking.formattedAddress || formData.formattedAddress || null,
+      latitude: booking.latitude ?? formData.latitude ?? null,
+      longitude: booking.longitude ?? formData.longitude ?? null,
+      vehicle: vehicleStr,
+      customer: {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+      },
+      service: {
+        name: primaryService,
+      },
+      message: booking.message,
+    };
+
     try {
-      await sendBookingConfirmation({
-        id: booking.id,
-        status: "pending",
-        bookingDate: bookingDateObj,
-        bookingTime: scheduledTimeStr,
-        location: locStr,
-        formattedAddress: booking.formattedAddress || formData.formattedAddress || null,
-        latitude: booking.latitude ?? formData.latitude ?? null,
-        longitude: booking.longitude ?? formData.longitude ?? null,
-        vehicle: vehicleStr,
-        customer: {
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email,
-        },
-        service: {
-          name: primaryService,
-        },
-        message: booking.message,
-      });
+      await sendBookingConfirmation(notificationPayload);
     } catch (notifErr) {
       console.warn("Failed to dispatch booking notification:", notifErr);
+    }
+
+    try {
+      await sendAdminBookingCreatedAlert(notificationPayload);
+    } catch (adminNotifErr) {
+      console.warn("Failed to dispatch admin booking notification:", adminNotifErr);
     }
 
     revalidatePath("/account");

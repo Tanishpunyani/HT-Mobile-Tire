@@ -8,6 +8,7 @@ import {
   sendAdminBookingCancelledAlert,
   sendCustomerBookingConfirmedAlert,
   sendCustomerTechnicianAssignedAlert,
+  sendCustomerServiceStartedAlert,
   sendCustomerBookingCancelledAlert,
 } from "@/lib/notifications";
 import { checkSlotCapacity, DEFAULT_SERVICE_DURATION_MINUTES } from "@/lib/bookings/availability";
@@ -106,10 +107,31 @@ export async function startServiceAction(bookingId: string) {
       return { success: true };
     }
 
-    await prisma.booking.update({
+    const updated = await prisma.booking.update({
       where: { id: bookingId },
       data: { status: "in_progress" },
+      include: {
+        customer: true,
+        service: true,
+      },
     });
+
+    // Non-blocking Customer Service Started WhatsApp Alert
+    try {
+      await sendCustomerServiceStartedAlert({
+        id: updated.id,
+        vehicle: updated.vehicle,
+        location: updated.location,
+        bookingDate: updated.bookingDate,
+        bookingTime: updated.bookingTime,
+        status: updated.status,
+        primaryService: updated.primaryService,
+        customer: updated.customer,
+        service: updated.service,
+      });
+    } catch (notifErr) {
+      console.warn("Failed to dispatch customer service started alert:", notifErr);
+    }
 
     revalidatePath("/admin/bookings");
     revalidatePath(`/admin/bookings/${bookingId}`);

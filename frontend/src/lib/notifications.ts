@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 import { logger } from "@/lib/logger";
+import { dispatchWhatsAppDirect } from "@/lib/notifications/whatsapp";
 
 
 // ============================================================================
@@ -175,12 +176,30 @@ async function dispatchEmailDirect({
   }
 
   try {
-    const response = await resend.emails.send({
+    let response = await resend.emails.send({
       from: RESEND_FROM_EMAIL,
       to,
       subject,
       html,
     });
+
+    // Development/Sandbox fallback: If custom domain is not yet verified in Resend, fall back to onboarding sender
+    if (
+      response.error &&
+      response.error.message?.toLowerCase().includes("domain is not verified") &&
+      !RESEND_FROM_EMAIL.includes("onboarding@resend.dev")
+    ) {
+      logger.warn("notifications.email.domain_unverified_fallback", {
+        configuredFrom: RESEND_FROM_EMAIL,
+        fallbackFrom: "HT Mobile Tires <onboarding@resend.dev>",
+      });
+      response = await resend.emails.send({
+        from: "HT Mobile Tires <onboarding@resend.dev>",
+        to,
+        subject,
+        html,
+      });
+    }
 
     if (response.error) {
       throw new Error(response.error.message);
@@ -244,6 +263,77 @@ export async function sendEmail({
   return result;
 }
 
+/**
+ * Sends a WhatsApp message via Meta WhatsApp Business Platform / Cloud API
+ * and creates a NotificationLog entry.
+ * Idempotent: checks providerEventId to prevent duplicate customer alerts.
+ */
+export async function sendWhatsApp({
+  to,
+  body,
+  type,
+  entityId,
+  entityType,
+  providerEventId,
+  templateName,
+  templateParameters,
+}: {
+  to: string;
+  body: string;
+  type: NotificationType;
+  entityId?: string;
+  entityType: "booking" | "emergency_request" | "contact_message" | string;
+  providerEventId?: string;
+  templateName?: string;
+  templateParameters?: Array<{ type: "text"; text: string }>;
+}): Promise<{ success: boolean; messageId?: string; error?: string; skipped?: boolean }> {
+  // Idempotency check: avoid duplicate customer WhatsApp messages if providerEventId exists
+  if (providerEventId) {
+    const existing = await prisma.notificationLog.findFirst({
+      where: {
+        channel: "whatsapp",
+        providerEventId,
+        status: "SENT",
+      },
+    });
+
+    if (existing) {
+      logger.info("notifications.whatsapp.duplicate_suppressed", {
+        providerEventId,
+        type,
+        entityId,
+      });
+      return { success: true, skipped: true, messageId: existing.messageId || undefined };
+    }
+  }
+
+  const result = await dispatchWhatsAppDirect({
+    to,
+    body,
+    type,
+    entityId,
+    entityType,
+    templateName,
+    templateParameters,
+  });
+
+  await logNotification({
+    channel: "whatsapp",
+    recipient: to,
+    type,
+    entityType,
+    entityId,
+    status: result.success ? "sent" : "failed",
+    subject: `WhatsApp: ${type}`,
+    body,
+    errorMessage: result.success ? undefined : result.error,
+    messageId: result.messageId,
+    providerEventId,
+  });
+
+  return result;
+}
+
 async function logNotification(data: {
   channel: string;
   recipient: string;
@@ -255,6 +345,7 @@ async function logNotification(data: {
   body?: string;
   errorMessage?: string;
   messageId?: string;
+  providerEventId?: string;
 }) {
   try {
     const isBooking = data.entityType === "booking";
@@ -276,6 +367,7 @@ async function logNotification(data: {
         body: data.body || null,
         errorMessage: data.errorMessage || null,
         messageId: data.messageId || null,
+        providerEventId: data.providerEventId || null,
       },
     });
   } catch (err) {
@@ -348,7 +440,7 @@ export async function sendBookingConfirmation(booking: BookingNotificationPayloa
             <h1>Request Received</h1>
           </div>
           <div class="content">
-            <span class="status-pill">✓ On-Demand 24/7 Dispatch</span>
+            <span class="status-pill">&#10003; On-Demand 24/7 Dispatch</span>
             <p style="font-size: 15px; margin-top: 0;">Hi <strong>${customerName}</strong>,</p>
             <p style="font-size: 14px; color: #475569; line-height: 1.6;">
               We have received your mobile tire service request. Our dispatch team is allocating an equipped technician van to your location.
@@ -378,11 +470,11 @@ export async function sendBookingConfirmation(booking: BookingNotificationPayloa
               }
             </div>
 
-            <a href="${manageUrl}" class="cta-button">View & Manage Booking in Account →</a>
+            <a href="${manageUrl}" class="cta-button">View &amp; Manage Booking in Account &rarr;</a>
           </div>
           <div class="footer">
             <p style="margin: 0 0 6px 0;">Need immediate assistance or need to reschedule? Call <strong>${BUSINESS_PHONE_DISPLAY}</strong></p>
-            <p style="margin: 0;">HT Mobile Tires • Professional On-Demand Roadside & Driveway Tire Service</p>
+            <p style="margin: 0;">HT Mobile Tires &bull; Professional On-Demand Roadside &amp; Driveway Tire Service</p>
           </div>
         </div>
       </body>
@@ -397,6 +489,24 @@ export async function sendBookingConfirmation(booking: BookingNotificationPayloa
         type: "booking_confirmation",
         entityId: booking.id,
         entityType: "booking",
+      })
+    );
+  }
+
+  // Customer WhatsApp Notification (Request Received / Pending Dispatch)
+  if (booking.customer?.phone) {
+    const manageUrl = `${APP_URL}/account?tab=bookings`;
+    const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
+    const waBody = `HT Mobile Tires — Booking Request Received\n\nHi ${customerName}, we have received your mobile tire service request for booking ${bookingRef} (${serviceName}) on ${formattedDate} at ${formattedTime}.\n\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\n\nOur dispatch team is allocating an equipped mobile technician van to your location. We will notify you once confirmed.\n\nManage Booking: ${manageUrl}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+
+    dispatchPromises.push(
+      sendWhatsApp({
+        to: booking.customer.phone,
+        body: waBody,
+        type: "booking_confirmation",
+        entityId: booking.id,
+        entityType: "booking",
+        providerEventId: `booking_created_${booking.id}`,
       })
     );
   }
@@ -447,12 +557,12 @@ export async function sendEmergencyAlert(emergency: EmergencyNotificationPayload
       <body>
         <div class="container">
           <div class="header">
-            <p>🚨 Roadside Emergency Dispatch</p>
+            <p>&#128680; Roadside Emergency Dispatch</p>
             <h1>Help Is On The Way!</h1>
           </div>
           <div class="content">
             <div class="eta-banner">
-              <h2>Estimated Arrival: 30–45 Minutes</h2>
+              <h2>Estimated Arrival: 30&ndash;45 Minutes</h2>
               <p>Your emergency request has been prioritized for mobile dispatch.</p>
             </div>
 
@@ -482,13 +592,13 @@ export async function sendEmergencyAlert(emergency: EmergencyNotificationPayload
 
             <div class="call-box">
               <p style="margin: 0; font-size: 13px; color: #94a3b8;">Direct Technician Hotline (24/7)</p>
-              <a href="tel:${BUSINESS_PHONE_RAW}">📞 ${BUSINESS_PHONE_DISPLAY}</a>
+              <a href="tel:${BUSINESS_PHONE_RAW}">&#128222; ${BUSINESS_PHONE_DISPLAY}</a>
             </div>
 
-            <a href="${trackUrl}" class="cta-button">Track Status in Customer Account →</a>
+            <a href="${trackUrl}" class="cta-button">Track Status in Customer Account &rarr;</a>
           </div>
           <div class="footer">
-            <p style="margin: 0;">HT Mobile Tires • 24/7 Roadside Assistance & Tire Replacement</p>
+            <p style="margin: 0;">HT Mobile Tires &bull; 24/7 Roadside Assistance &amp; Tire Replacement</p>
           </div>
         </div>
       </body>
@@ -507,118 +617,390 @@ export async function sendEmergencyAlert(emergency: EmergencyNotificationPayload
     );
   }
 
+  // Customer Priority WhatsApp Notification
+  if (emergency.customer?.phone) {
+    const trackUrl = `${APP_URL}/account?tab=emergency`;
+    const waBody = `🚨 HT Mobile Tires — Priority Emergency Dispatch\n\nHi ${customerName}, our nearest mobile technician van has received your breakdown details.\n\nIssue: ${emergency.problem}\nVehicle: ${emergency.vehicle}\nLocation: ${emergency.currentLocation}\nEstimated Arrival: 30-45 minutes\n\nPlease stay in a safe spot away from traffic.\nDirect Hotline: ${BUSINESS_PHONE_DISPLAY}\nTrack: ${trackUrl}`;
+
+    dispatchPromises.push(
+      sendWhatsApp({
+        to: emergency.customer.phone,
+        body: waBody,
+        type: "emergency_alert",
+        entityId: emergency.id,
+        entityType: "emergency_request",
+        providerEventId: `emergency_alert_${emergency.id}`,
+      })
+    );
+  }
+
   const results = await Promise.allSettled(dispatchPromises);
   return { success: true, results };
 }
 
 /**
- * Triggered on new Contact form submission:
- * Preserved for future WhatsApp integration; SMS dispatch removed.
+ * Triggered on new Booking creation:
+ * Alerts central dispatch / admin via WhatsApp
  */
-export async function sendAdminContactAlert(_contactMessage: ContactNotificationPayload): Promise<{
+export async function sendAdminBookingCreatedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  messageId?: string;
 }> {
-  void _contactMessage;
-  return { success: true, skipped: true, reason: "sms_removed" };
+  const adminPhone = process.env.TECHNICIAN_PHONE_NUMBER;
+  if (!adminPhone) {
+    return { success: true, skipped: true, reason: "no_admin_phone" };
+  }
+
+  const customerName = booking.customer?.name || "Customer";
+  const customerPhone = booking.customer?.phone || "N/A";
+  const serviceName = booking.service?.name || booking.primaryService || "Mobile Tire Service";
+  const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
+
+  const formattedDate =
+    typeof booking.bookingDate === "string" && !booking.bookingDate.includes("T")
+      ? booking.bookingDate
+      : new Date(booking.bookingDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+
+  const formattedTime =
+    typeof booking.bookingTime === "string" && !booking.bookingTime.includes("T")
+      ? booking.bookingTime
+      : new Date(booking.bookingTime).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        });
+
+  const adminBookingUrl = `${APP_URL}/admin/bookings/${booking.id}`;
+
+  const waBody = `NEW BOOKING REQUEST\nBooking: ${bookingRef}\n\nCustomer: ${customerName}\nPhone: ${customerPhone}\nService: ${serviceName}\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nOpen booking in Admin Dashboard:\n${adminBookingUrl}`;
+
+  return sendWhatsApp({
+    to: adminPhone,
+    body: waBody,
+    type: "BOOKING_CREATED",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `admin_booking_created_${booking.id}`,
+  });
+}
+
+/**
+ * Triggered on new Contact form submission:
+ * Alerts on-duty technician or central dispatch via WhatsApp
+ */
+export async function sendAdminContactAlert(contactMessage: ContactNotificationPayload): Promise<{
+  success: boolean;
+  skipped?: boolean;
+  reason?: string;
+  messageId?: string;
+}> {
+  const adminPhone = process.env.TECHNICIAN_PHONE_NUMBER;
+  if (!adminPhone) {
+    return { success: true, skipped: true, reason: "no_admin_phone" };
+  }
+
+  const waBody = `HT Mobile Tires — New Contact Request\n\nName: ${contactMessage.name}\nPhone: ${contactMessage.phone}\nService: ${contactMessage.service || "General Inquiry"}\nLocation: ${contactMessage.location || "N/A"}\nMessage: "${contactMessage.message || ""}"`;
+
+  return sendWhatsApp({
+    to: adminPhone,
+    body: waBody,
+    type: "CONTACT_REQUEST_CREATED",
+    entityId: contactMessage.id,
+    entityType: "contact_message",
+    providerEventId: `admin_contact_${contactMessage.id}`,
+  });
 }
 
 /**
  * Triggered on Booking Cancellation (Customer or Admin):
- * Preserved for future WhatsApp integration; SMS dispatch removed.
+ * Alerts central dispatch via WhatsApp
  */
-export async function sendAdminBookingCancelledAlert(_params: BookingCancelledAlertParams): Promise<{
+export async function sendAdminBookingCancelledAlert(params: BookingCancelledAlertParams): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  messageId?: string;
 }> {
-  void _params;
-  return { success: true, skipped: true, reason: "sms_removed" };
+  const adminPhone = process.env.TECHNICIAN_PHONE_NUMBER;
+  if (!adminPhone) {
+    return { success: true, skipped: true, reason: "no_admin_phone" };
+  }
+
+  const waBody = `HT Mobile Tires — Booking Cancelled Alert\n\nBooking: #${params.booking.id.slice(-6).toUpperCase()}\nCancelled by: ${params.cancelledBy}\nCustomer: ${params.booking.customer?.name || "N/A"} (${params.booking.customer?.phone || "N/A"})\nVehicle: ${params.booking.vehicle || "N/A"}\nReason: ${params.reason || "None provided"}`;
+
+  return sendWhatsApp({
+    to: adminPhone,
+    body: waBody,
+    type: "BOOKING_CANCELLED",
+    entityId: params.booking.id,
+    entityType: "booking",
+    providerEventId: `admin_cancel_${params.booking.id}`,
+  });
 }
 
 /**
  * 1. Customer Alert: Booking Confirmed (BOOKING_CONFIRMED)
- * Preserved for future WhatsApp integration; SMS dispatch removed.
+ * Dispatches WhatsApp confirmation to customer phone.
  */
-export async function sendCustomerBookingConfirmedAlert(_booking: BookingNotificationPayload): Promise<{
+export async function sendCustomerBookingConfirmedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  messageId?: string;
 }> {
-  void _booking;
-  return { success: true, skipped: true, reason: "sms_removed" };
+  if (!booking.customer?.phone) {
+    return { success: true, skipped: true, reason: "no_phone" };
+  }
+
+  const customerName = booking.customer.name || "Customer";
+  const serviceName = booking.service?.name || "Mobile Tire Service";
+  const formattedDate =
+    typeof booking.bookingDate === "string" && !booking.bookingDate.includes("T")
+      ? booking.bookingDate
+      : new Date(booking.bookingDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+
+  const formattedTime =
+    typeof booking.bookingTime === "string" && !booking.bookingTime.includes("T")
+      ? booking.bookingTime
+      : new Date(booking.bookingTime).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        });
+
+  const manageUrl = `${APP_URL}/account?tab=bookings`;
+  const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
+  const waBody = `HT Mobile Tires — Booking Confirmed\n\nHi ${customerName}, your appointment for booking ${bookingRef} (${serviceName}) on ${formattedDate} at ${formattedTime} has been CONFIRMED!\n\nLocation: ${booking.location}\nVehicle: ${booking.vehicle}\n\nWe look forward to servicing your vehicle.\nManage Booking: ${manageUrl}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+
+  return sendWhatsApp({
+    to: booking.customer.phone,
+    body: waBody,
+    type: "BOOKING_CONFIRMED",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `booking_confirmed_${booking.id}`,
+  });
 }
 
 /**
  * 2. Customer Alert: Technician Assigned (TECHNICIAN_ASSIGNED)
- * Preserved for future WhatsApp integration; SMS dispatch removed.
+ * Dispatches WhatsApp alert when technician is assigned.
  */
-export async function sendCustomerTechnicianAssignedAlert(_params: {
+export async function sendCustomerTechnicianAssignedAlert(params: {
   booking: BookingNotificationPayload;
   technician?: { id?: string; name: string; phone?: string | null } | null;
 }): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  messageId?: string;
 }> {
-  void _params;
-  return { success: true, skipped: true, reason: "sms_removed" };
+  const { booking, technician } = params;
+  if (!booking.customer?.phone) {
+    return { success: true, skipped: true, reason: "no_phone" };
+  }
+
+  const customerName = booking.customer.name || "Customer";
+  const serviceName = booking.service?.name || "Mobile Tire Service";
+  const techName = technician?.name || "A certified technician";
+
+  const waBody = `HT Mobile Tires — Technician Assigned\n\nHi ${customerName}, certified technician ${techName} has been assigned to your mobile tire service (${serviceName}) for your ${booking.vehicle}.\n\nWe will notify you with live updates as soon as the technician is en route to ${booking.location}.\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+
+  return sendWhatsApp({
+    to: booking.customer.phone,
+    body: waBody,
+    type: "TECHNICIAN_ASSIGNED",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `tech_assigned_${booking.id}_${technician?.id || "assigned"}`,
+  });
 }
 
 /**
  * 3. Customer Alert: Technician En Route (TECHNICIAN_EN_ROUTE)
- * Preserved for future WhatsApp integration; SMS dispatch removed.
+ * Dispatches WhatsApp alert with ETA and live tracking link.
  */
-export async function sendCustomerTechnicianEnRouteAlert(_params: {
+export async function sendCustomerTechnicianEnRouteAlert(params: {
   booking: BookingNotificationPayload;
   etaMinutes?: number | null;
 }): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  messageId?: string;
 }> {
-  void _params;
-  return { success: true, skipped: true, reason: "sms_removed" };
+  const { booking, etaMinutes } = params;
+  if (!booking.customer?.phone) {
+    return { success: true, skipped: true, reason: "no_phone" };
+  }
+
+  const customerName = booking.customer.name || "Customer";
+  const eta = etaMinutes ? `${etaMinutes} minutes` : "30-45 minutes";
+  const trackingUrl = `${APP_URL}/technician/tracking/${booking.id}`;
+
+  const waBody = `HT Mobile Tires — Technician En Route\n\nHi ${customerName}, our mobile technician is on the way to your location!\n\nEstimated Arrival: ${eta}\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\n\nTrack Technician Live: ${trackingUrl}\nHotline: ${BUSINESS_PHONE_DISPLAY}`;
+
+  return sendWhatsApp({
+    to: booking.customer.phone,
+    body: waBody,
+    type: "TECHNICIAN_EN_ROUTE",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `tech_en_route_${booking.id}_${Date.now()}`,
+  });
 }
 
 /**
  * 4. Customer Alert: Technician Arrived (TECHNICIAN_ARRIVED)
- * Preserved for future WhatsApp integration; SMS dispatch removed.
+ * Dispatches WhatsApp alert when technician arrives on-site.
  */
-export async function sendCustomerTechnicianArrivedAlert(_booking: BookingNotificationPayload): Promise<{
+export async function sendCustomerTechnicianArrivedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  messageId?: string;
 }> {
-  void _booking;
-  return { success: true, skipped: true, reason: "sms_removed" };
+  if (!booking.customer?.phone) {
+    return { success: true, skipped: true, reason: "no_phone" };
+  }
+
+  const customerName = booking.customer.name || "Customer";
+  const waBody = `HT Mobile Tires — Technician Arrived\n\nHi ${customerName}, our mobile technician has arrived at ${booking.location} and is preparing to begin service on your ${booking.vehicle}.\n\nPlease ensure the vehicle is accessible.\nQuestions? Call: ${BUSINESS_PHONE_DISPLAY}`;
+
+  return sendWhatsApp({
+    to: booking.customer.phone,
+    body: waBody,
+    type: "TECHNICIAN_ARRIVED",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `tech_arrived_${booking.id}`,
+  });
+}
+
+/**
+ * Customer Alert: Service Started (SERVICE_STARTED)
+ * Dispatches WhatsApp alert when technician begins work on vehicle.
+ */
+export async function sendCustomerServiceStartedAlert(booking: BookingNotificationPayload): Promise<{
+  success: boolean;
+  skipped?: boolean;
+  reason?: string;
+  messageId?: string;
+}> {
+  if (!booking.customer?.phone) {
+    return { success: true, skipped: true, reason: "no_phone" };
+  }
+
+  const customerName = booking.customer.name || "Customer";
+  const serviceName = booking.service?.name || booking.primaryService || "Mobile Tire Service";
+  const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
+
+  const waBody = `HT Mobile Tires — Service Started\n\nHi ${customerName},\nWork on your booking ${bookingRef} (${serviceName}) has now started.\n\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\n\nOur technician is currently working on your vehicle.\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+
+  return sendWhatsApp({
+    to: booking.customer.phone,
+    body: waBody,
+    type: "SERVICE_STARTED",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `service_started_${booking.id}`,
+  });
+}
+
+/**
+ * Customer Alert: Service Completed (SERVICE_COMPLETED)
+ * Dispatches dedicated operational WhatsApp alert when service work is completed.
+ */
+export async function sendCustomerServiceCompletedAlert(booking: BookingNotificationPayload): Promise<{
+  success: boolean;
+  skipped?: boolean;
+  reason?: string;
+  messageId?: string;
+}> {
+  if (!booking.customer?.phone) {
+    return { success: true, skipped: true, reason: "no_phone" };
+  }
+
+  const customerName = booking.customer.name || "Customer";
+  const serviceName = booking.service?.name || booking.primaryService || "Mobile Tire Service";
+  const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
+
+  const waBody = `HT Mobile Tires — Service Completed\n\nHi ${customerName},\nYour mobile tire service for booking ${bookingRef} has been completed successfully.\n\nService: ${serviceName}\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\nStatus: Completed\n\nThank you for choosing HT Mobile Tires!\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+
+  return sendWhatsApp({
+    to: booking.customer.phone,
+    body: waBody,
+    type: "SERVICE_COMPLETED",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `service_completed_${booking.id}`,
+  });
 }
 
 /**
  * 5. Customer Alert: Booking Cancelled (BOOKING_CANCELLED)
- * Preserved for future WhatsApp integration; SMS dispatch removed.
+ * Dispatches WhatsApp notification on cancellation.
  */
-export async function sendCustomerBookingCancelledAlert(_booking: BookingNotificationPayload): Promise<{
+export async function sendCustomerBookingCancelledAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  messageId?: string;
 }> {
-  void _booking;
-  return { success: true, skipped: true, reason: "sms_removed" };
+  if (!booking.customer?.phone) {
+    return { success: true, skipped: true, reason: "no_phone" };
+  }
+
+  const customerName = booking.customer.name || "Customer";
+  const bookingUrl = `${APP_URL}/booking`;
+
+  const waBody = `HT Mobile Tires — Booking Cancelled\n\nHi ${customerName}, your appointment for ${booking.vehicle} has been cancelled.\n\nIf you need to rebook or have questions, visit ${bookingUrl} or call our dispatch team at ${BUSINESS_PHONE_DISPLAY}.`;
+
+  return sendWhatsApp({
+    to: booking.customer.phone,
+    body: waBody,
+    type: "BOOKING_CANCELLED",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `booking_cancelled_${booking.id}`,
+  });
 }
 
 /**
  * 6. Customer Alert: Payment Received (PAYMENT_RECEIVED)
- * Preserved for future WhatsApp integration; SMS dispatch removed.
+ * Dispatches WhatsApp payment confirmation.
  */
-export async function sendCustomerPaymentReceivedAlert(_booking: BookingNotificationPayload): Promise<{
+export async function sendCustomerPaymentReceivedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
+  messageId?: string;
 }> {
-  void _booking;
-  return { success: true, skipped: true, reason: "sms_removed" };
+  if (!booking.customer?.phone) {
+    return { success: true, skipped: true, reason: "no_phone" };
+  }
+
+  const customerName = booking.customer.name || "Customer";
+  const accountUrl = `${APP_URL}/account?tab=bookings`;
+
+  const waBody = `HT Mobile Tires — Payment Received\n\nHi ${customerName}, thank you for your payment for Booking #${booking.id.slice(-6).toUpperCase()}!\n\nYour receipt and service invoice are available in your account:\n${accountUrl}\n\nThank you for choosing HT Mobile Tires!`;
+
+  return sendWhatsApp({
+    to: booking.customer.phone,
+    body: waBody,
+    type: "PAYMENT_RECEIVED",
+    entityId: booking.id,
+    entityType: "booking",
+    providerEventId: `payment_received_${booking.id}`,
+  });
 }
 
 /**
@@ -717,10 +1099,10 @@ export async function sendStatusUpdate({
               </div>
             </div>
 
-            <a href="${accountUrl}" class="cta-button">View Account Details →</a>
+            <a href="${accountUrl}" class="cta-button">View Account Details &rarr;</a>
           </div>
           <div class="footer">
-            <p style="margin: 0;">HT Mobile Tires • Support: ${BUSINESS_PHONE_DISPLAY}</p>
+            <p style="margin: 0;">HT Mobile Tires &bull; Support: ${BUSINESS_PHONE_DISPLAY}</p>
           </div>
         </div>
       </body>
@@ -751,6 +1133,7 @@ export async function sendStatusUpdate({
 export async function sendQuoteReadyNotification({
   bookingId,
   customerName,
+  customerPhone,
   customerEmail,
   serviceName,
   vehicle,
@@ -826,10 +1209,10 @@ export async function sendQuoteReadyNotification({
               ${notes ? `<p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b;"><strong>Technician Note:</strong> ${notes}</p>` : ""}
             </div>
 
-            <a href="${accountUrl}" class="cta-button">View in Account & Download PDF Receipt →</a>
+            <a href="${accountUrl}" class="cta-button">View in Account &amp; Download PDF Receipt &rarr;</a>
           </div>
           <div class="footer">
-            <p style="margin: 0;">HT Mobile Tires • Support: ${BUSINESS_PHONE_DISPLAY}</p>
+            <p style="margin: 0;">HT Mobile Tires &bull; Support: ${BUSINESS_PHONE_DISPLAY}</p>
           </div>
         </div>
       </body>
@@ -848,6 +1231,22 @@ export async function sendQuoteReadyNotification({
     );
   }
 
+  // Customer WhatsApp Invoice Notification
+  if (customerPhone) {
+    const waBody = `HT Mobile Tires — Service Quote & Invoice Ready\n\nHi ${customerName}, your invoice for ${serviceName} (${vehicle}) has been finalized.\n\nTotal Amount: $${totalAmount.toFixed(2)}\n\nView details & download receipt: ${accountUrl}`;
+
+    dispatchPromises.push(
+      sendWhatsApp({
+        to: customerPhone,
+        body: waBody,
+        type: "quote_ready",
+        entityId: bookingId,
+        entityType: "booking",
+        providerEventId: `quote_ready_${bookingId}`,
+      })
+    );
+  }
+
   const results = await Promise.allSettled(dispatchPromises);
   return { success: true, results };
 }
@@ -858,7 +1257,8 @@ export async function sendQuoteReadyNotification({
 
 /**
  * Re-attempts delivery for failed notifications (max 3 retries)
- * Preserves email retry mechanism; SMS retry path safely removed.
+ * Retries active delivery channels (email, whatsapp).
+ * Legacy SMS records are safely filtered out to prevent clogging retry queues.
  */
 export async function retryFailedNotifications(limit = 10) {
   try {
@@ -866,13 +1266,14 @@ export async function retryFailedNotifications(limit = 10) {
       where: {
         status: "FAILED",
         retryCount: { lt: 3 },
+        channel: { in: ["email", "whatsapp"] },
       },
       take: limit,
       orderBy: { createdAt: "asc" },
     });
 
     if (failedLogs.length === 0) {
-      return { count: 0, message: "No failed notifications to retry." };
+      return { total: 0, succeeded: 0, failed: 0, message: "No failed notifications to retry." };
     }
 
     let retried = 0;
@@ -897,6 +1298,13 @@ export async function retryFailedNotifications(limit = 10) {
       // Legacy SMS records are skipped since SMS Gateway is decommissioned
       if (log.channel === "sms") {
         logger.info("notifications.retry.sms_skipped", { id: log.id });
+        await prisma.notificationLog.update({
+          where: { id: log.id },
+          data: {
+            retryCount: 3,
+            errorMessage: "SMS gateway decommissioned",
+          },
+        });
         continue;
       }
 
@@ -905,11 +1313,45 @@ export async function retryFailedNotifications(limit = 10) {
 
       let result: { success: boolean; messageId?: string; error?: string } = { success: false };
 
-      if (log.channel === "email" && log.body && log.subject) {
+      if (log.channel === "email") {
+        if (!log.recipient || !log.body || !log.subject) {
+          await prisma.notificationLog.update({
+            where: { id: log.id },
+            data: {
+              status: "FAILED",
+              errorMessage: "Non-retryable: Missing recipient, subject, or HTML body payload",
+              retryCount: 3,
+            },
+          });
+          continue;
+        }
+
         result = await dispatchEmailDirect({
           to: log.recipient,
           subject: log.subject,
           html: log.body,
+          type: log.type as NotificationType,
+          entityId,
+          entityType,
+        });
+      }
+
+      if (log.channel === "whatsapp") {
+        if (!log.recipient || !log.body) {
+          await prisma.notificationLog.update({
+            where: { id: log.id },
+            data: {
+              status: "FAILED",
+              errorMessage: "Non-retryable: Missing recipient phone or body payload",
+              retryCount: 3,
+            },
+          });
+          continue;
+        }
+
+        result = await dispatchWhatsAppDirect({
+          to: log.recipient,
+          body: log.body,
           type: log.type as NotificationType,
           entityId,
           entityType,
@@ -937,11 +1379,11 @@ export async function retryFailedNotifications(limit = 10) {
       }
     }
 
-    return { total: failedLogs.length, succeeded: retried };
+    return { total: failedLogs.length, succeeded: retried, failed: failedLogs.length - retried };
   } catch (err: unknown) {
     const errorMsg = (err as Error)?.message || "Unknown retry error";
     logger.error("notifications.retry.failed", { error: errorMsg });
-    return { error: errorMsg };
+    return { error: errorMsg, total: 0, succeeded: 0, failed: 0 };
   }
 }
 

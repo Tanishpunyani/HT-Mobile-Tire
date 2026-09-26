@@ -5,7 +5,11 @@ import { requireAdminSession } from "@/lib/admin-auth";
 import { validateBookingTransition, validatePaymentTransition } from "@/lib/bookings/state-machine";
 import { completeQuoteSchema } from "@/lib/validations/complete-quote";
 import { generateQuotePdf } from "@/lib/receipts";
-import { sendQuoteReadyNotification, sendCustomerPaymentReceivedAlert } from "@/lib/notifications";
+import {
+  sendQuoteReadyNotification,
+  sendCustomerPaymentReceivedAlert,
+  sendCustomerServiceCompletedAlert,
+} from "@/lib/notifications";
 import { serializeDecimal } from "@/lib/utils/serialize-prisma";
 import { revalidatePath } from "next/cache";
 
@@ -61,6 +65,22 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
         notes: validated.notes || booking.notes,
       },
     });
+
+    // Send Dedicated Service Completed WhatsApp Alert (Non-blocking)
+    try {
+      await sendCustomerServiceCompletedAlert({
+        id: booking.id,
+        vehicle: booking.vehicle || "Vehicle",
+        location: booking.formattedAddress || booking.location || "Dallas, TX",
+        bookingDate: booking.bookingDate,
+        bookingTime: booking.bookingTime,
+        status: "completed",
+        primaryService: booking.primaryService,
+        customer: booking.customer,
+      });
+    } catch (completeErr) {
+      console.warn("Service completed notification warning:", completeErr);
+    }
 
     // Generate Quote / Invoice PDF
     try {

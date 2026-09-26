@@ -44,7 +44,7 @@ type NotificationLog = {
 export default function AdminNotificationsPage() {
   const [logs, setLogs] = useState<NotificationLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterChannel, setFilterChannel] = useState<"all" | "sms" | "email">("all");
+  const [filterChannel, setFilterChannel] = useState<"all" | "email" | "whatsapp" | "sms">("all");
   const [filterStatus, setFilterStatus] = useState<"all" | "delivered" | "sent" | "failed" | "pending">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLog, setSelectedLog] = useState<NotificationLog | null>(null);
@@ -231,7 +231,7 @@ export default function AdminNotificationsPage() {
           <div className="flex flex-wrap items-center gap-2">
             {/* Channel Filters */}
             <div className="flex rounded-xl border border-border bg-white p-1">
-              {(["all", "sms", "email"] as const).map((ch) => (
+              {(["all", "email", "whatsapp", "sms"] as const).map((ch) => (
                 <button
                   key={ch}
                   type="button"
@@ -242,7 +242,7 @@ export default function AdminNotificationsPage() {
                       : "text-text-secondary hover:text-foreground"
                   }`}
                 >
-                  {ch}
+                  {ch === "sms" ? "LEGACY SMS" : ch}
                 </button>
               ))}
             </div>
@@ -308,7 +308,8 @@ export default function AdminNotificationsPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredLogs.map((log) => {
-                  const isSms = log.channel === "sms" || log.type.includes("sms");
+                  const isWhatsApp = log.channel === "whatsapp" || log.type.toLowerCase().includes("whatsapp");
+                  const isSms = !isWhatsApp && (log.channel === "sms" || log.type.includes("sms"));
                   const isDelivered = log.deliveryStatus?.toUpperCase() === "DELIVERED";
                   const isSent = !isDelivered && log.status?.toUpperCase() === "SENT";
                   const isFailed = log.status?.toUpperCase() === "FAILED" || log.deliveryStatus?.toUpperCase() === "FAILED";
@@ -329,13 +330,15 @@ export default function AdminNotificationsPage() {
                       <td className="px-5 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-bold ${
-                            isSms
+                            isWhatsApp
+                              ? "bg-emerald-100 text-emerald-800"
+                              : isSms
                               ? "bg-purple-100 text-purple-800"
                               : "bg-blue-100 text-blue-800"
                           }`}
                         >
-                          {isSms ? <Phone size={12} /> : <Mail size={12} />}
-                          {isSms ? "SMS" : "EMAIL"}
+                          {isWhatsApp ? <Send size={12} /> : isSms ? <Phone size={12} /> : <Mail size={12} />}
+                          {isWhatsApp ? "WHATSAPP" : isSms ? "LEGACY SMS" : "EMAIL"}
                         </span>
                       </td>
 

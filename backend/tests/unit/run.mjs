@@ -14,6 +14,7 @@ import { runCapacityTests } from "./capacity.test.mjs";
 import { runSerializationTests } from "./serialization.test.mjs";
 import { runNotificationRetryReliabilityTests } from "./notification-retry-reliability.test.mjs";
 import { runPhase4B3PhonePersistenceTests } from "./phase-4b3-phone-persistence.test.mjs";
+import { runWhatsAppWorkflowCompletionUnitTests } from "./whatsapp-workflow-completion.test.mjs";
 
 console.log("\x1b[1m\x1b[35m==================================================\x1b[0m");
 console.log("\x1b[1m\x1b[35m   RUNNING UNIT TEST SUITE (PHASE 7 & 10)        \x1b[0m");
@@ -31,5 +32,6 @@ runCapacityTests();
 runSerializationTests();
 runNotificationRetryReliabilityTests();
 runPhase4B3PhonePersistenceTests();
+runWhatsAppWorkflowCompletionUnitTests();
 
 printSummaryAndExit();
