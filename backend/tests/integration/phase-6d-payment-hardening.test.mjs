@@ -19,8 +19,8 @@
  */
 
 import { describe, test, testAsync, assert, assertEqual } from "../helpers/test-runner.mjs";
-import { validateBookingTransition, validatePaymentTransition } from "../../lib/bookings/state-machine.ts";
-import { buildPaymentReceivedKey, buildServiceCompletedKey, buildBookingCancelledKey } from "../../lib/notifications/identity.ts";
+import { validateBookingTransition, validatePaymentTransition } from "../../../frontend/src/lib/bookings/state-machine.ts";
+import { buildPaymentReceivedKey, buildServiceCompletedKey, buildBookingCancelledKey } from "../../../frontend/src/lib/notifications/identity.ts";
 
 export function runPhase6DPaymentHardeningTests() {
   describe("Phase 6D: Payment Preservation (Fix 1)", () => {

@@ -16,7 +16,7 @@ import {
   buildContactAlertKey,
   buildBookingCancelledKey,
   buildPaymentReceivedKey,
-} from "../../lib/notifications/identity.ts";
+} from "../../../frontend/src/lib/notifications/identity.ts";
 
 export function runNotificationIdentityUnitTests() {
   describe("Notification Identity: Pure Determinism", () => {

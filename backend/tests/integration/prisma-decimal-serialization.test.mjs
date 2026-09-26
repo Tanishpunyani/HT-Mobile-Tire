@@ -4,7 +4,7 @@
  */
 
 import { describe, test, assert, assertEqual } from "../helpers/test-runner.mjs";
-import { serializeDecimal, serializePrisma } from "../../lib/utils/serialize-prisma.ts";
+import { serializeDecimal, serializePrisma } from "../../../frontend/src/lib/utils/serialize-prisma.ts";
 
 // Mock Prisma Decimal object matching Decimal.js internals used by Prisma Client
 class MockPrismaDecimal {

@@ -4,7 +4,7 @@
  */
 
 import { describe, test, assert, assertEqual } from "../helpers/test-runner.mjs";
-import { buildGoogleMapsUrl } from "../../lib/utils/maps.ts";
+import { buildGoogleMapsUrl } from "../../../frontend/src/lib/utils/maps.ts";
 
 export function runMapsUnitTests() {
   describe("Google Maps URL Generator (Unit)", () => {

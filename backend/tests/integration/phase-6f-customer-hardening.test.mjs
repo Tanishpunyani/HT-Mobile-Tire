@@ -33,7 +33,7 @@
  */
 
 import { describe, test, assert, assertEqual } from "../helpers/test-runner.mjs";
-import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "../../lib/constants/phone.ts";
+import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "../../../frontend/src/lib/constants/phone.ts";
 
 export function runPhase6FCustomerHardeningTests() {
   describe("Phase 6F: Customer Privacy & Technician Phone Masking (Fix 1)", () => {
