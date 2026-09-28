@@ -27,6 +27,7 @@ import { runPhase4BWorkflowTests } from "./unit/phase-4b-workflow.test.mjs";
 import { runPhase4B3PhonePersistenceTests } from "./unit/phase-4b3-phone-persistence.test.mjs";
 import { runWhatsAppWorkflowCompletionUnitTests } from "./unit/whatsapp-workflow-completion.test.mjs";
 import { runWhatsAppInboundWebhookUnitTests } from "./unit/whatsapp-inbound-webhook.test.mjs";
+import { runWhatsAppContextResolverUnitTests } from "./unit/whatsapp-context-resolver.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -79,6 +80,7 @@ runPhase4BWorkflowTests();
 runPhase4B3PhonePersistenceTests();
 runWhatsAppWorkflowCompletionUnitTests();
 runWhatsAppInboundWebhookUnitTests();
+runWhatsAppContextResolverUnitTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();

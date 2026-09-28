@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { normalizePhoneNumber } from "@/lib/utils/phone";
 import { maskPhoneForLogging } from "@/lib/notifications/whatsapp";
+import { resolveWhatsAppCustomerContext } from "@/lib/whatsapp/context";
 import crypto from "crypto";
 
 const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
@@ -162,56 +163,20 @@ export async function POST(request: Request) {
                 continue;
               }
 
-              // Resolve existing Customer by phone
-              const rawDigits = String(rawFrom).replace(/\D/g, "");
-              const tenDigits =
-                rawDigits.length === 11 && rawDigits.startsWith("1") ? rawDigits.slice(1) : null;
+              // Resolve full customer & database context (Customer, Bookings, ETA, Services)
+              const customerContext = await resolveWhatsAppCustomerContext(rawFrom);
 
-              const customer = await prisma.customer.findFirst({
-                where: {
-                  OR: [
-                    { phone: normalizedPhone },
-                    { phone: rawDigits },
-                    ...(tenDigits ? [{ phone: tenDigits }, { phone: { contains: tenDigits } }] : []),
-                  ],
-                },
-                orderBy: { updatedAt: "desc" },
-              });
-
-              if (customer) {
+              if (customerContext.customer.isKnown) {
                 logger.info("whatsapp.inbound.customer_resolved", {
                   wamid,
-                  customerId: customer.id,
+                  customerId: customerContext.customer.id,
                   maskedPhone,
                 });
               }
 
               // Active booking context (if customer has exactly 1 active booking)
-              let activeBookingId: string | null = null;
-              try {
-                const activeBookings = await prisma.booking.findMany({
-                  where: {
-                    ...(customer?.id
-                      ? { customerId: customer.id }
-                      : { customer: { phone: normalizedPhone } }),
-                    status: { in: ["pending", "confirmed", "in_progress"] },
-                  },
-                  select: { id: true },
-                  take: 2,
-                });
-
-                if (activeBookings.length === 1) {
-                  activeBookingId = activeBookings[0].id;
-                }
-              } catch (bookingLookupErr) {
-                logger.warn("whatsapp.inbound.booking_lookup_failed", { error: bookingLookupErr });
-              }
-
-              // Find or create WhatsAppConversation for this customer phone
-              let conversation = await prisma.whatsAppConversation.findFirst({
-                where: { customerPhone: normalizedPhone },
-                orderBy: { updatedAt: "desc" },
-              });
+              const activeBookingId =
+                customerContext.bookingContext.activeBooking?.id || null;
 
               // Parse message timestamp safely
               let messageDate = new Date();
@@ -222,11 +187,17 @@ export async function POST(request: Request) {
                 }
               }
 
+              // Find or create WhatsAppConversation for this customer phone
+              let conversation = await prisma.whatsAppConversation.findFirst({
+                where: { customerPhone: normalizedPhone },
+                orderBy: { updatedAt: "desc" },
+              });
+
               if (!conversation) {
                 conversation = await prisma.whatsAppConversation.create({
                   data: {
                     customerPhone: normalizedPhone,
-                    customerId: customer?.id || null,
+                    customerId: customerContext.customer.id || null,
                     status: "bot_active",
                     activeBookingId,
                     lastMessageAt: messageDate,
@@ -235,10 +206,10 @@ export async function POST(request: Request) {
               } else {
                 // Update conversation if customer or active booking can now be linked
                 const updateData: Record<string, unknown> = {};
-                if (!conversation.customerId && customer?.id) {
-                  updateData.customerId = customer.id;
+                if (!conversation.customerId && customerContext.customer.id) {
+                  updateData.customerId = customerContext.customer.id;
                 }
-                if (!conversation.activeBookingId && activeBookingId) {
+                if (conversation.activeBookingId !== activeBookingId) {
                   updateData.activeBookingId = activeBookingId;
                 }
                 // Never move lastMessageAt backwards
