@@ -28,6 +28,7 @@ import { runPhase4B3PhonePersistenceTests } from "./unit/phase-4b3-phone-persist
 import { runWhatsAppWorkflowCompletionUnitTests } from "./unit/whatsapp-workflow-completion.test.mjs";
 import { runWhatsAppInboundWebhookUnitTests } from "./unit/whatsapp-inbound-webhook.test.mjs";
 import { runWhatsAppContextResolverUnitTests } from "./unit/whatsapp-context-resolver.test.mjs";
+import { runWhatsAppResponseRouterUnitTests } from "./unit/whatsapp-response-router.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -81,6 +82,7 @@ runPhase4B3PhonePersistenceTests();
 runWhatsAppWorkflowCompletionUnitTests();
 runWhatsAppInboundWebhookUnitTests();
 runWhatsAppContextResolverUnitTests();
+runWhatsAppResponseRouterUnitTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();

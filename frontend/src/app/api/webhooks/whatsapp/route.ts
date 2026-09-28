@@ -3,6 +3,7 @@ import { logger } from "@/lib/logger";
 import { normalizePhoneNumber } from "@/lib/utils/phone";
 import { maskPhoneForLogging } from "@/lib/notifications/whatsapp";
 import { resolveWhatsAppCustomerContext } from "@/lib/whatsapp/context";
+import { sendWhatsAppBotReply } from "@/lib/whatsapp/router";
 import crypto from "crypto";
 
 const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
@@ -269,6 +270,22 @@ export async function POST(request: Request) {
                   type: messageType,
                   maskedPhone,
                 });
+
+                // Phase 3: Route Intent & Dispatch Customer-Safe Response
+                try {
+                  await sendWhatsAppBotReply({
+                    conversationId: conversation.id,
+                    customerPhone: normalizedPhone,
+                    context: customerContext,
+                    inboundText: body,
+                  });
+                } catch (botErr) {
+                  logger.error("whatsapp.bot_reply.exception", {
+                    wamid,
+                    maskedPhone,
+                    error: (botErr as Error)?.message || botErr,
+                  });
+                }
               } catch (msgCreateErr: any) {
                 // Handle unique constraint conflict gracefully
                 if (msgCreateErr?.code === "P2002") {

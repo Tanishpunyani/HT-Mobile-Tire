@@ -17,6 +17,7 @@ import { runPhase4B3PhonePersistenceTests } from "./phase-4b3-phone-persistence.
 import { runWhatsAppWorkflowCompletionUnitTests } from "./whatsapp-workflow-completion.test.mjs";
 import { runWhatsAppInboundWebhookUnitTests } from "./whatsapp-inbound-webhook.test.mjs";
 import { runWhatsAppContextResolverUnitTests } from "./whatsapp-context-resolver.test.mjs";
+import { runWhatsAppResponseRouterUnitTests } from "./whatsapp-response-router.test.mjs";
 
 console.log("\x1b[1m\x1b[35m==================================================\x1b[0m");
 console.log("\x1b[1m\x1b[35m   RUNNING UNIT TEST SUITE (PHASE 7 & 10)        \x1b[0m");
@@ -37,5 +38,6 @@ runPhase4B3PhonePersistenceTests();
 runWhatsAppWorkflowCompletionUnitTests();
 runWhatsAppInboundWebhookUnitTests();
 runWhatsAppContextResolverUnitTests();
+runWhatsAppResponseRouterUnitTests();
 
 printSummaryAndExit();
