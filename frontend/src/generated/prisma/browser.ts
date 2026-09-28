@@ -82,3 +82,13 @@ export type AdminSession = Prisma.AdminSessionModel
  * 
  */
 export type AdminLoginAttempt = Prisma.AdminLoginAttemptModel
+/**
+ * Model WhatsAppConversation
+ * 
+ */
+export type WhatsAppConversation = Prisma.WhatsAppConversationModel
+/**
+ * Model WhatsAppMessage
+ * 
+ */
+export type WhatsAppMessage = Prisma.WhatsAppMessageModel

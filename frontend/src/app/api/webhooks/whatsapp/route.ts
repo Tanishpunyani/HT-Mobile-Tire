@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { normalizePhoneNumber } from "@/lib/utils/phone";
+import { maskPhoneForLogging } from "@/lib/notifications/whatsapp";
 import crypto from "crypto";
 
 const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
@@ -39,6 +41,7 @@ export async function GET(request: Request) {
 /**
  * POST handler: Meta WhatsApp Webhook Status & Message Ingestion
  * Receives delivery receipts (sent, delivered, read, failed) and updates NotificationLog.
+ * Receives inbound customer messages and persists them to WhatsAppConversation & WhatsAppMessage.
  */
 export async function POST(request: Request) {
   try {
@@ -80,7 +83,7 @@ export async function POST(request: Request) {
           const value = change.value;
           if (!value) continue;
 
-          // Delivery status updates (sent, delivered, read, failed)
+          // 1. Delivery status updates (sent, delivered, read, failed)
           if (Array.isArray(value.statuses)) {
             for (const statusObj of value.statuses) {
               const messageId = statusObj.id;
@@ -122,6 +125,189 @@ export async function POST(request: Request) {
                   messageId,
                   error: updateErr,
                 });
+              }
+            }
+          }
+
+          // 2. Inbound customer WhatsApp messages
+          if (Array.isArray(value.messages)) {
+            for (const message of value.messages) {
+              const wamid = message.id;
+              const rawFrom = message.from;
+
+              if (!wamid || !rawFrom) {
+                continue;
+              }
+
+              const normalizedPhone = normalizePhoneNumber(rawFrom);
+              const maskedPhone = maskPhoneForLogging(normalizedPhone);
+
+              logger.info("whatsapp.inbound.received", {
+                wamid,
+                maskedPhone,
+                type: message.type,
+              });
+
+              // Deduplication check: verify if wamid already stored
+              const existingMsg = await prisma.whatsAppMessage.findUnique({
+                where: { wamid },
+                select: { id: true },
+              });
+
+              if (existingMsg) {
+                logger.info("whatsapp.inbound.duplicate", {
+                  wamid,
+                  maskedPhone,
+                });
+                continue;
+              }
+
+              // Resolve existing Customer by phone
+              const rawDigits = String(rawFrom).replace(/\D/g, "");
+              const tenDigits =
+                rawDigits.length === 11 && rawDigits.startsWith("1") ? rawDigits.slice(1) : null;
+
+              const customer = await prisma.customer.findFirst({
+                where: {
+                  OR: [
+                    { phone: normalizedPhone },
+                    { phone: rawDigits },
+                    ...(tenDigits ? [{ phone: tenDigits }, { phone: { contains: tenDigits } }] : []),
+                  ],
+                },
+                orderBy: { updatedAt: "desc" },
+              });
+
+              if (customer) {
+                logger.info("whatsapp.inbound.customer_resolved", {
+                  wamid,
+                  customerId: customer.id,
+                  maskedPhone,
+                });
+              }
+
+              // Active booking context (if customer has exactly 1 active booking)
+              let activeBookingId: string | null = null;
+              try {
+                const activeBookings = await prisma.booking.findMany({
+                  where: {
+                    ...(customer?.id
+                      ? { customerId: customer.id }
+                      : { customer: { phone: normalizedPhone } }),
+                    status: { in: ["pending", "confirmed", "in_progress"] },
+                  },
+                  select: { id: true },
+                  take: 2,
+                });
+
+                if (activeBookings.length === 1) {
+                  activeBookingId = activeBookings[0].id;
+                }
+              } catch (bookingLookupErr) {
+                logger.warn("whatsapp.inbound.booking_lookup_failed", { error: bookingLookupErr });
+              }
+
+              // Find or create WhatsAppConversation for this customer phone
+              let conversation = await prisma.whatsAppConversation.findFirst({
+                where: { customerPhone: normalizedPhone },
+                orderBy: { updatedAt: "desc" },
+              });
+
+              // Parse message timestamp safely
+              let messageDate = new Date();
+              if (message.timestamp) {
+                const parsedSec = parseInt(message.timestamp, 10);
+                if (!isNaN(parsedSec) && parsedSec > 0) {
+                  messageDate = new Date(parsedSec * 1000);
+                }
+              }
+
+              if (!conversation) {
+                conversation = await prisma.whatsAppConversation.create({
+                  data: {
+                    customerPhone: normalizedPhone,
+                    customerId: customer?.id || null,
+                    status: "bot_active",
+                    activeBookingId,
+                    lastMessageAt: messageDate,
+                  },
+                });
+              } else {
+                // Update conversation if customer or active booking can now be linked
+                const updateData: Record<string, unknown> = {};
+                if (!conversation.customerId && customer?.id) {
+                  updateData.customerId = customer.id;
+                }
+                if (!conversation.activeBookingId && activeBookingId) {
+                  updateData.activeBookingId = activeBookingId;
+                }
+                // Never move lastMessageAt backwards
+                if (!conversation.lastMessageAt || conversation.lastMessageAt < messageDate) {
+                  updateData.lastMessageAt = messageDate;
+                }
+
+                if (Object.keys(updateData).length > 0) {
+                  conversation = await prisma.whatsAppConversation.update({
+                    where: { id: conversation.id },
+                    data: updateData,
+                  });
+                }
+              }
+
+              // Extract body according to message type
+              const messageType = message.type || "unknown";
+              let body: string | null = null;
+
+              if (messageType === "text" && message.text?.body) {
+                body = message.text.body;
+              } else if (messageType === "interactive") {
+                if (message.interactive?.type === "button_reply") {
+                  body =
+                    message.interactive.button_reply?.title ||
+                    message.interactive.button_reply?.id ||
+                    null;
+                } else if (message.interactive?.type === "list_reply") {
+                  body =
+                    message.interactive.list_reply?.title ||
+                    message.interactive.list_reply?.id ||
+                    null;
+                }
+              } else if (messageType === "button" && message.button?.text) {
+                body = message.button.text;
+              } else if (messageType === "image" && message.image?.caption) {
+                body = message.image.caption;
+              }
+
+              // Store incoming message with rawPayload
+              try {
+                await prisma.whatsAppMessage.create({
+                  data: {
+                    conversationId: conversation.id,
+                    wamid,
+                    direction: "inbound",
+                    type: messageType,
+                    body,
+                    rawPayload: message as any,
+                    createdAt: messageDate,
+                  },
+                });
+
+                logger.info("whatsapp.inbound.stored", {
+                  wamid,
+                  conversationId: conversation.id,
+                  type: messageType,
+                  maskedPhone,
+                });
+              } catch (msgCreateErr: any) {
+                // Handle unique constraint conflict gracefully
+                if (msgCreateErr?.code === "P2002") {
+                  logger.info("whatsapp.inbound.duplicate_p2002", { wamid, maskedPhone });
+                } else {
+                  logger.error("whatsapp.inbound.store_failed", {
+                    wamid,
+                    error: msgCreateErr?.message || msgCreateErr,
+                  });
+                }
               }
             }
           }

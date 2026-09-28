@@ -405,6 +405,7 @@ export type BookingWhereInput = {
   technician?: Prisma.XOR<Prisma.TechnicianNullableScalarRelationFilter, Prisma.TechnicianWhereInput> | null
   reviews?: Prisma.ReviewListRelationFilter
   technicianLocation?: Prisma.XOR<Prisma.TechnicianLocationNullableScalarRelationFilter, Prisma.TechnicianLocationWhereInput> | null
+  whatsappConversations?: Prisma.WhatsAppConversationListRelationFilter
 }
 
 export type BookingOrderByWithRelationInput = {
@@ -440,6 +441,7 @@ export type BookingOrderByWithRelationInput = {
   technician?: Prisma.TechnicianOrderByWithRelationInput
   reviews?: Prisma.ReviewOrderByRelationAggregateInput
   technicianLocation?: Prisma.TechnicianLocationOrderByWithRelationInput
+  whatsappConversations?: Prisma.WhatsAppConversationOrderByRelationAggregateInput
 }
 
 export type BookingWhereUniqueInput = Prisma.AtLeast<{
@@ -478,6 +480,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   technician?: Prisma.XOR<Prisma.TechnicianNullableScalarRelationFilter, Prisma.TechnicianWhereInput> | null
   reviews?: Prisma.ReviewListRelationFilter
   technicianLocation?: Prisma.XOR<Prisma.TechnicianLocationNullableScalarRelationFilter, Prisma.TechnicianLocationWhereInput> | null
+  whatsappConversations?: Prisma.WhatsAppConversationListRelationFilter
 }, "id">
 
 export type BookingOrderByWithAggregationInput = {
@@ -578,6 +581,7 @@ export type BookingCreateInput = {
   technician?: Prisma.TechnicianCreateNestedOneWithoutBookingsInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutBookingInput
   technicianLocation?: Prisma.TechnicianLocationCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingUncheckedCreateInput = {
@@ -610,6 +614,7 @@ export type BookingUncheckedCreateInput = {
   updatedAt?: Date | string
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutBookingInput
   technicianLocation?: Prisma.TechnicianLocationUncheckedCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingUpdateInput = {
@@ -642,6 +647,7 @@ export type BookingUpdateInput = {
   technician?: Prisma.TechnicianUpdateOneWithoutBookingsNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutBookingNestedInput
   technicianLocation?: Prisma.TechnicianLocationUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateInput = {
@@ -674,6 +680,7 @@ export type BookingUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutBookingNestedInput
   technicianLocation?: Prisma.TechnicianLocationUncheckedUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingCreateManyInput = {
@@ -1061,6 +1068,22 @@ export type BookingUpdateOneRequiredWithoutTechnicianLocationNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BookingUpdateToOneWithWhereWithoutTechnicianLocationInput, Prisma.BookingUpdateWithoutTechnicianLocationInput>, Prisma.BookingUncheckedUpdateWithoutTechnicianLocationInput>
 }
 
+export type BookingCreateNestedOneWithoutWhatsappConversationsInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutWhatsappConversationsInput, Prisma.BookingUncheckedCreateWithoutWhatsappConversationsInput>
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutWhatsappConversationsInput
+  connect?: Prisma.BookingWhereUniqueInput
+}
+
+export type BookingUpdateOneWithoutWhatsappConversationsNestedInput = {
+  create?: Prisma.XOR<Prisma.BookingCreateWithoutWhatsappConversationsInput, Prisma.BookingUncheckedCreateWithoutWhatsappConversationsInput>
+  connectOrCreate?: Prisma.BookingCreateOrConnectWithoutWhatsappConversationsInput
+  upsert?: Prisma.BookingUpsertWithoutWhatsappConversationsInput
+  disconnect?: Prisma.BookingWhereInput | boolean
+  delete?: Prisma.BookingWhereInput | boolean
+  connect?: Prisma.BookingWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BookingUpdateToOneWithWhereWithoutWhatsappConversationsInput, Prisma.BookingUpdateWithoutWhatsappConversationsInput>, Prisma.BookingUncheckedUpdateWithoutWhatsappConversationsInput>
+}
+
 export type BookingCreateWithoutServiceInput = {
   id?: string
   primaryService?: string
@@ -1090,6 +1113,7 @@ export type BookingCreateWithoutServiceInput = {
   technician?: Prisma.TechnicianCreateNestedOneWithoutBookingsInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutBookingInput
   technicianLocation?: Prisma.TechnicianLocationCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingUncheckedCreateWithoutServiceInput = {
@@ -1121,6 +1145,7 @@ export type BookingUncheckedCreateWithoutServiceInput = {
   updatedAt?: Date | string
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutBookingInput
   technicianLocation?: Prisma.TechnicianLocationUncheckedCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingCreateOrConnectWithoutServiceInput = {
@@ -1211,6 +1236,7 @@ export type BookingCreateWithoutCustomerInput = {
   technician?: Prisma.TechnicianCreateNestedOneWithoutBookingsInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutBookingInput
   technicianLocation?: Prisma.TechnicianLocationCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingUncheckedCreateWithoutCustomerInput = {
@@ -1242,6 +1268,7 @@ export type BookingUncheckedCreateWithoutCustomerInput = {
   updatedAt?: Date | string
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutBookingInput
   technicianLocation?: Prisma.TechnicianLocationUncheckedCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingCreateOrConnectWithoutCustomerInput = {
@@ -1299,6 +1326,7 @@ export type BookingCreateWithoutReviewsInput = {
   service?: Prisma.ServiceCreateNestedOneWithoutBookingsInput
   technician?: Prisma.TechnicianCreateNestedOneWithoutBookingsInput
   technicianLocation?: Prisma.TechnicianLocationCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingUncheckedCreateWithoutReviewsInput = {
@@ -1330,6 +1358,7 @@ export type BookingUncheckedCreateWithoutReviewsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   technicianLocation?: Prisma.TechnicianLocationUncheckedCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingCreateOrConnectWithoutReviewsInput = {
@@ -1377,6 +1406,7 @@ export type BookingUpdateWithoutReviewsInput = {
   service?: Prisma.ServiceUpdateOneWithoutBookingsNestedInput
   technician?: Prisma.TechnicianUpdateOneWithoutBookingsNestedInput
   technicianLocation?: Prisma.TechnicianLocationUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutReviewsInput = {
@@ -1408,6 +1438,7 @@ export type BookingUncheckedUpdateWithoutReviewsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   technicianLocation?: Prisma.TechnicianLocationUncheckedUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingCreateWithoutTechnicianInput = {
@@ -1439,6 +1470,7 @@ export type BookingCreateWithoutTechnicianInput = {
   service?: Prisma.ServiceCreateNestedOneWithoutBookingsInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutBookingInput
   technicianLocation?: Prisma.TechnicianLocationCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingUncheckedCreateWithoutTechnicianInput = {
@@ -1470,6 +1502,7 @@ export type BookingUncheckedCreateWithoutTechnicianInput = {
   updatedAt?: Date | string
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutBookingInput
   technicianLocation?: Prisma.TechnicianLocationUncheckedCreateNestedOneWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingCreateOrConnectWithoutTechnicianInput = {
@@ -1527,6 +1560,7 @@ export type BookingCreateWithoutTechnicianLocationInput = {
   service?: Prisma.ServiceCreateNestedOneWithoutBookingsInput
   technician?: Prisma.TechnicianCreateNestedOneWithoutBookingsInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingUncheckedCreateWithoutTechnicianLocationInput = {
@@ -1558,6 +1592,7 @@ export type BookingUncheckedCreateWithoutTechnicianLocationInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutBookingInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedCreateNestedManyWithoutActiveBookingInput
 }
 
 export type BookingCreateOrConnectWithoutTechnicianLocationInput = {
@@ -1605,6 +1640,7 @@ export type BookingUpdateWithoutTechnicianLocationInput = {
   service?: Prisma.ServiceUpdateOneWithoutBookingsNestedInput
   technician?: Prisma.TechnicianUpdateOneWithoutBookingsNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutTechnicianLocationInput = {
@@ -1636,6 +1672,151 @@ export type BookingUncheckedUpdateWithoutTechnicianLocationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedUpdateManyWithoutActiveBookingNestedInput
+}
+
+export type BookingCreateWithoutWhatsappConversationsInput = {
+  id?: string
+  primaryService?: string
+  extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  vehicle: string
+  location: string
+  formattedAddress?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  city?: string | null
+  state?: string | null
+  zipCode?: string | null
+  tireSize?: string | null
+  bookingDate: Date | string
+  bookingTime: Date | string
+  message?: string | null
+  notes?: string | null
+  status?: string
+  paymentStatus?: string
+  totalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  serviceConfirmedAt?: Date | string | null
+  arrivedAt?: Date | string | null
+  estimatedDurationMinutes?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  customer?: Prisma.CustomerCreateNestedOneWithoutBookingsInput
+  service?: Prisma.ServiceCreateNestedOneWithoutBookingsInput
+  technician?: Prisma.TechnicianCreateNestedOneWithoutBookingsInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutBookingInput
+  technicianLocation?: Prisma.TechnicianLocationCreateNestedOneWithoutBookingInput
+}
+
+export type BookingUncheckedCreateWithoutWhatsappConversationsInput = {
+  id?: string
+  customerId?: string | null
+  serviceId?: string | null
+  technicianId?: string | null
+  primaryService?: string
+  extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  vehicle: string
+  location: string
+  formattedAddress?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  city?: string | null
+  state?: string | null
+  zipCode?: string | null
+  tireSize?: string | null
+  bookingDate: Date | string
+  bookingTime: Date | string
+  message?: string | null
+  notes?: string | null
+  status?: string
+  paymentStatus?: string
+  totalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  serviceConfirmedAt?: Date | string | null
+  arrivedAt?: Date | string | null
+  estimatedDurationMinutes?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutBookingInput
+  technicianLocation?: Prisma.TechnicianLocationUncheckedCreateNestedOneWithoutBookingInput
+}
+
+export type BookingCreateOrConnectWithoutWhatsappConversationsInput = {
+  where: Prisma.BookingWhereUniqueInput
+  create: Prisma.XOR<Prisma.BookingCreateWithoutWhatsappConversationsInput, Prisma.BookingUncheckedCreateWithoutWhatsappConversationsInput>
+}
+
+export type BookingUpsertWithoutWhatsappConversationsInput = {
+  update: Prisma.XOR<Prisma.BookingUpdateWithoutWhatsappConversationsInput, Prisma.BookingUncheckedUpdateWithoutWhatsappConversationsInput>
+  create: Prisma.XOR<Prisma.BookingCreateWithoutWhatsappConversationsInput, Prisma.BookingUncheckedCreateWithoutWhatsappConversationsInput>
+  where?: Prisma.BookingWhereInput
+}
+
+export type BookingUpdateToOneWithWhereWithoutWhatsappConversationsInput = {
+  where?: Prisma.BookingWhereInput
+  data: Prisma.XOR<Prisma.BookingUpdateWithoutWhatsappConversationsInput, Prisma.BookingUncheckedUpdateWithoutWhatsappConversationsInput>
+}
+
+export type BookingUpdateWithoutWhatsappConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  primaryService?: Prisma.StringFieldUpdateOperationsInput | string
+  extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  vehicle?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  formattedAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zipCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tireSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookingDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookingTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  totalAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  serviceConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  arrivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customer?: Prisma.CustomerUpdateOneWithoutBookingsNestedInput
+  service?: Prisma.ServiceUpdateOneWithoutBookingsNestedInput
+  technician?: Prisma.TechnicianUpdateOneWithoutBookingsNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutBookingNestedInput
+  technicianLocation?: Prisma.TechnicianLocationUpdateOneWithoutBookingNestedInput
+}
+
+export type BookingUncheckedUpdateWithoutWhatsappConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryService?: Prisma.StringFieldUpdateOperationsInput | string
+  extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  vehicle?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  formattedAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  zipCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tireSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  bookingDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookingTime?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  message?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  totalAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  serviceConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  arrivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  estimatedDurationMinutes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutBookingNestedInput
+  technicianLocation?: Prisma.TechnicianLocationUncheckedUpdateOneWithoutBookingNestedInput
 }
 
 export type BookingCreateManyServiceInput = {
@@ -1696,6 +1877,7 @@ export type BookingUpdateWithoutServiceInput = {
   technician?: Prisma.TechnicianUpdateOneWithoutBookingsNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutBookingNestedInput
   technicianLocation?: Prisma.TechnicianLocationUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutServiceInput = {
@@ -1727,6 +1909,7 @@ export type BookingUncheckedUpdateWithoutServiceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutBookingNestedInput
   technicianLocation?: Prisma.TechnicianLocationUncheckedUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateManyWithoutServiceInput = {
@@ -1816,6 +1999,7 @@ export type BookingUpdateWithoutCustomerInput = {
   technician?: Prisma.TechnicianUpdateOneWithoutBookingsNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutBookingNestedInput
   technicianLocation?: Prisma.TechnicianLocationUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutCustomerInput = {
@@ -1847,6 +2031,7 @@ export type BookingUncheckedUpdateWithoutCustomerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutBookingNestedInput
   technicianLocation?: Prisma.TechnicianLocationUncheckedUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateManyWithoutCustomerInput = {
@@ -1936,6 +2121,7 @@ export type BookingUpdateWithoutTechnicianInput = {
   service?: Prisma.ServiceUpdateOneWithoutBookingsNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutBookingNestedInput
   technicianLocation?: Prisma.TechnicianLocationUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateWithoutTechnicianInput = {
@@ -1967,6 +2153,7 @@ export type BookingUncheckedUpdateWithoutTechnicianInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutBookingNestedInput
   technicianLocation?: Prisma.TechnicianLocationUncheckedUpdateOneWithoutBookingNestedInput
+  whatsappConversations?: Prisma.WhatsAppConversationUncheckedUpdateManyWithoutActiveBookingNestedInput
 }
 
 export type BookingUncheckedUpdateManyWithoutTechnicianInput = {
@@ -2005,10 +2192,12 @@ export type BookingUncheckedUpdateManyWithoutTechnicianInput = {
 
 export type BookingCountOutputType = {
   reviews: number
+  whatsappConversations: number
 }
 
 export type BookingCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   reviews?: boolean | BookingCountOutputTypeCountReviewsArgs
+  whatsappConversations?: boolean | BookingCountOutputTypeCountWhatsappConversationsArgs
 }
 
 /**
@@ -2026,6 +2215,13 @@ export type BookingCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
  */
 export type BookingCountOutputTypeCountReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ReviewWhereInput
+}
+
+/**
+ * BookingCountOutputType without action
+ */
+export type BookingCountOutputTypeCountWhatsappConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WhatsAppConversationWhereInput
 }
 
 
@@ -2062,6 +2258,7 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   technician?: boolean | Prisma.Booking$technicianArgs<ExtArgs>
   reviews?: boolean | Prisma.Booking$reviewsArgs<ExtArgs>
   technicianLocation?: boolean | Prisma.Booking$technicianLocationArgs<ExtArgs>
+  whatsappConversations?: boolean | Prisma.Booking$whatsappConversationsArgs<ExtArgs>
   _count?: boolean | Prisma.BookingCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["booking"]>
 
@@ -2168,6 +2365,7 @@ export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   technician?: boolean | Prisma.Booking$technicianArgs<ExtArgs>
   reviews?: boolean | Prisma.Booking$reviewsArgs<ExtArgs>
   technicianLocation?: boolean | Prisma.Booking$technicianLocationArgs<ExtArgs>
+  whatsappConversations?: boolean | Prisma.Booking$whatsappConversationsArgs<ExtArgs>
   _count?: boolean | Prisma.BookingCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BookingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2189,6 +2387,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     technician: Prisma.$TechnicianPayload<ExtArgs> | null
     reviews: Prisma.$ReviewPayload<ExtArgs>[]
     technicianLocation: Prisma.$TechnicianLocationPayload<ExtArgs> | null
+    whatsappConversations: Prisma.$WhatsAppConversationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2617,6 +2816,7 @@ export interface Prisma__BookingClient<T, Null = never, ExtArgs extends runtime.
   technician<T extends Prisma.Booking$technicianArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$technicianArgs<ExtArgs>>): Prisma.Prisma__TechnicianClient<runtime.Types.Result.GetResult<Prisma.$TechnicianPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reviews<T extends Prisma.Booking$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   technicianLocation<T extends Prisma.Booking$technicianLocationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$technicianLocationArgs<ExtArgs>>): Prisma.Prisma__TechnicianLocationClient<runtime.Types.Result.GetResult<Prisma.$TechnicianLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  whatsappConversations<T extends Prisma.Booking$whatsappConversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Booking$whatsappConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WhatsAppConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3171,6 +3371,30 @@ export type Booking$technicianLocationArgs<ExtArgs extends runtime.Types.Extensi
    */
   include?: Prisma.TechnicianLocationInclude<ExtArgs> | null
   where?: Prisma.TechnicianLocationWhereInput
+}
+
+/**
+ * Booking.whatsappConversations
+ */
+export type Booking$whatsappConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WhatsAppConversation
+   */
+  select?: Prisma.WhatsAppConversationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WhatsAppConversation
+   */
+  omit?: Prisma.WhatsAppConversationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WhatsAppConversationInclude<ExtArgs> | null
+  where?: Prisma.WhatsAppConversationWhereInput
+  orderBy?: Prisma.WhatsAppConversationOrderByWithRelationInput | Prisma.WhatsAppConversationOrderByWithRelationInput[]
+  cursor?: Prisma.WhatsAppConversationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WhatsAppConversationScalarFieldEnum | Prisma.WhatsAppConversationScalarFieldEnum[]
 }
 
 /**

@@ -25,6 +25,8 @@ import { runNotificationRecipientsUnitTests } from "./unit/notification-recipien
 import { runNotificationIdentityUnitTests } from "./unit/notification-identity.test.mjs";
 import { runPhase4BWorkflowTests } from "./unit/phase-4b-workflow.test.mjs";
 import { runPhase4B3PhonePersistenceTests } from "./unit/phase-4b3-phone-persistence.test.mjs";
+import { runWhatsAppWorkflowCompletionUnitTests } from "./unit/whatsapp-workflow-completion.test.mjs";
+import { runWhatsAppInboundWebhookUnitTests } from "./unit/whatsapp-inbound-webhook.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -75,6 +77,8 @@ runNotificationRecipientsUnitTests();
 runNotificationIdentityUnitTests();
 runPhase4BWorkflowTests();
 runPhase4B3PhonePersistenceTests();
+runWhatsAppWorkflowCompletionUnitTests();
+runWhatsAppInboundWebhookUnitTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();
