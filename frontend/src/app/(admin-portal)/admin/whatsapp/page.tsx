@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   Car,
   AlertTriangle,
+  Check,
+  CheckCheck,
 } from "lucide-react";
 import Container from "@/app/components/Container";
 import {
@@ -47,6 +49,7 @@ export default function AdminWhatsAppPortalPage() {
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
   const loadConversations = useCallback(
@@ -65,11 +68,13 @@ export default function AdminWhatsAppPortalPage() {
           if (!selectedConversationId && result.conversations.length > 0) {
             setSelectedConversationId(result.conversations[0].id);
           }
-        } else if (result.error) {
+        } else if (result.error && !isSilent) {
           setErrorNotice(result.error);
         }
       } catch (err: unknown) {
-        setErrorNotice((err as Error)?.message || "Failed to load conversations.");
+        if (!isSilent) {
+          setErrorNotice((err as Error)?.message || "Failed to load conversations.");
+        }
       } finally {
         if (!isSilent) setLoadingConversations(false);
       }
@@ -77,19 +82,31 @@ export default function AdminWhatsAppPortalPage() {
     [searchQuery, statusFilter, selectedConversationId]
   );
 
-  const loadMessages = useCallback(async (conversationId: string) => {
-    setLoadingMessages(true);
+  const loadMessages = useCallback(async (conversationId: string, isSilent = false) => {
+    if (!isSilent) setLoadingMessages(true);
     try {
       const result = await getWhatsAppConversationMessagesAction(conversationId);
       if (result.success && result.messages) {
-        setMessages(result.messages);
-      } else if (result.error) {
+        setMessages((prev) => {
+          if (
+            isSilent &&
+            prev.length === result.messages!.length &&
+            prev[prev.length - 1]?.id === result.messages![result.messages!.length - 1]?.id &&
+            prev[prev.length - 1]?.deliveryStatus === result.messages![result.messages!.length - 1]?.deliveryStatus
+          ) {
+            return prev;
+          }
+          return result.messages!;
+        });
+      } else if (result.error && !isSilent) {
         setErrorNotice(result.error);
       }
     } catch (err: unknown) {
-      setErrorNotice((err as Error)?.message || "Failed to load messages.");
+      if (!isSilent) {
+        setErrorNotice((err as Error)?.message || "Failed to load messages.");
+      }
     } finally {
-      setLoadingMessages(false);
+      if (!isSilent) setLoadingMessages(false);
     }
   }, []);
 
@@ -107,10 +124,51 @@ export default function AdminWhatsAppPortalPage() {
     }
   }, [selectedConversationId, loadMessages]);
 
-  // Scroll to bottom when messages update
+  // Step 7: 10-Second Background Polling with Document Visibility Handling
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const POLLING_INTERVAL_MS = 10000;
+
+    const interval = setInterval(() => {
+      // Pause polling if tab is not visible
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
+      loadConversations(true);
+      if (selectedConversationId && !isSending) {
+        loadMessages(selectedConversationId, true);
+      }
+    }, POLLING_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [loadConversations, loadMessages, selectedConversationId, isSending]);
+
+  // Immediately refresh when tab becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadConversations(true);
+        if (selectedConversationId && !isSending) {
+          loadMessages(selectedConversationId, true);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [loadConversations, loadMessages, selectedConversationId, isSending]);
+
+  // Scroll to bottom when messages update (maintains scroll position if reading history)
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+      if (isNearBottom || !loadingMessages) {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, loadingMessages]);
 
   // Clear toast notifications after 4 seconds
   useEffect(() => {
@@ -366,22 +424,31 @@ export default function AdminWhatsAppPortalPage() {
                         </p>
                       )}
 
-                      {/* Status Badge */}
+                      {/* Status Badge & Unread Indicator */}
                       <div className="pt-1 flex items-center justify-between">
-                        {isHandoff ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-800 border border-amber-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
-                            Needs Attention
-                          </span>
-                        ) : isBot ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                            <Bot className="w-3 h-3 text-sky-600" />
-                            Bot Active
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                            <CheckCircle2 className="w-3 h-3 text-slate-400" />
-                            Closed
+                        <div className="flex items-center gap-1.5">
+                          {isHandoff ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+                              Needs Attention
+                            </span>
+                          ) : isBot ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-sky-50 text-sky-700 border border-sky-200">
+                              <Bot className="w-3 h-3 text-sky-600" />
+                              Bot Active
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                              <CheckCircle2 className="w-3 h-3 text-slate-400" />
+                              Closed
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Step 6: Unread Indicator */}
+                        {conv.hasUnreadMessages && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white shadow-xs">
+                            New
                           </span>
                         )}
                       </div>
@@ -495,7 +562,10 @@ export default function AdminWhatsAppPortalPage() {
                 )}
 
                 {/* Message Transcript */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
+                <div
+                  ref={messagesContainerRef}
+                  className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50"
+                >
                   {loadingMessages ? (
                     <div className="flex items-center justify-center h-full text-slate-400">
                       <Loader2 className="w-6 h-6 animate-spin" />
@@ -545,6 +615,46 @@ export default function AdminWhatsAppPortalPage() {
                                 minute: "2-digit",
                               })}
                             </span>
+
+                            {/* Step 9: Delivery Status Indicator for Outbound messages */}
+                            {!isCustomer && msg.deliveryStatus && (
+                              <>
+                                <span>•</span>
+                                {msg.deliveryStatus === "READ" ? (
+                                  <span
+                                    className="inline-flex items-center gap-0.5 text-sky-600 font-medium"
+                                    title="Read by recipient"
+                                  >
+                                    <CheckCheck className="w-3.5 h-3.5" />
+                                    Read
+                                  </span>
+                                ) : msg.deliveryStatus === "DELIVERED" ? (
+                                  <span
+                                    className="inline-flex items-center gap-0.5 text-emerald-600 font-medium"
+                                    title="Delivered to handset"
+                                  >
+                                    <CheckCheck className="w-3.5 h-3.5" />
+                                    Delivered
+                                  </span>
+                                ) : msg.deliveryStatus === "SENT" ? (
+                                  <span
+                                    className="inline-flex items-center gap-0.5 text-slate-500 font-medium"
+                                    title="Sent from server"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                    Sent
+                                  </span>
+                                ) : msg.deliveryStatus === "FAILED" ? (
+                                  <span
+                                    className="inline-flex items-center gap-0.5 text-rose-600 font-medium"
+                                    title="Delivery failed"
+                                  >
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    Failed
+                                  </span>
+                                ) : null}
+                              </>
+                            )}
                           </div>
 
                           {/* Message Bubble */}

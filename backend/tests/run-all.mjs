@@ -30,6 +30,7 @@ import { runWhatsAppInboundWebhookUnitTests } from "./unit/whatsapp-inbound-webh
 import { runWhatsAppContextResolverUnitTests } from "./unit/whatsapp-context-resolver.test.mjs";
 import { runWhatsAppResponseRouterUnitTests } from "./unit/whatsapp-response-router.test.mjs";
 import { runWhatsAppHumanHandoffUnitTests } from "./unit/whatsapp-human-handoff.test.mjs";
+import { runWhatsAppProductionHardeningUnitTests } from "./unit/whatsapp-production-hardening.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -85,6 +86,7 @@ runWhatsAppInboundWebhookUnitTests();
 runWhatsAppContextResolverUnitTests();
 runWhatsAppResponseRouterUnitTests();
 runWhatsAppHumanHandoffUnitTests();
+runWhatsAppProductionHardeningUnitTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();

@@ -4,6 +4,7 @@ import { normalizePhoneNumber } from "@/lib/utils/phone";
 import { maskPhoneForLogging } from "@/lib/notifications/whatsapp";
 import { resolveWhatsAppCustomerContext } from "@/lib/whatsapp/context";
 import { sendWhatsAppBotReply } from "@/lib/whatsapp/router";
+import { after } from "next/server";
 import crypto from "crypto";
 
 const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
@@ -106,6 +107,7 @@ export async function POST(request: Request) {
                   : undefined;
 
               try {
+                // 1a. Update NotificationLog for transactional notifications
                 const updated = await prisma.notificationLog.updateMany({
                   where: {
                     messageId,
@@ -117,10 +119,38 @@ export async function POST(request: Request) {
                   },
                 });
 
+                // 1b. Synchronize delivery status into WhatsAppMessage rawPayload for 2-way bot and admin messages
+                const existingMsg = await prisma.whatsAppMessage.findUnique({
+                  where: { wamid: messageId },
+                  select: { id: true, rawPayload: true },
+                });
+
+                if (existingMsg) {
+                  const existingPayload =
+                    existingMsg.rawPayload && typeof existingMsg.rawPayload === "object"
+                      ? (existingMsg.rawPayload as Record<string, unknown>)
+                      : {};
+
+                  const mergedPayload: Record<string, unknown> = {
+                    ...existingPayload,
+                    deliveryStatus,
+                    ...(deliveredAt ? { deliveredAt: deliveredAt.toISOString() } : {}),
+                    ...(errorMessage ? { deliveryError: errorMessage } : {}),
+                  };
+
+                  await prisma.whatsAppMessage.update({
+                    where: { id: existingMsg.id },
+                    data: {
+                      rawPayload: mergedPayload as any,
+                    },
+                  });
+                }
+
                 logger.info("whatsapp.webhook.status_updated", {
                   messageId,
                   deliveryStatus,
                   recordsUpdated: updated.count,
+                  whatsAppMessageUpdated: Boolean(existingMsg),
                 });
               } catch (updateErr) {
                 logger.error("whatsapp.webhook.db_update_failed", {
@@ -271,21 +301,24 @@ export async function POST(request: Request) {
                   maskedPhone,
                 });
 
-                // Phase 3: Route Intent & Dispatch Customer-Safe Response
-                try {
-                  await sendWhatsAppBotReply({
-                    conversationId: conversation.id,
-                    customerPhone: normalizedPhone,
-                    context: customerContext,
-                    inboundText: body,
-                  });
-                } catch (botErr) {
-                  logger.error("whatsapp.bot_reply.exception", {
-                    wamid,
-                    maskedPhone,
-                    error: (botErr as Error)?.message || botErr,
-                  });
-                }
+                // Phase 3 & 5: Route Intent & Dispatch Customer-Safe Response
+                // Decouple outbound bot reply from webhook HTTP response using Next.js after()
+                after(async () => {
+                  try {
+                    await sendWhatsAppBotReply({
+                      conversationId: conversation.id,
+                      customerPhone: normalizedPhone,
+                      context: customerContext,
+                      inboundText: body,
+                    });
+                  } catch (botErr) {
+                    logger.error("whatsapp.bot_reply.exception", {
+                      wamid,
+                      maskedPhone,
+                      error: (botErr as Error)?.message || botErr,
+                    });
+                  }
+                });
               } catch (msgCreateErr: any) {
                 // Handle unique constraint conflict gracefully
                 if (msgCreateErr?.code === "P2002") {

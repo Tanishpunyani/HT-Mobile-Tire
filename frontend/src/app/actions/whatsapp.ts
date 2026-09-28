@@ -41,6 +41,7 @@ export interface AdminConversationSummary {
     createdAt: string;
   } | null;
   metadata: Record<string, unknown> | null;
+  hasUnreadMessages: boolean;
 }
 
 export interface AdminMessageItem {
@@ -51,6 +52,7 @@ export interface AdminMessageItem {
   body: string | null;
   senderRole: "customer" | "bot" | "admin";
   adminEmail: string | null;
+  deliveryStatus?: "SENT" | "DELIVERED" | "READ" | "FAILED" | null;
   createdAt: string;
 }
 
@@ -123,48 +125,63 @@ export async function getWhatsAppConversationsAction(
       },
     });
 
-    const safeSummaries: AdminConversationSummary[] = conversations.map((c) => ({
-      id: c.id,
-      customerPhone: c.customerPhone,
-      status: c.status,
-      lastMessageAt: c.lastMessageAt.toISOString(),
-      createdAt: c.createdAt.toISOString(),
-      updatedAt: c.updatedAt.toISOString(),
-      activeBookingId: c.activeBookingId,
-      customer: c.customer
-        ? {
-            id: c.customer.id,
-            name: c.customer.name,
-            email: c.customer.email,
-            phone: c.customer.phone,
-          }
-        : null,
-      activeBooking: c.activeBooking
-        ? {
-            id: c.activeBooking.id,
-            reference: `#${c.activeBooking.id.slice(0, 8).toUpperCase()}`,
-            vehicle: c.activeBooking.vehicle,
-            status: c.activeBooking.status,
-            bookingDate:
-              c.activeBooking.bookingDate instanceof Date
-                ? c.activeBooking.bookingDate.toISOString().split("T")[0]
-                : String(c.activeBooking.bookingDate),
-            bookingTime:
-              c.activeBooking.bookingTime instanceof Date
-                ? c.activeBooking.bookingTime.toISOString().split("T")[1]?.slice(0, 5) || ""
-                : String(c.activeBooking.bookingTime).slice(0, 5),
-          }
-        : null,
-      lastMessage: c.messages[0]
-        ? {
-            body: c.messages[0].body,
-            direction: c.messages[0].direction,
-            type: c.messages[0].type,
-            createdAt: c.messages[0].createdAt.toISOString(),
-          }
-        : null,
-      metadata: (c.metadata as Record<string, unknown>) || null,
-    }));
+    const safeSummaries: AdminConversationSummary[] = conversations.map((c) => {
+      const meta = (c.metadata as Record<string, unknown>) || null;
+      const lastReadAt = typeof meta?.lastReadAt === "string" ? new Date(meta.lastReadAt).getTime() : 0;
+      const lastMsg = c.messages[0] || null;
+
+      // Only mark unread if latest message was an inbound customer message
+      // and it occurred strictly after the staff's lastReadAt timestamp
+      const hasUnreadMessages = Boolean(
+        lastMsg &&
+          lastMsg.direction === "inbound" &&
+          new Date(lastMsg.createdAt).getTime() > lastReadAt
+      );
+
+      return {
+        id: c.id,
+        customerPhone: c.customerPhone,
+        status: c.status,
+        lastMessageAt: c.lastMessageAt.toISOString(),
+        createdAt: c.createdAt.toISOString(),
+        updatedAt: c.updatedAt.toISOString(),
+        activeBookingId: c.activeBookingId,
+        customer: c.customer
+          ? {
+              id: c.customer.id,
+              name: c.customer.name,
+              email: c.customer.email,
+              phone: c.customer.phone,
+            }
+          : null,
+        activeBooking: c.activeBooking
+          ? {
+              id: c.activeBooking.id,
+              reference: `#${c.activeBooking.id.slice(0, 8).toUpperCase()}`,
+              vehicle: c.activeBooking.vehicle,
+              status: c.activeBooking.status,
+              bookingDate:
+                c.activeBooking.bookingDate instanceof Date
+                  ? c.activeBooking.bookingDate.toISOString().split("T")[0]
+                  : String(c.activeBooking.bookingDate),
+              bookingTime:
+                c.activeBooking.bookingTime instanceof Date
+                  ? c.activeBooking.bookingTime.toISOString().split("T")[1]?.slice(0, 5) || ""
+                  : String(c.activeBooking.bookingTime).slice(0, 5),
+            }
+          : null,
+        lastMessage: lastMsg
+          ? {
+              body: lastMsg.body,
+              direction: lastMsg.direction,
+              type: lastMsg.type,
+              createdAt: lastMsg.createdAt.toISOString(),
+            }
+          : null,
+        metadata: meta,
+        hasUnreadMessages,
+      };
+    });
 
     return { success: true, conversations: safeSummaries };
   } catch (err: unknown) {
@@ -198,12 +215,32 @@ export async function getWhatsAppConversationMessagesAction(
 
     const conversation = await prisma.whatsAppConversation.findUnique({
       where: { id: conversationId },
-      select: { id: true },
+      select: { id: true, metadata: true },
     });
 
     if (!conversation) {
       return { success: false, error: "Conversation not found." };
     }
+
+    // Step 5: Update metadata.lastReadAt when staff fetches conversation messages
+    const existingMetadata =
+      conversation.metadata && typeof conversation.metadata === "object"
+        ? (conversation.metadata as Record<string, unknown>)
+        : {};
+
+    const updatedMetadata = {
+      ...existingMetadata,
+      lastReadAt: new Date().toISOString(),
+    };
+
+    await prisma.whatsAppConversation.update({
+      where: { id: conversation.id },
+      data: {
+        metadata: updatedMetadata as any,
+      },
+    }).catch((err) => {
+      logger.warn("whatsapp_action.update_last_read_failed", { conversationId, error: err });
+    });
 
     const rawMessages = await prisma.whatsAppMessage.findMany({
       where: { conversationId },
@@ -222,14 +259,24 @@ export async function getWhatsAppConversationMessagesAction(
     const messages: AdminMessageItem[] = rawMessages.map((m) => {
       let senderRole: "customer" | "bot" | "admin" = "customer";
       let adminEmail: string | null = null;
+      let deliveryStatus: "SENT" | "DELIVERED" | "READ" | "FAILED" | null = null;
+
+      const raw = m.rawPayload as Record<string, unknown> | null;
 
       if (m.direction === "outbound") {
-        const raw = m.rawPayload as Record<string, unknown> | null;
         if (raw?.source === "admin") {
           senderRole = "admin";
           adminEmail = typeof raw.adminEmail === "string" ? raw.adminEmail : null;
         } else {
           senderRole = "bot";
+        }
+
+        // Step 4: Extract deliveryStatus for outbound messages
+        if (typeof raw?.deliveryStatus === "string") {
+          const s = raw.deliveryStatus.toUpperCase();
+          if (["SENT", "DELIVERED", "READ", "FAILED"].includes(s)) {
+            deliveryStatus = s as "SENT" | "DELIVERED" | "READ" | "FAILED";
+          }
         }
       } else {
         senderRole = "customer";
@@ -243,6 +290,7 @@ export async function getWhatsAppConversationMessagesAction(
         body: m.body,
         senderRole,
         adminEmail,
+        deliveryStatus,
         createdAt: m.createdAt.toISOString(),
       };
     });
@@ -320,6 +368,18 @@ export async function sendAdminWhatsAppReplyAction(
         recipient: maskedPhone,
         error: dispatchResult.error,
       });
+
+      // Step 10: Meta 131047 Error Handling
+      // Error code 131047: Re-engagement window expired (> 24 hours since customer's last reply)
+      const errStr = dispatchResult.error || "";
+      if (errStr.includes("131047") || /24\s*hours/i.test(errStr)) {
+        return {
+          success: false,
+          error:
+            "Meta Cloud API Policy: The 24-hour customer service window has expired. You cannot send plain-text messages until the customer messages again or an approved template is sent.",
+        };
+      }
+
       return {
         success: false,
         error: dispatchResult.error || "Failed to deliver WhatsApp message via Meta Cloud API.",
