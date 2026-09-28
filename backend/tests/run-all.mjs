@@ -50,6 +50,7 @@ import { runPhase6BLifecycleTests } from "./integration/phase-6b-lifecycle.test.
 import { runPhase6DPaymentHardeningTests } from "./integration/phase-6d-payment-hardening.test.mjs";
 import { runPhase6FCustomerHardeningTests } from "./integration/phase-6f-customer-hardening.test.mjs";
 import { runPhase6HAdminOperationalTests } from "./integration/phase-6h-admin-operational.test.mjs";
+import { runWhatsAppCoexistenceE2EIntegrationTests } from "./integration/whatsapp-coexistence-e2e.test.mjs";
 
 // E2E Suites
 import { runCustomerJourneyE2ETests } from "./e2e/customer-journey.test.mjs";
@@ -106,6 +107,7 @@ runPhase6BLifecycleTests();
 runPhase6DPaymentHardeningTests();
 runPhase6FCustomerHardeningTests();
 runPhase6HAdminOperationalTests();
+runWhatsAppCoexistenceE2EIntegrationTests();
 
 // 3. E2E SUITES
 runCustomerJourneyE2ETests();

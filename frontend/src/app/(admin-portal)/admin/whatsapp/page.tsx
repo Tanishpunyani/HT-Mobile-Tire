@@ -29,15 +29,18 @@ import {
   getWhatsAppConversationMessagesAction,
   sendAdminWhatsAppReplyAction,
   setConversationStatusAction,
+  setConversationActiveBookingAction,
   type AdminConversationSummary,
   type AdminMessageItem,
   type AdminConversationStatus,
+  type AdminAvailableBookingSummary,
 } from "@/app/actions/whatsapp";
 
 export default function AdminWhatsAppPortalPage() {
   const [conversations, setConversations] = useState<AdminConversationSummary[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AdminMessageItem[]>([]);
+  const [availableBookings, setAvailableBookings] = useState<AdminAvailableBookingSummary[]>([]);
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,6 +48,7 @@ export default function AdminWhatsAppPortalPage() {
   const [replyText, setReplyText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isLinkingBooking, setIsLinkingBooking] = useState(false);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
@@ -87,6 +91,9 @@ export default function AdminWhatsAppPortalPage() {
     try {
       const result = await getWhatsAppConversationMessagesAction(conversationId);
       if (result.success && result.messages) {
+        if (result.availableBookings) {
+          setAvailableBookings(result.availableBookings);
+        }
         setMessages((prev) => {
           if (
             isSilent &&
@@ -110,6 +117,28 @@ export default function AdminWhatsAppPortalPage() {
     }
   }, []);
 
+  const handleLinkBooking = async (bookingId: string) => {
+    if (!selectedConversationId) return;
+    setIsLinkingBooking(true);
+    try {
+      const res = await setConversationActiveBookingAction({
+        conversationId: selectedConversationId,
+        bookingId,
+      });
+      if (res.success) {
+        setSuccessNotice("Booking successfully associated with conversation.");
+        await loadConversations(true);
+        await loadMessages(selectedConversationId, true);
+      } else {
+        setErrorNotice(res.error || "Failed to associate booking.");
+      }
+    } catch (err: unknown) {
+      setErrorNotice((err as Error)?.message || "Failed to associate booking.");
+    } finally {
+      setIsLinkingBooking(false);
+    }
+  };
+
   // Initial load and filter change
   useEffect(() => {
     loadConversations();
@@ -121,6 +150,7 @@ export default function AdminWhatsAppPortalPage() {
       loadMessages(selectedConversationId);
     } else {
       setMessages([]);
+      setAvailableBookings([]);
     }
   }, [selectedConversationId, loadMessages]);
 
@@ -521,15 +551,15 @@ export default function AdminWhatsAppPortalPage() {
                   </div>
                 </div>
 
-                {/* Active Booking Banner */}
-                {activeConversation.activeBooking && (
-                  <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between text-xs text-slate-700">
+                {/* Active Booking Banner & Manual Association */}
+                {activeConversation.activeBooking ? (
+                  <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700">
                     <div className="flex items-center gap-2">
                       <Car className="w-3.5 h-3.5 text-slate-400" />
                       <span>
                         Active Booking:{" "}
                         <strong className="font-mono">
-                          #{activeConversation.activeBooking.reference}
+                          {activeConversation.activeBooking.reference}
                         </strong>
                       </span>
                       <span className="text-slate-300">•</span>
@@ -540,15 +570,66 @@ export default function AdminWhatsAppPortalPage() {
                       </span>
                     </div>
 
-                    <Link
-                      href="/admin/bookings"
-                      className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 font-medium"
-                    >
-                      View Booking
-                      <ExternalLink className="w-3 h-3" />
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      {availableBookings.length > 1 && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-500 text-[11px]">Switch:</span>
+                          <select
+                            value={activeConversation.activeBookingId || ""}
+                            onChange={(e) => handleLinkBooking(e.target.value)}
+                            disabled={isLinkingBooking}
+                            className="text-xs bg-white border border-slate-300 rounded px-1.5 py-0.5 text-slate-700 disabled:opacity-50"
+                          >
+                            {availableBookings.map((b) => (
+                              <option key={b.id} value={b.id}>
+                                {b.reference} — {b.vehicle} ({b.status})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <Link
+                        href={
+                          activeConversation.activeBookingId
+                            ? `/admin/bookings/${activeConversation.activeBookingId}`
+                            : "/admin/bookings"
+                        }
+                        className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 font-medium"
+                      >
+                        View Booking
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                    </div>
                   </div>
-                )}
+                ) : availableBookings.length > 0 ? (
+                  <div className="bg-sky-50/70 border-b border-sky-200 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-sky-900">
+                    <div className="flex items-center gap-2">
+                      <Car className="w-3.5 h-3.5 text-sky-600" />
+                      <span className="font-medium">Associate Active Booking:</span>
+                      <select
+                        defaultValue=""
+                        onChange={(e) => {
+                          if (e.target.value) handleLinkBooking(e.target.value);
+                        }}
+                        disabled={isLinkingBooking}
+                        className="text-xs bg-white border border-sky-300 rounded px-2 py-0.5 text-slate-800 disabled:opacity-50"
+                      >
+                        <option value="" disabled>
+                          Select customer booking to associate...
+                        </option>
+                        {availableBookings.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.reference} — {b.vehicle} ({b.bookingDate} {b.bookingTime}) [{b.status}]
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <span className="text-[11px] text-sky-700">
+                      {availableBookings.length} customer booking{availableBookings.length > 1 ? "s" : ""} available
+                    </span>
+                  </div>
+                ) : null}
 
                 {/* 24-Hour Policy Window Notice */}
                 {isOutside24HourWindow && (

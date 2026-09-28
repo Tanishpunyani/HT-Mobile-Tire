@@ -859,6 +859,7 @@ export async function sendWhatsAppBotReply({
 
   // 2. Disambiguation Re-Resolution
   // If the user's message referenced one of the candidate bookings, re-resolve context
+  let validatedTargetBookingId: string | null = null;
   if (
     botResponse.targetBookingId &&
     !context.bookingContext.activeBooking
@@ -867,6 +868,10 @@ export async function sendWhatsAppBotReply({
       const targetedContext = await resolveWhatsAppCustomerContext(customerPhone, {
         targetBookingId: botResponse.targetBookingId,
       });
+      if (targetedContext.bookingContext.activeBooking?.id === botResponse.targetBookingId) {
+        context = targetedContext;
+        validatedTargetBookingId = botResponse.targetBookingId;
+      }
       botResponse = routeWhatsAppIntent(targetedContext, inboundText);
     } catch (err) {
       logger.warn("whatsapp.router.target_reresolve_failed", {
@@ -934,11 +939,15 @@ export async function sendWhatsAppBotReply({
     }
   }
 
-  // 6. Update Conversation State (lastMessageAt and status)
+  // 6. Update Conversation State (lastMessageAt, status, and activeBookingId)
   try {
     const convUpdate: Record<string, unknown> = {
       lastMessageAt: new Date(),
     };
+
+    if (validatedTargetBookingId) {
+      convUpdate.activeBookingId = validatedTargetBookingId;
+    }
 
     if (botResponse.shouldHandoff) {
       convUpdate.status = "human_handoff";

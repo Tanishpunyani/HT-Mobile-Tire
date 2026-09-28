@@ -4,8 +4,18 @@ import { requireAdminSession } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { dispatchWhatsAppDirect, maskPhoneForLogging } from "@/lib/notifications/whatsapp";
+import { normalizePhoneNumber } from "@/lib/utils/phone";
 
 export type AdminConversationStatus = "bot_active" | "human_handoff" | "closed";
+
+export interface AdminAvailableBookingSummary {
+  id: string;
+  reference: string;
+  vehicle: string;
+  status: string;
+  bookingDate: string;
+  bookingTime: string;
+}
 
 export interface GetConversationsFilter {
   search?: string;
@@ -205,7 +215,12 @@ export async function getWhatsAppConversationsAction(
  */
 export async function getWhatsAppConversationMessagesAction(
   conversationId: string
-): Promise<{ success: boolean; messages?: AdminMessageItem[]; error?: string }> {
+): Promise<{
+  success: boolean;
+  messages?: AdminMessageItem[];
+  availableBookings?: AdminAvailableBookingSummary[];
+  error?: string;
+}> {
   try {
     await requireAdminSession();
 
@@ -215,7 +230,13 @@ export async function getWhatsAppConversationMessagesAction(
 
     const conversation = await prisma.whatsAppConversation.findUnique({
       where: { id: conversationId },
-      select: { id: true, metadata: true },
+      select: {
+        id: true,
+        metadata: true,
+        customerId: true,
+        customerPhone: true,
+        activeBookingId: true,
+      },
     });
 
     if (!conversation) {
@@ -242,9 +263,48 @@ export async function getWhatsAppConversationMessagesAction(
       logger.warn("whatsapp_action.update_last_read_failed", { conversationId, error: err });
     });
 
-    const rawMessages = await prisma.whatsAppMessage.findMany({
+    // Step 5 & 7: Fetch candidate active bookings for manual linking if needed
+    const candidateBookingsRaw = await prisma.booking.findMany({
+      where: {
+        OR: [
+          conversation.customerId ? { customerId: conversation.customerId } : undefined,
+          { customer: { phone: conversation.customerPhone } },
+        ].filter(Boolean) as any,
+        status: { in: ["pending", "confirmed", "in_progress"] },
+      },
+      select: {
+        id: true,
+        vehicle: true,
+        status: true,
+        bookingDate: true,
+        bookingTime: true,
+      },
+      orderBy: [{ bookingDate: "desc" }, { createdAt: "desc" }],
+      take: 10,
+    });
+
+    const availableBookings: AdminAvailableBookingSummary[] = candidateBookingsRaw.map((b) => ({
+      id: b.id,
+      reference: `#${b.id.slice(0, 8).toUpperCase()}`,
+      vehicle: b.vehicle,
+      status: b.status,
+      bookingDate:
+        b.bookingDate instanceof Date
+          ? b.bookingDate.toISOString().split("T")[0]
+          : String(b.bookingDate),
+      bookingTime:
+        b.bookingTime instanceof Date
+          ? b.bookingTime.toISOString().split("T")[1]?.slice(0, 5) || ""
+          : String(b.bookingTime).slice(0, 5),
+    }));
+
+    // Step 7: Message Transcript Safety Ceiling (latest 150 messages)
+    const TRANSCRIPT_SAFETY_CEILING = 150;
+
+    const rawMessagesDesc = await prisma.whatsAppMessage.findMany({
       where: { conversationId },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
+      take: TRANSCRIPT_SAFETY_CEILING,
       select: {
         id: true,
         wamid: true,
@@ -255,6 +315,9 @@ export async function getWhatsAppConversationMessagesAction(
         createdAt: true,
       },
     });
+
+    // Re-order chronologically (oldest -> newest) for display presentation
+    const rawMessages = rawMessagesDesc.reverse();
 
     const messages: AdminMessageItem[] = rawMessages.map((m) => {
       let senderRole: "customer" | "bot" | "admin" = "customer";
@@ -295,7 +358,7 @@ export async function getWhatsAppConversationMessagesAction(
       };
     });
 
-    return { success: true, messages };
+    return { success: true, messages, availableBookings };
   } catch (err: unknown) {
     logger.error("whatsapp_action.get_messages_failed", {
       conversationId,
@@ -541,6 +604,112 @@ export async function setConversationStatusAction(
     return {
       success: false,
       error: (err as Error)?.message || "Failed to update conversation status.",
+    };
+  }
+}
+
+/**
+ * Step 4: Admin Manual Active Booking Association
+ * Associates or switches the activeBookingId on a conversation.
+ * Strictly verifies server-side that the booking belongs to the customer owning the conversation.
+ */
+export async function setConversationActiveBookingAction({
+  conversationId,
+  bookingId,
+}: {
+  conversationId: string;
+  bookingId: string | null;
+}): Promise<{ success: boolean; activeBookingId?: string | null; error?: string }> {
+  try {
+    const session = await requireAdminSession();
+
+    if (!conversationId || typeof conversationId !== "string" || conversationId.trim() === "") {
+      return { success: false, error: "Invalid conversation ID." };
+    }
+
+    const conversation = await prisma.whatsAppConversation.findUnique({
+      where: { id: conversationId },
+      select: { id: true, customerId: true, customerPhone: true },
+    });
+
+    if (!conversation) {
+      return { success: false, error: "Conversation not found." };
+    }
+
+    // If clearing association
+    if (bookingId === null) {
+      await prisma.whatsAppConversation.update({
+        where: { id: conversation.id },
+        data: { activeBookingId: null },
+      });
+
+      logger.info("whatsapp_action.active_booking_unlinked", {
+        conversationId: conversation.id,
+        adminEmail: session.email,
+      });
+
+      return { success: true, activeBookingId: null };
+    }
+
+    if (typeof bookingId !== "string" || bookingId.trim() === "") {
+      return { success: false, error: "Invalid booking ID." };
+    }
+
+    // Server-side ownership verification:
+    // Verify target booking exists and belongs to the conversation customer
+    const targetBooking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { customer: true },
+    });
+
+    if (!targetBooking) {
+      return { success: false, error: "Booking not found." };
+    }
+
+    // Customer ownership validation:
+    // Check either customerId matches, or customer's phone matches conversation.customerPhone
+    const matchesCustomerId = Boolean(
+      conversation.customerId && targetBooking.customerId === conversation.customerId
+    );
+    const matchesCustomerPhone = Boolean(
+      targetBooking.customer?.phone &&
+        normalizePhoneNumber(targetBooking.customer.phone) === conversation.customerPhone
+    );
+
+    if (!matchesCustomerId && !matchesCustomerPhone) {
+      logger.warn("whatsapp_action.booking_link_idor_blocked", {
+        conversationId: conversation.id,
+        bookingId,
+        adminEmail: session.email,
+      });
+      return {
+        success: false,
+        error: "Forbidden: Selected booking does not belong to this customer.",
+      };
+    }
+
+    // Update conversation record
+    await prisma.whatsAppConversation.update({
+      where: { id: conversation.id },
+      data: { activeBookingId: targetBooking.id },
+    });
+
+    logger.info("whatsapp_action.active_booking_linked", {
+      conversationId: conversation.id,
+      bookingId: targetBooking.id,
+      adminEmail: session.email,
+    });
+
+    return { success: true, activeBookingId: targetBooking.id };
+  } catch (err: unknown) {
+    logger.error("whatsapp_action.set_active_booking_failed", {
+      conversationId,
+      bookingId,
+      error: (err as Error)?.message || err,
+    });
+    return {
+      success: false,
+      error: (err as Error)?.message || "Failed to associate booking with conversation.",
     };
   }
 }

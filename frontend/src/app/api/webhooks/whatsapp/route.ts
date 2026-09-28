@@ -174,6 +174,31 @@ export async function POST(request: Request) {
               const normalizedPhone = normalizePhoneNumber(rawFrom);
               const maskedPhone = maskPhoneForLogging(normalizedPhone);
 
+              // Step 6: Business-side echo / loop defense
+              // Distinguish inbound customer messages from business-side outbound echo messages
+              const configuredPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+              const metadataPhoneId = value.metadata?.phone_number_id;
+              const displayPhoneNumber = value.metadata?.display_phone_number
+                ? normalizePhoneNumber(value.metadata.display_phone_number)
+                : null;
+
+              const isBusinessEcho = Boolean(
+                (configuredPhoneId && rawFrom === configuredPhoneId) ||
+                (metadataPhoneId && rawFrom === metadataPhoneId) ||
+                (displayPhoneNumber && normalizedPhone === displayPhoneNumber)
+              );
+
+              if (isBusinessEcho) {
+                logger.info("whatsapp.webhook.business_echo_suppressed", {
+                  wamid,
+                  rawFrom,
+                  metadataPhoneId,
+                  displayPhoneNumber,
+                });
+                // Acknowledge receipt to Meta without triggering automated bot responses
+                continue;
+              }
+
               logger.info("whatsapp.inbound.received", {
                 wamid,
                 maskedPhone,
@@ -194,8 +219,19 @@ export async function POST(request: Request) {
                 continue;
               }
 
+              // Find existing WhatsAppConversation for this customer phone
+              let conversation = await prisma.whatsAppConversation.findFirst({
+                where: { customerPhone: normalizedPhone },
+                orderBy: { updatedAt: "desc" },
+              });
+
               // Resolve full customer & database context (Customer, Bookings, ETA, Services)
-              const customerContext = await resolveWhatsAppCustomerContext(rawFrom);
+              // If conversation already has an activeBookingId (from prior disambiguation or staff linking), pass it
+              const customerContext = conversation?.activeBookingId
+                ? await resolveWhatsAppCustomerContext(rawFrom, {
+                    targetBookingId: conversation.activeBookingId,
+                  })
+                : await resolveWhatsAppCustomerContext(rawFrom);
 
               if (customerContext.customer.isKnown) {
                 logger.info("whatsapp.inbound.customer_resolved", {
@@ -218,12 +254,6 @@ export async function POST(request: Request) {
                 }
               }
 
-              // Find or create WhatsAppConversation for this customer phone
-              let conversation = await prisma.whatsAppConversation.findFirst({
-                where: { customerPhone: normalizedPhone },
-                orderBy: { updatedAt: "desc" },
-              });
-
               if (!conversation) {
                 conversation = await prisma.whatsAppConversation.create({
                   data: {
@@ -240,7 +270,8 @@ export async function POST(request: Request) {
                 if (!conversation.customerId && customerContext.customer.id) {
                   updateData.customerId = customerContext.customer.id;
                 }
-                if (conversation.activeBookingId !== activeBookingId) {
+                // Only link activeBookingId if not already set, or if verified single active booking exists
+                if (!conversation.activeBookingId && activeBookingId) {
                   updateData.activeBookingId = activeBookingId;
                 }
                 // Never move lastMessageAt backwards
