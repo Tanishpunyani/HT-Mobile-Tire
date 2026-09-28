@@ -370,6 +370,13 @@ export function routeWhatsAppIntent(
 ): WhatsAppBotResponse {
   const normalizedText = normalizeInboundText(inboundMessageText);
 
+  // 0. Closed Conversation Reopening
+  // When an inbound message arrives for a closed conversation, automatically reopen to bot_active
+  const wasClosed = context.conversation.status === "closed";
+  if (wasClosed) {
+    context.conversation.status = "bot_active";
+  }
+
   // 1. Human Handoff Check
   // If conversation is marked for human handoff and user did NOT ask to return to bot:
   if (context.conversation.status === "human_handoff") {
@@ -845,6 +852,7 @@ export async function sendWhatsAppBotReply({
   inboundText,
 }: SendWhatsAppBotReplyParams): Promise<WhatsAppBotResponse | null> {
   const maskedPhone = maskPhoneForLogging(customerPhone);
+  const wasClosed = context.conversation.status === "closed";
 
   // 1. Initial Routing
   let botResponse = routeWhatsAppIntent(context, inboundText);
@@ -935,8 +943,9 @@ export async function sendWhatsAppBotReply({
     if (botResponse.shouldHandoff) {
       convUpdate.status = "human_handoff";
     } else if (
-      context.conversation.status === "human_handoff" &&
-      !botResponse.suppressResponse
+      (context.conversation.status === "human_handoff" &&
+        !botResponse.suppressResponse) ||
+      wasClosed
     ) {
       convUpdate.status = "bot_active";
     }

@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Star,
   Bell,
+  MessageSquare,
 } from "lucide-react";
 import Container from "@/app/components/Container";
 
@@ -54,6 +55,11 @@ const adminNavLinks = [
     name: "Messages",
     href: "/admin/contact-messages",
     icon: Mail,
+  },
+  {
+    name: "WhatsApp",
+    href: "/admin/whatsapp",
+    icon: MessageSquare,
   },
 ];
 
