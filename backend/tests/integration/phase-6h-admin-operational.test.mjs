@@ -223,6 +223,74 @@ export function runPhase6HAdminOperationalTests() {
     });
   });
 
+  describe("Phase 8.1: Direct Admin Booking Confirmation Capacity Parity (app/actions/bookings/admin.ts)", () => {
+    // Simulates confirmBookingAction validation in app/actions/bookings/admin.ts
+    function simulateConfirmBooking({ booking, capacityAvailable = true }) {
+      if (booking.status === "completed" || booking.status === "cancelled") {
+        return {
+          success: false,
+          error: `Cannot transition booking from "${booking.status}" to "confirmed".`,
+        };
+      }
+
+      if (booking.status === "confirmed") {
+        return { success: true, isNoop: true };
+      }
+
+      if (!capacityAvailable) {
+        return {
+          success: false,
+          error: "Maximum technician capacity reached for this time slot. Reassign or choose an alternative slot.",
+        };
+      }
+
+      return {
+        success: true,
+        booking: {
+          ...booking,
+          status: "confirmed",
+          serviceConfirmedAt: new Date(),
+        },
+        notifications: ["BOOKING_CONFIRMED"],
+      };
+    }
+
+    test("1. Direct confirmation succeeds when capacity is available", () => {
+      const booking = { id: "bkg-801", status: "pending", bookingDate: new Date(), bookingTime: "10:00" };
+      const res = simulateConfirmBooking({ booking, capacityAvailable: true });
+      assertEqual(res.success, true);
+      assertEqual(res.booking.status, "confirmed");
+      assert(res.booking.serviceConfirmedAt instanceof Date);
+      assertEqual(res.notifications.length, 1);
+      assertEqual(res.notifications[0], "BOOKING_CONFIRMED");
+    });
+
+    test("2. Direct confirmation is rejected when slot capacity limit is reached", () => {
+      const booking = { id: "bkg-802", status: "pending", bookingDate: new Date(), bookingTime: "10:00" };
+      const res = simulateConfirmBooking({ booking, capacityAvailable: false });
+      assertEqual(res.success, false);
+      assert(res.error.includes("capacity"));
+      assertEqual(
+        res.error,
+        "Maximum technician capacity reached for this time slot. Reassign or choose an alternative slot."
+      );
+    });
+
+    test("3. Direct confirmation is a safe no-op if already confirmed", () => {
+      const booking = { id: "bkg-803", status: "confirmed", bookingDate: new Date(), bookingTime: "10:00" };
+      const res = simulateConfirmBooking({ booking, capacityAvailable: false });
+      assertEqual(res.success, true);
+      assertEqual(res.isNoop, true);
+    });
+
+    test("4. Direct confirmation is rejected on terminal completed or cancelled bookings", () => {
+      const completed = { id: "bkg-804", status: "completed" };
+      const cancelled = { id: "bkg-805", status: "cancelled" };
+      assertEqual(simulateConfirmBooking({ booking: completed }).success, false);
+      assertEqual(simulateConfirmBooking({ booking: cancelled }).success, false);
+    });
+  });
+
   describe("G-04: Block REST Completion Bypass (app/api/admin/bookings/[id]/route.ts)", () => {
     // Simulates PATCH validation in app/api/admin/bookings/[id]/route.ts
     function simulateAdminPatch(currentBooking, patchBody) {

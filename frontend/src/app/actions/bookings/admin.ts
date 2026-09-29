@@ -37,6 +37,21 @@ export async function confirmBookingAction(bookingId: string) {
       return { success: true };
     }
 
+    // Verify slot capacity before confirming booking
+    const slotCapacity = await checkSlotCapacity(prisma, {
+      bookingDate: booking.bookingDate,
+      bookingTime: booking.bookingTime,
+      durationMinutes: booking.estimatedDurationMinutes || DEFAULT_SERVICE_DURATION_MINUTES,
+      excludeBookingId: booking.id,
+    });
+
+    if (!slotCapacity.available) {
+      return {
+        success: false,
+        error: "Maximum technician capacity reached for this time slot. Reassign or choose an alternative slot.",
+      };
+    }
+
     const updated = await prisma.booking.update({
       where: { id: bookingId },
       data: {
