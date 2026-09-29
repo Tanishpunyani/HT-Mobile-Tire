@@ -76,6 +76,114 @@ function matchesAny(text, patterns) {
 }
 
 function detectWhatsAppIntent(inboundText) {
+  // 0. Structured Interactive Intents & Button Aliases
+  if (inboundText) {
+    const rawTrimmed = inboundText.trim();
+    const rawLower = rawTrimmed.toLowerCase();
+
+    // Human Support
+    if (
+      rawLower === "intent:human_support" ||
+      rawLower === "intent:human" ||
+      rawLower === "btn_human" ||
+      rawLower === "btn_support"
+    ) {
+      return "human_support";
+    }
+
+    // Booking Selection / Status
+    if (
+      rawLower.startsWith("booking_select:") ||
+      rawLower === "intent:booking_status" ||
+      rawLower === "intent:status" ||
+      rawLower === "btn_status"
+    ) {
+      return "booking_status";
+    }
+
+    // Tracking
+    if (
+      rawLower === "intent:tracking" ||
+      rawLower === "intent:track" ||
+      rawLower === "btn_tracking" ||
+      rawLower === "btn_track"
+    ) {
+      return "tracking";
+    }
+
+    // Technician
+    if (
+      rawLower === "intent:technician" ||
+      rawLower === "btn_technician"
+    ) {
+      return "technician";
+    }
+
+    // Appointment
+    if (
+      rawLower === "intent:appointment" ||
+      rawLower === "btn_appointment"
+    ) {
+      return "appointment";
+    }
+
+    // Cancellation
+    if (
+      rawLower === "intent:cancellation" ||
+      rawLower === "intent:cancel" ||
+      rawLower === "btn_cancel"
+    ) {
+      return "cancellation";
+    }
+
+    // Reschedule
+    if (
+      rawLower === "intent:reschedule" ||
+      rawLower === "btn_reschedule"
+    ) {
+      return "reschedule";
+    }
+
+    // Receipt
+    if (
+      rawLower === "intent:receipt" ||
+      rawLower === "intent:invoice" ||
+      rawLower === "btn_receipt" ||
+      rawLower === "btn_invoice"
+    ) {
+      return "receipt";
+    }
+
+    // Payment
+    if (
+      rawLower === "intent:payment" ||
+      rawLower === "intent:pay" ||
+      rawLower === "btn_payment" ||
+      rawLower === "btn_pay"
+    ) {
+      return "payment";
+    }
+
+    // Services
+    if (
+      rawLower.startsWith("service_select:") ||
+      rawLower === "intent:services" ||
+      rawLower === "intent:service_info" ||
+      rawLower === "btn_services"
+    ) {
+      return "service_info";
+    }
+
+    // Greeting
+    if (
+      rawLower === "intent:greeting" ||
+      rawLower === "btn_greeting" ||
+      rawLower === "btn_menu"
+    ) {
+      return "greeting";
+    }
+  }
+
   const text = normalizeInboundText(inboundText);
   if (!text) return "unknown";
 
@@ -380,6 +488,410 @@ function createMockContext(overrides = {}) {
   return { ...base, ...overrides };
 }
 
+function buildDisambiguationPrompt(candidates) {
+  const items = candidates
+    .map((c, i) => `${i + 1}. *${c.reference}* — ${c.serviceName} (${c.vehicle})\n   Scheduled: *${c.bookingDate}* at *${c.bookingTime}*`)
+    .join("\n\n");
+  return `You currently have *${candidates.length} active bookings*:\n\n${items}\n\nPlease reply with your booking reference (e.g. *${candidates[0].reference}*) so I can assist you with the right appointment.`;
+}
+
+function buildDisambiguationListPayload(candidates) {
+  if (!candidates || candidates.length < 2 || candidates.length > 10) {
+    return undefined;
+  }
+  return {
+    type: "list",
+    buttonText: "Select Booking",
+    bodyText: "Please select which booking you would like to view:",
+    sections: [
+      {
+        title: "Active Bookings",
+        rows: candidates.slice(0, 10).map((c) => ({
+          id: `booking_select:${c.reference.replace(/#/g, "") || c.id}`.slice(0, 200),
+          title: (c.vehicle || "Vehicle").slice(0, 24),
+          description: `${c.serviceName} • ${c.bookingDate}`.slice(0, 72),
+        })),
+      },
+    ],
+  };
+}
+
+function buildServiceListPayload(services) {
+  if (!services || services.length === 0 || services.length > 10) {
+    return undefined;
+  }
+  return {
+    type: "list",
+    buttonText: "View Services",
+    bodyText: "Select a service below for detailed pricing and availability:",
+    sections: [
+      {
+        title: "Our Services",
+        rows: services.slice(0, 10).map((s) => {
+          const serviceId = s.slug || s.id || s.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+          const pricePart = s.price != null ? `From $${Number(s.price).toFixed(2)} • ` : "";
+          const descPart = s.description ? s.description.slice(0, 50) : "Mobile tire service";
+          return {
+            id: `service_select:${serviceId}`.slice(0, 200),
+            title: s.name.slice(0, 24),
+            description: `${pricePart}${descPart}`.slice(0, 72),
+          };
+        }),
+      },
+    ],
+  };
+}
+
+function simulateRouteWhatsAppIntent(context, inboundMessageText) {
+  const normalizedText = normalizeInboundText(inboundMessageText);
+
+  if (context.conversation.status === "closed") {
+    context.conversation.status = "bot_active";
+  }
+
+  if (context.conversation.status === "human_handoff") {
+    if (
+      normalizedText === "bot" ||
+      normalizedText === "restart" ||
+      normalizedText === "restart bot"
+    ) {
+      return {
+        intent: "greeting",
+        replyText: "Welcome back! I am HT Mobile Tyres bot assistant. How can I help you today?",
+        shouldHandoff: false,
+        suppressResponse: false,
+      };
+    }
+    return {
+      intent: "human_support",
+      replyText: "",
+      suppressResponse: true,
+    };
+  }
+
+  const candidates = context.bookingContext.candidateActiveBookings;
+  let targetBookingId = null;
+
+  const bookingSelectMatch = inboundMessageText?.trim().match(/^booking_select:(.+)$/i);
+  if (bookingSelectMatch) {
+    const selectedToken = bookingSelectMatch[1].trim().toUpperCase();
+    const candidateList =
+      candidates && candidates.length > 0
+        ? candidates
+        : context.bookingContext.activeBooking
+        ? [context.bookingContext.activeBooking]
+        : [];
+    const matched = candidateList.find(
+      (c) =>
+        c.reference.replace(/#/g, "").toUpperCase() === selectedToken ||
+        c.id.toUpperCase() === selectedToken ||
+        c.id.replace(/-/g, "").toUpperCase().startsWith(selectedToken)
+    );
+    if (matched) {
+      targetBookingId = matched.id;
+    }
+  } else if (candidates && candidates.length > 1) {
+    const refMatch = inboundMessageText ? inboundMessageText.match(/#?([0-9a-fA-F]{8})\b/i) : null;
+    const refToken = refMatch ? refMatch[1].toUpperCase() : null;
+    if (refToken) {
+      const matched = candidates.find(
+        (c) =>
+          c.reference.replace(/#/g, "").toUpperCase() === refToken ||
+          c.id.replace(/-/g, "").toUpperCase().startsWith(refToken)
+      );
+      if (matched) {
+        targetBookingId = matched.id;
+      }
+    } else {
+      const numMatch = normalizedText.match(/^([1-9])$/);
+      if (numMatch) {
+        const idx = parseInt(numMatch[1], 10) - 1;
+        if (candidates[idx]) {
+          targetBookingId = candidates[idx].id;
+        }
+      } else {
+        const matchedByVehicle = candidates.filter(
+          (c) =>
+            normalizedText.includes(c.vehicle.toLowerCase()) ||
+            (normalizedText.length >= 3 && c.vehicle.toLowerCase().includes(normalizedText))
+        );
+        if (matchedByVehicle.length === 1) {
+          targetBookingId = matchedByVehicle[0].id;
+        }
+      }
+    }
+  }
+
+  const intent = detectWhatsAppIntent(inboundMessageText);
+
+  switch (intent) {
+    case "human_support":
+      return {
+        intent,
+        replyText: `I am connecting you with our customer support team.\n\n📞 *Support Hotline:* ${context.policy.supportHotline}\n🕒 *Hours:* 7 Days a week (24/7 Roadside Assistance)\n\nA team representative will review your message shortly.`,
+        shouldHandoff: true,
+      };
+
+    case "greeting": {
+      const greetingName = context.customer.isKnown && context.customer.name ? `Hi ${context.customer.name.split(" ")[0]}! ` : "Hello! ";
+      const text = `${greetingName}Welcome to *HT Mobile Tyres* — On-Demand Mobile Tire Service.\n\nI can help you with:\n• *Booking Status* — Check active appointments\n• *Appointment Details* — Date, time window & vehicle\n• *Technician ETA & Tracking* — Live van arrival time & link\n• *Services & Pricing* — Flat repairs, rotations & new tires\n• *Payment & Receipts* — Check balance or download invoices\n• *Cancellation & Reschedule* — Policy guidance\n• *Support* — Speak with a representative\n\nHow can I help you today?`;
+      return {
+        intent,
+        replyText: text,
+        interactive: {
+          type: "button",
+          bodyText: text.slice(0, 1024),
+          buttons: [
+            { id: "intent:booking_status", title: "Booking Status" },
+            { id: "intent:services", title: "Our Services" },
+            { id: "intent:human_support", title: "Speak to Staff" },
+          ],
+        },
+      };
+    }
+
+    case "booking_status": {
+      if (!context.bookingContext.hasBookings) {
+        const text = `You do not have any active or past bookings with HT Mobile Tyres.\n\nTo schedule on-demand mobile tire service:\n👉 https://mobiletire.clinic/booking`;
+        return {
+          intent,
+          replyText: text,
+          interactive: {
+            type: "button",
+            bodyText: text.slice(0, 1024),
+            buttons: [
+              { id: "intent:services", title: "Our Services" },
+              { id: "intent:human_support", title: "Support" },
+            ],
+          },
+        };
+      }
+
+      if (context.bookingContext.activeBookingsCount === 0) {
+        const last = context.bookingContext.lastCompletedBooking;
+        const text = last
+          ? `You don't have any active bookings right now.\n\n*Previous Service:*\n• Reference: *${last.reference}*\n• Service: *${last.serviceName}*\n• Vehicle: *${last.vehicle}*\n• Date: *${last.bookingDate}*\n• Status: *Completed*\n\nNeed to book a new appointment?\n👉 https://mobiletire.clinic/booking`
+          : `You do not have any active bookings right now.\n\nBook a new service online:\n👉 https://mobiletire.clinic/booking`;
+        return {
+          intent,
+          replyText: text,
+          interactive: {
+            type: "button",
+            bodyText: text.slice(0, 1024),
+            buttons: [
+              { id: "intent:services", title: "Our Services" },
+              { id: "intent:human_support", title: "Support" },
+            ],
+          },
+        };
+      }
+
+      if (context.bookingContext.activeBookingsCount > 1 && !targetBookingId) {
+        const interactive = buildDisambiguationListPayload(candidates);
+        return {
+          intent,
+          replyText: buildDisambiguationPrompt(candidates),
+          targetBookingId: null,
+          ...(interactive ? { interactive } : {}),
+        };
+      }
+
+      const b = context.bookingContext.activeBooking;
+      if (!b) {
+        const interactive = buildDisambiguationListPayload(candidates);
+        return {
+          intent,
+          replyText: buildDisambiguationPrompt(candidates),
+          targetBookingId: targetBookingId || null,
+          ...(interactive ? { interactive } : {}),
+        };
+      }
+
+      const trackingLine = b.trackingUrl ? `\n\nLive van tracking:\n👉 ${b.trackingUrl}` : "";
+      const text = `*Booking Status: ${b.status}*\n\n• Reference: *${b.reference}*\n• Service: *${b.serviceName}*\n• Vehicle: *${b.vehicle}*\n• Scheduled: *${b.bookingDate}* at *${b.bookingTime}*\n• Location: *${b.location}*\n• Payment: *${b.paymentStatus}*${trackingLine}`;
+      const buttons = b.trackingUrl
+        ? [
+            { id: "intent:tracking", title: "Track Van" },
+            { id: "intent:services", title: "Our Services" },
+            { id: "intent:human_support", title: "Support" },
+          ]
+        : [
+            { id: "intent:services", title: "Our Services" },
+            { id: "intent:human_support", title: "Support" },
+          ];
+
+      return {
+        intent,
+        replyText: text,
+        targetBookingId,
+        interactive: {
+          type: "button",
+          bodyText: text.slice(0, 1024),
+          buttons,
+        },
+      };
+    }
+
+    case "technician": {
+      if (context.bookingContext.activeBookingsCount === 0) {
+        return {
+          intent,
+          replyText: `You do not have an active booking with an assigned technician.\n\nTo schedule service:\n👉 https://mobiletire.clinic/booking`,
+        };
+      }
+
+      if (context.bookingContext.activeBookingsCount > 1 && !targetBookingId) {
+        const interactive = buildDisambiguationListPayload(candidates);
+        return {
+          intent,
+          replyText: buildDisambiguationPrompt(candidates),
+          ...(interactive ? { interactive } : {}),
+        };
+      }
+
+      const b = context.bookingContext.activeBooking;
+      if (!b) {
+        const interactive = buildDisambiguationListPayload(candidates);
+        return {
+          intent,
+          replyText: buildDisambiguationPrompt(candidates),
+          targetBookingId,
+          ...(interactive ? { interactive } : {}),
+        };
+      }
+
+      const techName = b.technician?.name || "Our technician";
+      if (b.eta.arrivalStatus === "arrived") {
+        const text = `*Technician On-Site!*\n\nYour technician, *${techName}*, has arrived on-site and is preparing equipment for your *${b.vehicle}*.`;
+        return {
+          intent,
+          replyText: text,
+          targetBookingId,
+          interactive: {
+            type: "button",
+            bodyText: text.slice(0, 1024),
+            buttons: [
+              { id: "intent:booking_status", title: "Check Status" },
+              { id: "intent:human_support", title: "Support" },
+            ],
+          },
+        };
+      }
+
+      const text = `*Technician En Route!*\n\nYour technician, *${techName}*, is on the way!`;
+      return {
+        intent,
+        replyText: text,
+        targetBookingId,
+        interactive: {
+          type: "button",
+          bodyText: text.slice(0, 1024),
+          buttons: [
+            { id: "intent:tracking", title: "Live Tracking" },
+            { id: "intent:human_support", title: "Support" },
+          ],
+        },
+      };
+    }
+
+    case "service_info": {
+      const rawText = inboundMessageText?.trim() || "";
+      const isServiceSelect = /^service_select:(.+)$/i.test(rawText);
+
+      if (isServiceSelect) {
+        const serviceToken = rawText.replace(/^service_select:/i, "").trim().toLowerCase();
+        const catalog = context.serviceCatalog || [];
+        const matchedService = catalog.find((s) => {
+          const sSlug = (s.slug || "").toLowerCase();
+          const sId = (s.id || "").toLowerCase();
+          const sNameSlug = s.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+          return sSlug === serviceToken || sId === serviceToken || sNameSlug === serviceToken || sNameSlug.includes(serviceToken);
+        });
+
+        if (matchedService) {
+          const text = `*${matchedService.name}*\n• Price: from $${Number(matchedService.price).toFixed(2)}\n• Description: ${matchedService.description}\n\nBook online: https://mobiletire.clinic/booking`;
+          return {
+            intent,
+            replyText: text,
+            interactive: {
+              type: "button",
+              bodyText: text.slice(0, 1024),
+              buttons: [
+                { id: "intent:services", title: "All Services" },
+                { id: "intent:human_support", title: "Speak to Staff" },
+              ],
+            },
+          };
+        } else {
+          const serviceListPayload = buildServiceListPayload(catalog);
+          const fallbackText = `We could not find the selected service. Here is our full list of mobile tire services:\n\nBook online:\n👉 https://mobiletire.clinic/services`;
+          return {
+            intent,
+            replyText: fallbackText,
+            ...(serviceListPayload ? { interactive: serviceListPayload } : {}),
+          };
+        }
+      }
+
+      const text = `*HT Mobile Tyres — Services & Pricing*`;
+      const serviceListPayload = buildServiceListPayload(context.serviceCatalog);
+      return {
+        intent,
+        replyText: text,
+        ...(serviceListPayload ? { interactive: serviceListPayload } : {}),
+      };
+    }
+
+    case "cancellation": {
+      const text = `Cancellations require dispatch assistance: please call ${context.policy.supportHotline}`;
+      return {
+        intent,
+        replyText: text,
+        targetBookingId,
+        interactive: {
+          type: "button",
+          bodyText: text.slice(0, 1024),
+          buttons: [
+            { id: "intent:human_support", title: "Speak to Staff" },
+            { id: "intent:booking_status", title: "Check Status" },
+          ],
+        },
+      };
+    }
+
+    case "reschedule": {
+      const text = `To reschedule your appointment, please call dispatch at ${context.policy.supportHotline}`;
+      return {
+        intent,
+        replyText: text,
+        targetBookingId,
+        interactive: {
+          type: "button",
+          bodyText: text.slice(0, 1024),
+          buttons: [
+            { id: "intent:human_support", title: "Speak to Staff" },
+            { id: "intent:booking_status", title: "Check Status" },
+          ],
+        },
+      };
+    }
+
+    case "media_attachment":
+      return {
+        intent,
+        replyText: "Thank you for sharing the photo! Our team has received your image.",
+        targetBookingId,
+      };
+
+    default:
+      return {
+        intent: "unknown",
+        replyText: "I didn't quite catch that.",
+        targetBookingId: targetBookingId || null,
+      };
+  }
+}
+
 export function runWhatsAppResponseRouterUnitTests() {
   const routerSrc = fs.readFileSync(ROUTER_PATH, "utf-8");
   const webhookSrc = fs.readFileSync(WEBHOOK_PATH, "utf-8");
@@ -618,6 +1130,335 @@ export function runWhatsAppResponseRouterUnitTests() {
     test("37. Loop prevention: Delivery receipts in value.statuses are not routed as bot messages", () => {
       assert(webhookSrc.includes("value.statuses"), "Statuses are processed separately");
       assert(!webhookSrc.includes("sendWhatsAppBotReply({ conversationId: statusObj"), "Statuses cannot trigger bot replies");
+    });
+  });
+
+  describe("Phase 9.3: Native WhatsApp Interactive Router Integration & Booking Disambiguation", () => {
+    test("38. Structured intent: intent:booking_status -> booking_status", () => {
+      assertEqual(detectWhatsAppIntent("intent:booking_status"), "booking_status");
+      assertEqual(detectWhatsAppIntent("intent:status"), "booking_status");
+    });
+
+    test("39. Structured intent: intent:services -> service_info", () => {
+      assertEqual(detectWhatsAppIntent("intent:services"), "service_info");
+      assertEqual(detectWhatsAppIntent("intent:service_info"), "service_info");
+    });
+
+    test("40. Structured intent: intent:human_support -> human_support", () => {
+      assertEqual(detectWhatsAppIntent("intent:human_support"), "human_support");
+      assertEqual(detectWhatsAppIntent("intent:human"), "human_support");
+    });
+
+    test("41. Button alias: btn_status -> booking_status", () => {
+      assertEqual(detectWhatsAppIntent("btn_status"), "booking_status");
+    });
+
+    test("42. Button alias: btn_services -> service_info", () => {
+      assertEqual(detectWhatsAppIntent("btn_services"), "service_info");
+    });
+
+    test("43. Button alias: btn_human -> human_support", () => {
+      assertEqual(detectWhatsAppIntent("btn_human"), "human_support");
+      assertEqual(detectWhatsAppIntent("btn_support"), "human_support");
+    });
+
+    test("44. Structured booking selection: booking_select:<valid-reference> selects correct booking", () => {
+      const multiCtx = createMockContext({
+        bookingContext: {
+          hasBookings: true,
+          activeBookingsCount: 2,
+          activeBooking: null,
+          candidateActiveBookings: [
+            { id: "book-1", reference: "#A1B2C3D4", serviceName: "Flat Tire Repair", vehicle: "2022 Honda Civic", location: "123 Main St", status: "confirmed", bookingDate: "2026-10-15", bookingTime: "09:00", paymentStatus: "pending", totalAmount: 75.0, receiptUrl: null },
+            { id: "book-2", reference: "#E5F6G7H8", serviceName: "Mobile Tire Rotation", vehicle: "2021 Ford F-150", location: "456 Oak St", status: "confirmed", bookingDate: "2026-10-16", bookingTime: "14:00", paymentStatus: "paid", totalAmount: 85.0, receiptUrl: null },
+          ],
+          lastCompletedBooking: null,
+        },
+      });
+
+      const res = simulateRouteWhatsAppIntent(multiCtx, "booking_select:A1B2C3D4");
+      assertEqual(res.intent, "booking_status");
+      assertEqual(res.targetBookingId, "book-1", "Must resolve targetBookingId to book-1");
+    });
+
+    test("45. Structured booking selection: booking_select:<wrong/unknown-reference> is rejected safely", () => {
+      const multiCtx = createMockContext({
+        bookingContext: {
+          hasBookings: true,
+          activeBookingsCount: 2,
+          activeBooking: null,
+          candidateActiveBookings: [
+            { id: "book-1", reference: "#A1B2C3D4", serviceName: "Flat Tire Repair", vehicle: "2022 Honda Civic", location: "123 Main St", status: "confirmed", bookingDate: "2026-10-15", bookingTime: "09:00", paymentStatus: "pending", totalAmount: 75.0, receiptUrl: null },
+            { id: "book-2", reference: "#E5F6G7H8", serviceName: "Mobile Tire Rotation", vehicle: "2021 Ford F-150", location: "456 Oak St", status: "confirmed", bookingDate: "2026-10-16", bookingTime: "14:00", paymentStatus: "paid", totalAmount: 85.0, receiptUrl: null },
+          ],
+          lastCompletedBooking: null,
+        },
+      });
+
+      const res = simulateRouteWhatsAppIntent(multiCtx, "booking_select:UNKNOWN999");
+      assertEqual(res.intent, "booking_status");
+      assertEqual(res.targetBookingId, null, "Must NOT resolve unauthorized targetBookingId");
+      assert(res.replyText.includes("2 active bookings"), "Falls back to disambiguation prompt");
+    });
+
+    test("46. Structured service selection: service_select:<known-service> maps correctly", () => {
+      const ctx = createMockContext();
+      const res = simulateRouteWhatsAppIntent(ctx, "service_select:flat-tire-repair");
+      assertEqual(res.intent, "service_info");
+      assert(res.replyText.includes("Flat Tire Repair"), "Contains service name");
+      assert(res.interactive?.type === "button", "Attaches buttons for service");
+      assertEqual(res.interactive.buttons[0].id, "intent:services");
+    });
+
+    test("47. Structured service selection: service_select:<unknown-service> falls back safely", () => {
+      const ctx = createMockContext();
+      const res = simulateRouteWhatsAppIntent(ctx, "service_select:nonexistent-mystery-service");
+      assertEqual(res.intent, "service_info");
+      assert(res.replyText.includes("could not find"), "Contains safe fallback wording");
+      assert(res.interactive?.type === "list", "Provides service list menu fallback");
+    });
+
+    test("48. Multiple bookings produce list interactive response when within limits", () => {
+      const multiCtx = createMockContext({
+        bookingContext: {
+          hasBookings: true,
+          activeBookingsCount: 2,
+          activeBooking: null,
+          candidateActiveBookings: [
+            { id: "book-1", reference: "#A1B2C3D4", serviceName: "Flat Tire Repair", vehicle: "2022 Honda Civic", location: "123 Main St", status: "confirmed", bookingDate: "2026-10-15", bookingTime: "09:00", paymentStatus: "pending", totalAmount: 75.0, receiptUrl: null },
+            { id: "book-2", reference: "#E5F6G7H8", serviceName: "Mobile Tire Rotation", vehicle: "2021 Ford F-150", location: "456 Oak St", status: "confirmed", bookingDate: "2026-10-16", bookingTime: "14:00", paymentStatus: "paid", totalAmount: 85.0, receiptUrl: null },
+          ],
+          lastCompletedBooking: null,
+        },
+      });
+
+      const res = simulateRouteWhatsAppIntent(multiCtx, "status");
+      assertEqual(res.intent, "booking_status");
+      assert(res.interactive !== undefined, "Interactive list payload must be present");
+      assertEqual(res.interactive.type, "list");
+      assertEqual(res.interactive.buttonText, "Select Booking");
+      assertEqual(res.interactive.sections[0].rows.length, 2);
+      assertEqual(res.interactive.sections[0].rows[0].id, "booking_select:A1B2C3D4");
+    });
+
+    test("49. Greeting produces button interactive response with 3 options", () => {
+      const ctx = createMockContext();
+      const res = simulateRouteWhatsAppIntent(ctx, "hi");
+      assertEqual(res.intent, "greeting");
+      assert(res.interactive !== undefined, "Interactive button payload must be attached");
+      assertEqual(res.interactive.type, "button");
+      assertEqual(res.interactive.buttons.length, 3);
+      assertEqual(res.interactive.buttons[0].id, "intent:booking_status");
+      assertEqual(res.interactive.buttons[1].id, "intent:services");
+      assertEqual(res.interactive.buttons[2].id, "intent:human_support");
+    });
+
+    test("50. Active booking status flow produces appropriate buttons", () => {
+      const ctxWithTracking = createMockContext();
+      const resWithTrack = simulateRouteWhatsAppIntent(ctxWithTracking, "status");
+      assertEqual(resWithTrack.intent, "booking_status");
+      assertEqual(resWithTrack.interactive?.type, "button");
+      assertEqual(resWithTrack.interactive.buttons.length, 3);
+      assertEqual(resWithTrack.interactive.buttons[0].title, "Track Van");
+
+      const ctxNoTracking = createMockContext({
+        bookingContext: {
+          hasBookings: true,
+          activeBookingsCount: 1,
+          activeBooking: {
+            ...createMockContext().bookingContext.activeBooking,
+            trackingUrl: null,
+          },
+          candidateActiveBookings: [createMockContext().bookingContext.activeBooking],
+          lastCompletedBooking: null,
+        },
+      });
+      const resNoTrack = simulateRouteWhatsAppIntent(ctxNoTracking, "status");
+      assertEqual(resNoTrack.interactive?.type, "button");
+      assertEqual(resNoTrack.interactive.buttons.length, 2);
+      assertEqual(resNoTrack.interactive.buttons[0].title, "Our Services");
+    });
+
+    test("51. Technician flow produces appropriate buttons", () => {
+      const ctx = createMockContext();
+      const resEnRoute = simulateRouteWhatsAppIntent(ctx, "technician");
+      assertEqual(resEnRoute.intent, "technician");
+      assertEqual(resEnRoute.interactive?.type, "button");
+      assertEqual(resEnRoute.interactive.buttons[0].id, "intent:tracking");
+      assertEqual(resEnRoute.interactive.buttons[0].title, "Live Tracking");
+
+      const ctxArrived = createMockContext({
+        bookingContext: {
+          hasBookings: true,
+          activeBookingsCount: 1,
+          activeBooking: {
+            ...createMockContext().bookingContext.activeBooking,
+            eta: { arrivalStatus: "arrived" },
+          },
+          candidateActiveBookings: [createMockContext().bookingContext.activeBooking],
+          lastCompletedBooking: null,
+        },
+      });
+      const resArrived = simulateRouteWhatsAppIntent(ctxArrived, "technician");
+      assertEqual(resArrived.interactive?.type, "button");
+      assertEqual(resArrived.interactive.buttons[0].title, "Check Status");
+    });
+
+    test("52. Services flow produces list menu response", () => {
+      const ctx = createMockContext();
+      const res = simulateRouteWhatsAppIntent(ctx, "services");
+      assertEqual(res.intent, "service_info");
+      assertEqual(res.interactive?.type, "list");
+      assertEqual(res.interactive.buttonText, "View Services");
+      assertEqual(res.interactive.sections[0].rows.length, 2);
+    });
+
+    test("53. Cancellation & reschedule flows produce appropriate buttons", () => {
+      const ctx = createMockContext();
+      const resCancel = simulateRouteWhatsAppIntent(ctx, "cancel");
+      assertEqual(resCancel.intent, "cancellation");
+      assertEqual(resCancel.interactive?.type, "button");
+      assertEqual(resCancel.interactive.buttons[0].title, "Speak to Staff");
+      assertEqual(resCancel.interactive.buttons[1].title, "Check Status");
+
+      const resResched = simulateRouteWhatsAppIntent(ctx, "reschedule");
+      assertEqual(resResched.intent, "reschedule");
+      assertEqual(resResched.interactive?.type, "button");
+      assertEqual(resResched.interactive.buttons[0].title, "Speak to Staff");
+    });
+
+    test("54. Plain-text 'status' remains unchanged and functional", () => {
+      assertEqual(detectWhatsAppIntent("status"), "booking_status");
+      assertEqual(detectWhatsAppIntent("booking status"), "booking_status");
+      const ctx = createMockContext();
+      const res = simulateRouteWhatsAppIntent(ctx, "status");
+      assert(res.replyText.includes("Booking Status:"), "Contains original status header");
+      assert(res.replyText.includes("#A1B2C3D4"), "Contains reference");
+    });
+
+    test("55. Plain-text 'services' remains unchanged and functional", () => {
+      assertEqual(detectWhatsAppIntent("services"), "service_info");
+      assertEqual(detectWhatsAppIntent("what services"), "service_info");
+      const ctx = createMockContext();
+      const res = simulateRouteWhatsAppIntent(ctx, "services");
+      assert(res.replyText.includes("HT Mobile Tyres"), "Contains service text");
+    });
+
+    test("56. Plain-text 'human' remains unchanged and triggers handoff", () => {
+      assertEqual(detectWhatsAppIntent("human"), "human_support");
+      assertEqual(detectWhatsAppIntent("agent"), "human_support");
+      const ctx = createMockContext();
+      const res = simulateRouteWhatsAppIntent(ctx, "human");
+      assertEqual(res.intent, "human_support");
+      assertEqual(res.shouldHandoff, true, "Must set shouldHandoff: true");
+    });
+
+    test("57. Plain-text numeric and vehicle-name booking selection remains functional", () => {
+      const multiCtx = createMockContext({
+        bookingContext: {
+          hasBookings: true,
+          activeBookingsCount: 2,
+          activeBooking: null,
+          candidateActiveBookings: [
+            { id: "book-1", reference: "#A1B2C3D4", serviceName: "Flat Tire Repair", vehicle: "2022 Honda Civic", location: "123 Main St", status: "confirmed", bookingDate: "2026-10-15", bookingTime: "09:00", paymentStatus: "pending", totalAmount: 75.0, receiptUrl: null },
+            { id: "book-2", reference: "#E5F6G7H8", serviceName: "Mobile Tire Rotation", vehicle: "2021 Ford F-150", location: "456 Oak St", status: "confirmed", bookingDate: "2026-10-16", bookingTime: "14:00", paymentStatus: "paid", totalAmount: 85.0, receiptUrl: null },
+          ],
+          lastCompletedBooking: null,
+        },
+      });
+
+      const resNum = simulateRouteWhatsAppIntent(multiCtx, "1");
+      assertEqual(resNum.targetBookingId, "book-1", "Numeric 1 selects first booking");
+
+      const resVehicle = simulateRouteWhatsAppIntent(multiCtx, "Ford F-150");
+      assertEqual(resVehicle.targetBookingId, "book-2", "Vehicle name selects second booking");
+    });
+
+    test("58. Existing media_attachment routing remains unchanged", () => {
+      assertEqual(detectWhatsAppIntent("[Photo Attached]"), "media_attachment");
+      assertEqual(detectWhatsAppIntent("[Voice Note Attached]"), "media_attachment");
+      assertEqual(detectWhatsAppIntent("[Location Shared]"), "media_attachment");
+      const ctx = createMockContext();
+      const res = simulateRouteWhatsAppIntent(ctx, "[Photo Attached]");
+      assertEqual(res.intent, "media_attachment");
+      assert(res.replyText.includes("photo"), "Acknowledges photo");
+    });
+
+    test("59. Existing handoff behavior remains unchanged", () => {
+      const handoffCtx = createMockContext({
+        conversation: { id: "conv-1", status: "human_handoff", activeBookingId: "book-1", metadata: null },
+      });
+      const resSuppressed = simulateRouteWhatsAppIntent(handoffCtx, "status");
+      assertEqual(resSuppressed.suppressResponse, true, "Suppresses bot reply in handoff");
+
+      const resRestart = simulateRouteWhatsAppIntent(handoffCtx, "restart");
+      assertEqual(resRestart.suppressResponse, false, "Resumes on restart command");
+      assertEqual(resRestart.intent, "greeting");
+    });
+
+    test("60. Interactive payload respects provider constraints", () => {
+      const ctx = createMockContext();
+      const resGreeting = simulateRouteWhatsAppIntent(ctx, "hi");
+      assert(resGreeting.interactive.buttons.length <= 3, "Buttons count <= 3");
+      resGreeting.interactive.buttons.forEach((b) => {
+        assert(b.title.length <= 20, `Button title "${b.title}" exceeds 20 characters`);
+        assert(b.id.length <= 256, `Button id "${b.id}" exceeds 256 characters`);
+      });
+
+      const resServices = simulateRouteWhatsAppIntent(ctx, "services");
+      assert(resServices.interactive.sections[0].rows.length <= 10, "List rows <= 10");
+      assert(resServices.interactive.buttonText.length <= 20, "buttonText <= 20");
+      resServices.interactive.sections[0].rows.forEach((r) => {
+        assert(r.title.length <= 24, `Row title "${r.title}" exceeds 24 characters`);
+        if (r.description) {
+          assert(r.description.length <= 72, `Row description "${r.description}" exceeds 72 characters`);
+        }
+      });
+    });
+
+    test("61. Fallback to text occurs safely when interactive data cannot be constructed", () => {
+      const manyCandidates = Array.from({ length: 15 }, (_, i) => ({
+        id: `book-${i}`,
+        reference: `#REF${i.toString().padStart(5, "0")}`,
+        serviceName: "Tire Repair",
+        vehicle: "Car",
+        location: "City",
+        status: "confirmed",
+        bookingDate: "2026-10-15",
+        bookingTime: "10:00",
+        paymentStatus: "pending",
+        totalAmount: 50.0,
+        receiptUrl: null,
+      }));
+
+      const overflowCtx = createMockContext({
+        bookingContext: {
+          hasBookings: true,
+          activeBookingsCount: 15,
+          activeBooking: null,
+          candidateActiveBookings: manyCandidates,
+          lastCompletedBooking: null,
+        },
+      });
+
+      const res = simulateRouteWhatsAppIntent(overflowCtx, "status");
+      assertEqual(res.intent, "booking_status");
+      assertEqual(res.interactive, undefined, "Interactive payload must be undefined when candidates > 10");
+      assert(res.replyText.includes("15 active bookings"), "Text fallback remains present and valid");
+    });
+
+    test("62. Static verification: router.ts implements Phase 9.3 interactive elements", () => {
+      assert(routerSrc.includes("booking_select:"), "router.ts must handle booking_select:");
+      assert(routerSrc.includes("service_select:"), "router.ts must handle service_select:");
+      assert(routerSrc.includes("btn_status"), "router.ts must handle btn_status");
+      assert(routerSrc.includes("btn_services"), "router.ts must handle btn_services");
+      assert(routerSrc.includes("btn_human"), "router.ts must handle btn_human");
+      assert(routerSrc.includes("intent:booking_status"), "router.ts must handle intent:booking_status");
+      assert(routerSrc.includes("intent:services"), "router.ts must handle intent:services");
+      assert(routerSrc.includes("intent:human_support"), "router.ts must handle intent:human_support");
+      assert(routerSrc.includes("buildDisambiguationListPayload"), "router.ts must include buildDisambiguationListPayload");
+      assert(routerSrc.includes("buildServiceListPayload"), "router.ts must include buildServiceListPayload");
+      assert(routerSrc.includes("interactive: botResponse.interactive"), "router.ts must forward interactive payload");
     });
   });
 }
