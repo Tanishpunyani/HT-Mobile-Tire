@@ -55,4 +55,7 @@ jobs:
         run: npm test
 
       - name: Production Build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ci
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/ci
         run: npm run build
