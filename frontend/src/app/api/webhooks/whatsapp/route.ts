@@ -41,6 +41,68 @@ export async function GET(request: Request) {
   }
 }
 
+interface ParsedInboundContent {
+  type: string;
+  body: string | null;
+  interactiveId: string | null;
+  interactiveTitle: string | null;
+}
+
+/**
+ * Parses inbound Meta WhatsApp message contents deterministically.
+ * Preserves structured interaction IDs and human-readable titles for button_reply and list_reply.
+ * Maintains full Phase 8.3 media normalization and text body handling.
+ */
+function parseInboundWhatsAppMessage(message: any): ParsedInboundContent {
+  const type = message?.type || "unknown";
+  let body: string | null = null;
+  let interactiveId: string | null = null;
+  let interactiveTitle: string | null = null;
+
+  if (type === "text" && message.text?.body) {
+    body = message.text.body;
+  } else if (type === "interactive") {
+    if (message.interactive?.type === "button_reply") {
+      interactiveId = message.interactive.button_reply?.id?.trim() || null;
+      interactiveTitle = message.interactive.button_reply?.title?.trim() || null;
+      // Stored body remains human-readable (uses display title; falls back to id if title missing)
+      body = interactiveTitle || interactiveId || null;
+    } else if (message.interactive?.type === "list_reply") {
+      interactiveId = message.interactive.list_reply?.id?.trim() || null;
+      interactiveTitle = message.interactive.list_reply?.title?.trim() || null;
+      // Stored body remains human-readable (uses display title; falls back to id if title missing)
+      body = interactiveTitle || interactiveId || null;
+    }
+  } else if (type === "button" && message.button?.text) {
+    body = message.button.text;
+  } else if (type === "image") {
+    body = message.image?.caption?.trim() ? message.image.caption.trim() : "[Photo Attached]";
+  } else if (type === "audio" || type === "voice") {
+    body = "[Voice Note Attached]";
+  } else if (type === "document") {
+    if (message.document?.caption?.trim()) {
+      body = message.document.caption.trim();
+    } else if (message.document?.filename?.trim()) {
+      body = `[Document: ${message.document.filename.trim()}]`;
+    } else {
+      body = "[Document Attached]";
+    }
+  } else if (type === "video") {
+    body = message.video?.caption?.trim() ? message.video.caption.trim() : "[Video Attached]";
+  } else if (type === "sticker") {
+    body = "[Sticker Attached]";
+  } else if (type === "location") {
+    body = "[Location Shared]";
+  }
+
+  return {
+    type,
+    body,
+    interactiveId,
+    interactiveTitle,
+  };
+}
+
 /**
  * POST handler: Meta WhatsApp Webhook Status & Message Ingestion
  * Receives delivery receipts (sent, delivered, read, failed) and updates NotificationLog.
@@ -287,45 +349,11 @@ export async function POST(request: Request) {
                 }
               }
 
-              // Extract body according to message type
-              const messageType = message.type || "unknown";
-              let body: string | null = null;
-
-              if (messageType === "text" && message.text?.body) {
-                body = message.text.body;
-              } else if (messageType === "interactive") {
-                if (message.interactive?.type === "button_reply") {
-                  body =
-                    message.interactive.button_reply?.title ||
-                    message.interactive.button_reply?.id ||
-                    null;
-                } else if (message.interactive?.type === "list_reply") {
-                  body =
-                    message.interactive.list_reply?.title ||
-                    message.interactive.list_reply?.id ||
-                    null;
-                }
-              } else if (messageType === "button" && message.button?.text) {
-                body = message.button.text;
-              } else if (messageType === "image") {
-                body = message.image?.caption?.trim() ? message.image.caption.trim() : "[Photo Attached]";
-              } else if (messageType === "audio" || messageType === "voice") {
-                body = "[Voice Note Attached]";
-              } else if (messageType === "document") {
-                if (message.document?.caption?.trim()) {
-                  body = message.document.caption.trim();
-                } else if (message.document?.filename?.trim()) {
-                  body = `[Document: ${message.document.filename.trim()}]`;
-                } else {
-                  body = "[Document Attached]";
-                }
-              } else if (messageType === "video") {
-                body = message.video?.caption?.trim() ? message.video.caption.trim() : "[Video Attached]";
-              } else if (messageType === "sticker") {
-                body = "[Sticker Attached]";
-              } else if (messageType === "location") {
-                body = "[Location Shared]";
-              }
+              // Extract body and structured interactive metadata
+              const parsed = parseInboundWhatsAppMessage(message);
+              const messageType = parsed.type;
+              const body = parsed.body;
+              const interactiveId = parsed.interactiveId;
 
               // Store incoming message with rawPayload
               try {
@@ -345,13 +373,16 @@ export async function POST(request: Request) {
                   wamid,
                   conversationId: conversation.id,
                   type: messageType,
+                  ...(interactiveId ? { interactiveId } : {}),
                   maskedPhone,
                 });
 
-                // Phase 3 & 5: Route Intent & Dispatch Customer-Safe Response
+                // Phase 3, 5 & 9.2: Route Intent & Dispatch Customer-Safe Response
                 // Decouple outbound bot reply from webhook HTTP response using Next.js after()
                 after(async () => {
                   try {
+                    // Downstream router receives structured interaction ID when present, or text body
+                    const body = interactiveId || parsed.body;
                     await sendWhatsAppBotReply({
                       conversationId: conversation.id,
                       customerPhone: normalizedPhone,

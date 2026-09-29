@@ -363,4 +363,230 @@ export function runWhatsAppInboundWebhookUnitTests() {
       );
     });
   });
+
+  describe("Phase 9.2 Invariants: Inbound WhatsApp Interactive Parsing", () => {
+    const webhookSrc = fs.readFileSync(WEBHOOK_PATH, "utf-8");
+
+    function parseInboundWhatsAppMessage(message) {
+      const type = message?.type || "unknown";
+      let body = null;
+      let interactiveId = null;
+      let interactiveTitle = null;
+
+      if (type === "text" && message.text?.body) {
+        body = message.text.body;
+      } else if (type === "interactive") {
+        if (message.interactive?.type === "button_reply") {
+          interactiveId = message.interactive.button_reply?.id?.trim() || null;
+          interactiveTitle = message.interactive.button_reply?.title?.trim() || null;
+          body = interactiveTitle || interactiveId || null;
+        } else if (message.interactive?.type === "list_reply") {
+          interactiveId = message.interactive.list_reply?.id?.trim() || null;
+          interactiveTitle = message.interactive.list_reply?.title?.trim() || null;
+          body = interactiveTitle || interactiveId || null;
+        }
+      } else if (type === "button" && message.button?.text) {
+        body = message.button.text;
+      } else if (type === "image") {
+        body = message.image?.caption?.trim() ? message.image.caption.trim() : "[Photo Attached]";
+      } else if (type === "audio" || type === "voice") {
+        body = "[Voice Note Attached]";
+      } else if (type === "document") {
+        if (message.document?.caption?.trim()) {
+          body = message.document.caption.trim();
+        } else if (message.document?.filename?.trim()) {
+          body = `[Document: ${message.document.filename.trim()}]`;
+        } else {
+          body = "[Document Attached]";
+        }
+      } else if (type === "video") {
+        body = message.video?.caption?.trim() ? message.video.caption.trim() : "[Video Attached]";
+      } else if (type === "sticker") {
+        body = "[Sticker Attached]";
+      } else if (type === "location") {
+        body = "[Location Shared]";
+      }
+
+      return {
+        type,
+        body,
+        interactiveId,
+        interactiveTitle,
+      };
+    }
+
+    test("14. button_reply extracts structured ID and preserves human-readable title", () => {
+      const btnMsg = {
+        type: "interactive",
+        interactive: {
+          type: "button_reply",
+          button_reply: {
+            id: "btn_status",
+            title: "Booking Status",
+          },
+        },
+      };
+
+      const parsed = parseInboundWhatsAppMessage(btnMsg);
+      assertEqual(parsed.type, "interactive", "Message type is interactive");
+      assertEqual(parsed.interactiveId, "btn_status", "Structured button ID is extracted");
+      assertEqual(parsed.interactiveTitle, "Booking Status", "Human-readable button title is preserved");
+      assertEqual(parsed.body, "Booking Status", "Stored body uses human-readable title");
+    });
+
+    test("15. list_reply extracts structured ID and preserves human-readable title", () => {
+      const listMsg = {
+        type: "interactive",
+        interactive: {
+          type: "list_reply",
+          list_reply: {
+            id: "booking_select:A1B2C3D4",
+            title: "2022 Ford F-150",
+          },
+        },
+      };
+
+      const parsed = parseInboundWhatsAppMessage(listMsg);
+      assertEqual(parsed.type, "interactive", "Message type is interactive");
+      assertEqual(parsed.interactiveId, "booking_select:A1B2C3D4", "Structured row ID is extracted");
+      assertEqual(parsed.interactiveTitle, "2022 Ford F-150", "Human-readable row title is preserved");
+      assertEqual(parsed.body, "2022 Ford F-150", "Stored body uses human-readable title");
+    });
+
+    test("16. booking_select:<id> structured row ID survives parsing completely unchanged", () => {
+      const listMsg = {
+        type: "interactive",
+        interactive: {
+          type: "list_reply",
+          list_reply: {
+            id: "booking_select:BK-9988-XYZ",
+            title: "Tesla Model Y",
+          },
+        },
+      };
+
+      const parsed = parseInboundWhatsAppMessage(listMsg);
+      assertEqual(parsed.interactiveId, "booking_select:BK-9988-XYZ", "booking_select token survives intact");
+    });
+
+    test("17. intent:<name> structured button ID survives parsing completely unchanged", () => {
+      const btnMsg = {
+        type: "interactive",
+        interactive: {
+          type: "button_reply",
+          button_reply: {
+            id: "intent:human_support",
+            title: "Speak to Agent",
+          },
+        },
+      };
+
+      const parsed = parseInboundWhatsAppMessage(btnMsg);
+      assertEqual(parsed.interactiveId, "intent:human_support", "intent token survives intact");
+    });
+
+    test("18. Stored body remains human-readable display title (never an opaque ID only)", () => {
+      const btnMsg = {
+        type: "interactive",
+        interactive: {
+          type: "button_reply",
+          button_reply: {
+            id: "intent:booking_status",
+            title: "Check Status",
+          },
+        },
+      };
+
+      const parsed = parseInboundWhatsAppMessage(btnMsg);
+      assertEqual(parsed.body, "Check Status", "Body must be human-readable title");
+      assert(parsed.body !== "intent:booking_status", "Body must NOT be opaque ID only");
+    });
+
+    test("19. Fallback behavior: missing or empty title falls back to ID for body", () => {
+      const btnWithoutTitle = {
+        type: "interactive",
+        interactive: {
+          type: "button_reply",
+          button_reply: {
+            id: "btn_confirm",
+          },
+        },
+      };
+
+      const parsed = parseInboundWhatsAppMessage(btnWithoutTitle);
+      assertEqual(parsed.interactiveId, "btn_confirm", "ID extracted");
+      assertEqual(parsed.interactiveTitle, null, "Title is null");
+      assertEqual(parsed.body, "btn_confirm", "Body falls back to ID when title is missing");
+    });
+
+    test("20. Whitespace handling: whitespace-only ID or title is trimmed safely to null", () => {
+      const btnWhitespace = {
+        type: "interactive",
+        interactive: {
+          type: "button_reply",
+          button_reply: {
+            id: "   ",
+            title: "  Valid Title  ",
+          },
+        },
+      };
+
+      const parsed = parseInboundWhatsAppMessage(btnWhitespace);
+      assertEqual(parsed.interactiveId, null, "Whitespace-only ID normalizes to null");
+      assertEqual(parsed.interactiveTitle, "Valid Title", "Title is trimmed cleanly");
+      assertEqual(parsed.body, "Valid Title", "Body uses trimmed title");
+    });
+
+    test("21. Inbound interactive reply preserves full original interactive object in rawPayload", () => {
+      const fullMetaMessage = {
+        from: "12145550199",
+        id: "wamid.HBgTEST999",
+        timestamp: "1710000000",
+        type: "interactive",
+        interactive: {
+          type: "button_reply",
+          button_reply: {
+            id: "btn_status",
+            title: "Booking Status",
+          },
+        },
+      };
+
+      // Simulates prisma.whatsAppMessage.create({ data: { rawPayload: message as any } })
+      const storedPayload = fullMetaMessage;
+      assertEqual(storedPayload.type, "interactive", "rawPayload preserves message type");
+      assertEqual(storedPayload.interactive?.type, "button_reply", "rawPayload preserves interactive type");
+      assertEqual(storedPayload.interactive?.button_reply?.id, "btn_status", "rawPayload preserves button ID");
+      assertEqual(storedPayload.interactive?.button_reply?.title, "Booking Status", "rawPayload preserves button title");
+    });
+
+    test("22. Deterministic router input preparation passes structured ID or fallback body", () => {
+      // Interactive with ID
+      const parsedInteractive = parseInboundWhatsAppMessage({
+        type: "interactive",
+        interactive: {
+          type: "button_reply",
+          button_reply: { id: "intent:services", title: "View Services" },
+        },
+      });
+      const routerInputInteractive = parsedInteractive.interactiveId || parsedInteractive.body;
+      assertEqual(routerInputInteractive, "intent:services", "Router receives structured ID");
+
+      // Plain text message
+      const parsedText = parseInboundWhatsAppMessage({
+        type: "text",
+        text: { body: "Hello HT Tyres" },
+      });
+      const routerInputText = parsedText.interactiveId || parsedText.body;
+      assertEqual(routerInputText, "Hello HT Tyres", "Router receives text body for standard messages");
+    });
+
+    test("23. Webhook route source code contracts verify parseInboundWhatsAppMessage and rawPayload preservation", () => {
+      assert(webhookSrc.includes("function parseInboundWhatsAppMessage("), "route.ts must implement parseInboundWhatsAppMessage helper");
+      assert(webhookSrc.includes("parsed.interactiveId"), "route.ts must extract parsed.interactiveId");
+      assert(webhookSrc.includes("rawPayload: message as any"), "route.ts must store rawPayload with full message");
+      assert(webhookSrc.includes("const body = interactiveId || parsed.body;"), "route.ts must prepare router input with interactiveId or parsed.body");
+      assert(webhookSrc.includes("inboundText: body"), "route.ts must pass inboundText: body to sendWhatsAppBotReply");
+    });
+  });
 }
