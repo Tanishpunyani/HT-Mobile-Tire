@@ -268,6 +268,25 @@ function detectWhatsAppIntent(inboundText) {
     return "greeting";
   }
 
+  // Priority 9: Media Attachments (Phase 8.3)
+  if (
+    inboundText &&
+    (/^\[(Photo Attached|Voice Note Attached|Document:.*|Document Attached|Video Attached|Sticker Attached|Location Shared)\]$/i.test(
+      inboundText.trim()
+    ) ||
+      matchesAny(text, [
+        "photo attached",
+        "voice note attached",
+        "document attached",
+        "video attached",
+        "sticker attached",
+        "location shared",
+      ]) ||
+      /^document\b/i.test(text))
+  ) {
+    return "media_attachment";
+  }
+
   return "unknown";
 }
 
@@ -449,6 +468,16 @@ export function runWhatsAppResponseRouterUnitTests() {
       assertEqual(detectWhatsAppIntent(""), "unknown");
       assertEqual(detectWhatsAppIntent(null), "unknown");
     });
+
+    test("13b. Media attachment labels detected as media_attachment and do not fall into unknown fallback", () => {
+      assertEqual(detectWhatsAppIntent("[Photo Attached]"), "media_attachment");
+      assertEqual(detectWhatsAppIntent("[Voice Note Attached]"), "media_attachment");
+      assertEqual(detectWhatsAppIntent("[Document: tire_receipt.pdf]"), "media_attachment");
+      assertEqual(detectWhatsAppIntent("[Document Attached]"), "media_attachment");
+      assertEqual(detectWhatsAppIntent("[Video Attached]"), "media_attachment");
+      assertEqual(detectWhatsAppIntent("[Sticker Attached]"), "media_attachment");
+      assertEqual(detectWhatsAppIntent("[Location Shared]"), "media_attachment");
+    });
   });
 
   describe("Phase 3 Invariants: Router Behavior & Business Logic", () => {
@@ -562,6 +591,16 @@ export function runWhatsAppResponseRouterUnitTests() {
       assert(!routerSrc.includes("technicianLocation.longitude"), "Raw GPS longitude must not be read in router");
       assert(!routerSrc.includes("technicianLocation.speed"), "Speed must not be read in router");
       assert(!routerSrc.includes("technicianLocation.heading"), "Heading must not be read in router");
+    });
+
+    test("34b. Media attachment router responses provide deterministic acknowledgements", () => {
+      assert(routerSrc.includes("case \"media_attachment\":"), "Must handle media_attachment intent");
+      assert(routerSrc.includes("[photo attached]"), "Handles [Photo Attached]");
+      assert(routerSrc.includes("[voice note attached]"), "Handles [Voice Note Attached]");
+      assert(routerSrc.includes("[document:"), "Handles [Document: filename]");
+      assert(routerSrc.includes("[video attached]"), "Handles [Video Attached]");
+      assert(routerSrc.includes("[sticker attached]"), "Handles [Sticker Attached]");
+      assert(routerSrc.includes("[location shared]"), "Handles [Location Shared]");
     });
   });
 

@@ -218,7 +218,7 @@ export function runWhatsAppInboundWebhookUnitTests() {
       assertEqual(mockDb.messages.length, 2, "Message count remains 2 (duplicate prevented)");
     });
 
-    test("11. Non-text message types do not crash and extract available data", () => {
+    test("11. Media normalization: non-text messages extract human-readable labels and preserve captions", () => {
       function extractBody(msg) {
         const type = msg.type || "unknown";
         if (type === "text" && msg.text?.body) return msg.text.body;
@@ -231,7 +231,26 @@ export function runWhatsAppInboundWebhookUnitTests() {
           }
         }
         if (type === "button" && msg.button?.text) return msg.button.text;
-        if (type === "image" && msg.image?.caption) return msg.image.caption;
+        if (type === "image") {
+          return msg.image?.caption?.trim() ? msg.image.caption.trim() : "[Photo Attached]";
+        }
+        if (type === "audio" || type === "voice") {
+          return "[Voice Note Attached]";
+        }
+        if (type === "document") {
+          if (msg.document?.caption?.trim()) return msg.document.caption.trim();
+          if (msg.document?.filename?.trim()) return `[Document: ${msg.document.filename.trim()}]`;
+          return "[Document Attached]";
+        }
+        if (type === "video") {
+          return msg.video?.caption?.trim() ? msg.video.caption.trim() : "[Video Attached]";
+        }
+        if (type === "sticker") {
+          return "[Sticker Attached]";
+        }
+        if (type === "location") {
+          return "[Location Shared]";
+        }
         return null;
       }
 
@@ -244,23 +263,76 @@ export function runWhatsAppInboundWebhookUnitTests() {
       };
       assertEqual(extractBody(btnReplyMsg), "View Status");
 
+      // 1. image with caption preserves caption
       const imgWithCaption = {
         type: "image",
         image: { id: "img_123", caption: "Damaged front passenger tire" },
       };
       assertEqual(extractBody(imgWithCaption), "Damaged front passenger tire");
 
+      // 2. image without caption -> [Photo Attached]
       const imgWithoutCaption = {
         type: "image",
         image: { id: "img_123" },
       };
-      assertEqual(extractBody(imgWithoutCaption), null, "Image without caption returns null body without throwing");
+      assertEqual(extractBody(imgWithoutCaption), "[Photo Attached]");
 
+      // 3. voice/audio -> [Voice Note Attached]
+      const audioMsg = { type: "audio", audio: { id: "aud_456" } };
+      assertEqual(extractBody(audioMsg), "[Voice Note Attached]");
+      const voiceMsg = { type: "voice", voice: { id: "voc_789" } };
+      assertEqual(extractBody(voiceMsg), "[Voice Note Attached]");
+
+      // 4. document with caption preserves caption
+      const docWithCaption = {
+        type: "document",
+        document: { id: "doc_1", caption: "My Tire Invoice" },
+      };
+      assertEqual(extractBody(docWithCaption), "My Tire Invoice");
+
+      // 5. document with filename but no caption -> [Document: filename]
+      const docWithFilename = {
+        type: "document",
+        document: { id: "doc_2", filename: "invoice-oct2026.pdf" },
+      };
+      assertEqual(extractBody(docWithFilename), "[Document: invoice-oct2026.pdf]");
+
+      // 6. document without caption/filename -> [Document Attached]
+      const docWithoutFilename = {
+        type: "document",
+        document: { id: "doc_3" },
+      };
+      assertEqual(extractBody(docWithoutFilename), "[Document Attached]");
+
+      // 7. video without caption -> [Video Attached]
+      const vidWithoutCaption = {
+        type: "video",
+        video: { id: "vid_101" },
+      };
+      assertEqual(extractBody(vidWithoutCaption), "[Video Attached]");
+      const vidWithCaption = {
+        type: "video",
+        video: { id: "vid_102", caption: "Slow puncture leak video" },
+      };
+      assertEqual(extractBody(vidWithCaption), "Slow puncture leak video");
+
+      // 8. sticker -> [Sticker Attached]
+      const stickerMsg = {
+        type: "sticker",
+        sticker: { id: "stk_202" },
+      };
+      assertEqual(extractBody(stickerMsg), "[Sticker Attached]");
+
+      // 9. location -> [Location Shared]
       const locationMsg = {
         type: "location",
         location: { latitude: 32.7767, longitude: -96.797 },
       };
-      assertEqual(extractBody(locationMsg), null, "Location message returns null body without throwing");
+      assertEqual(extractBody(locationMsg), "[Location Shared]");
+
+      // 10. rawPayload remains preserved
+      const webhookSrc = fs.readFileSync(WEBHOOK_PATH, "utf-8");
+      assert(webhookSrc.includes("rawPayload: message as any"), "rawPayload must be preserved with full message object");
     });
 
     test("12. Timestamp monotonicity: lastMessageAt never regresses on older delivery", () => {

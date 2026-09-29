@@ -23,6 +23,7 @@ export type CustomerIntent =
   | "payment"
   | "receipt"
   | "human_support"
+  | "media_attachment"
   | "unknown";
 
 export interface WhatsAppBotResponse {
@@ -291,6 +292,25 @@ export function detectWhatsAppIntent(inboundText: string | null): CustomerIntent
     ])
   ) {
     return "greeting";
+  }
+
+  // Priority 9: Media Attachments (Phase 8.3)
+  if (
+    inboundText &&
+    (/^\[(Photo Attached|Voice Note Attached|Document:.*|Document Attached|Video Attached|Sticker Attached|Location Shared)\]$/i.test(
+      inboundText.trim()
+    ) ||
+      matchesAny(text, [
+        "photo attached",
+        "voice note attached",
+        "document attached",
+        "video attached",
+        "sticker attached",
+        "location shared",
+      ]) ||
+      /^document\b/i.test(text))
+  ) {
+    return "media_attachment";
   }
 
   // Fallback
@@ -818,6 +838,47 @@ export function routeWhatsAppIntent(
       return {
         intent,
         replyText: `Official receipts are generated upon service completion. You do not currently have any completed bookings with receipts available.\n\nManage account & invoices: https://mobiletire.clinic/account`,
+        targetBookingId,
+      };
+    }
+
+    case "media_attachment": {
+      const rawText = inboundMessageText?.trim() || "";
+      const lower = rawText.toLowerCase();
+
+      let replyText =
+        "Thank you! We have received your attachment. A member of our team will review it. Reply with *Status* to check your booking, or *Human* to speak with our staff.";
+
+      if (lower.startsWith("[photo attached]") || lower.includes("photo attached")) {
+        replyText =
+          "Thank you for sharing the photo! Our team has received your image. If this is related to tire damage or an upcoming appointment, a technician or dispatch agent will review it. You can also reply with *Status* to check your booking or *Human* to chat with our staff.";
+      } else if (lower.startsWith("[voice note attached]") || lower.includes("voice note attached")) {
+        replyText =
+          `Thank you for your voice note! We have received your audio message. If you need immediate assistance with an active booking, please text *Status* or reply *Human* to speak directly with our team, or call our hotline at *${context.policy.supportHotline}*.`;
+      } else if (lower.startsWith("[document:") || lower.startsWith("[document attached]") || lower.includes("document")) {
+        const docMatch = rawText.match(/\[Document:\s*([^\]]+)\]/i);
+        const filename = docMatch ? docMatch[1].trim() : null;
+        if (filename) {
+          replyText =
+            `We received your document (*${filename}*). Our staff will review your file. To check your booking status or request service details, reply with *Status* or *Services*.`;
+        } else {
+          replyText =
+            "We received your document attachment. Our staff will review your file. To check your booking status or request service details, reply with *Status* or *Services*.";
+        }
+      } else if (lower.startsWith("[video attached]") || lower.includes("video attached")) {
+        replyText =
+          "Thank you for sharing the video! Our team has received your video clip and will review it with your service details. Reply with *Status* to view your active appointment, or *Human* to speak with our dispatch team.";
+      } else if (lower.startsWith("[sticker attached]") || lower.includes("sticker attached")) {
+        replyText =
+          "Thanks for the sticker! 😊 How can we assist you with your vehicle today? Reply with *Status* to check your booking, or *Services* to view available mobile tire services.";
+      } else if (lower.startsWith("[location shared]") || lower.includes("location shared")) {
+        replyText =
+          `Thank you for sharing your location! We have noted your coordinates. If you are updating the service location for an active booking, our dispatch team will update your mobile van route. Reply with *Status* or call *${context.policy.supportHotline}* for real-time updates.`;
+      }
+
+      return {
+        intent,
+        replyText,
         targetBookingId,
       };
     }

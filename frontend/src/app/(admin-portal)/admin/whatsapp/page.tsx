@@ -22,6 +22,12 @@ import {
   AlertTriangle,
   Check,
   CheckCheck,
+  Image as ImageIcon,
+  Mic,
+  FileText,
+  Video as VideoIcon,
+  Smile,
+  MapPin,
 } from "lucide-react";
 import Container from "@/app/components/Container";
 import {
@@ -35,6 +41,92 @@ import {
   type AdminConversationStatus,
   type AdminAvailableBookingSummary,
 } from "@/app/actions/whatsapp";
+
+function renderMessageBody(msg: AdminMessageItem) {
+  const isImage = msg.type === "image" || msg.body === "[Photo Attached]";
+  const isAudio = msg.type === "audio" || msg.type === "voice" || msg.body === "[Voice Note Attached]";
+  const isDocument = msg.type === "document" || (msg.body?.startsWith("[Document") ?? false);
+  const isVideo = msg.type === "video" || msg.body === "[Video Attached]";
+  const isSticker = msg.type === "sticker" || msg.body === "[Sticker Attached]";
+  const isLocation = msg.type === "location" || msg.body === "[Location Shared]";
+
+  if (isImage) {
+    const isStandardLabel = msg.body === "[Photo Attached]" || !msg.body;
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center gap-1.5 font-medium">
+          <ImageIcon className="w-4 h-4 shrink-0 opacity-80" />
+          <span>Photo Attached</span>
+        </div>
+        {!isStandardLabel && <div className="text-xs mt-1 whitespace-pre-wrap">{msg.body}</div>}
+      </div>
+    );
+  }
+
+  if (isAudio) {
+    return (
+      <div className="flex items-center gap-1.5 font-medium">
+        <Mic className="w-4 h-4 shrink-0 opacity-80" />
+        <span>Voice Note Attached</span>
+      </div>
+    );
+  }
+
+  if (isDocument) {
+    const docMatch = msg.body?.match(/\[Document:\s*([^\]]+)\]/i);
+    const filename = docMatch ? docMatch[1].trim() : null;
+    const isAttachedOnly = msg.body === "[Document Attached]" || !msg.body;
+
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center gap-1.5 font-medium">
+          <FileText className="w-4 h-4 shrink-0 opacity-80" />
+          {filename ? (
+            <span className="underline underline-offset-2">{filename}</span>
+          ) : (
+            <span>Document Attached</span>
+          )}
+        </div>
+        {!filename && !isAttachedOnly && (
+          <div className="text-xs mt-1 whitespace-pre-wrap">{msg.body}</div>
+        )}
+      </div>
+    );
+  }
+
+  if (isVideo) {
+    const isStandardLabel = msg.body === "[Video Attached]" || !msg.body;
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center gap-1.5 font-medium">
+          <VideoIcon className="w-4 h-4 shrink-0 opacity-80" />
+          <span>Video Attached</span>
+        </div>
+        {!isStandardLabel && <div className="text-xs mt-1 whitespace-pre-wrap">{msg.body}</div>}
+      </div>
+    );
+  }
+
+  if (isSticker) {
+    return (
+      <div className="flex items-center gap-1.5 font-medium">
+        <Smile className="w-4 h-4 shrink-0 opacity-80" />
+        <span>Sticker Attached</span>
+      </div>
+    );
+  }
+
+  if (isLocation) {
+    return (
+      <div className="flex items-center gap-1.5 font-medium">
+        <MapPin className="w-4 h-4 shrink-0 opacity-80" />
+        <span>Location Shared</span>
+      </div>
+    );
+  }
+
+  return msg.body || <span className="italic opacity-60">Empty message</span>;
+}
 
 export default function AdminWhatsAppPortalPage() {
   const [conversations, setConversations] = useState<AdminConversationSummary[]>([]);
@@ -748,7 +840,7 @@ export default function AdminWhatsAppPortalPage() {
                                 : "bg-emerald-600 text-white rounded-tr-sm"
                             }`}
                           >
-                            {msg.body}
+                            {renderMessageBody(msg)}
                           </div>
                         </div>
                       );

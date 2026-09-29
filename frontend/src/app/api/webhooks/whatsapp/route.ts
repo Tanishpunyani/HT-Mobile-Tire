@@ -307,8 +307,24 @@ export async function POST(request: Request) {
                 }
               } else if (messageType === "button" && message.button?.text) {
                 body = message.button.text;
-              } else if (messageType === "image" && message.image?.caption) {
-                body = message.image.caption;
+              } else if (messageType === "image") {
+                body = message.image?.caption?.trim() ? message.image.caption.trim() : "[Photo Attached]";
+              } else if (messageType === "audio" || messageType === "voice") {
+                body = "[Voice Note Attached]";
+              } else if (messageType === "document") {
+                if (message.document?.caption?.trim()) {
+                  body = message.document.caption.trim();
+                } else if (message.document?.filename?.trim()) {
+                  body = `[Document: ${message.document.filename.trim()}]`;
+                } else {
+                  body = "[Document Attached]";
+                }
+              } else if (messageType === "video") {
+                body = message.video?.caption?.trim() ? message.video.caption.trim() : "[Video Attached]";
+              } else if (messageType === "sticker") {
+                body = "[Sticker Attached]";
+              } else if (messageType === "location") {
+                body = "[Location Shared]";
               }
 
               // Store incoming message with rawPayload
