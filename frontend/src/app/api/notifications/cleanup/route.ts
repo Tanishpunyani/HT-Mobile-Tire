@@ -46,3 +46,10 @@ export async function POST(request: Request) {
     );
   }
 }
+
+/**
+ * Support Vercel Cron native invocation (which defaults to GET)
+ */
+export async function GET(request: Request) {
+  return POST(request);
+}
