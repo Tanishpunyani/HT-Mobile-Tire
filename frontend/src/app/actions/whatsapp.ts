@@ -63,6 +63,7 @@ export interface AdminMessageItem {
   senderRole: "customer" | "bot" | "admin";
   adminEmail: string | null;
   deliveryStatus?: "SENT" | "DELIVERED" | "READ" | "FAILED" | null;
+  interactiveType?: "button_reply" | "list_reply" | null;
   createdAt: string;
 }
 
@@ -345,6 +346,29 @@ export async function getWhatsAppConversationMessagesAction(
         senderRole = "customer";
       }
 
+      // Phase 9.4: Extract interactive discriminator safely for interactive messages
+      let interactiveType: "button_reply" | "list_reply" | null = null;
+      if (m.type === "interactive") {
+        const interactiveObj =
+          raw?.interactive && typeof raw.interactive === "object"
+            ? (raw.interactive as Record<string, unknown>)
+            : null;
+
+        if (interactiveObj?.type === "list_reply" || Boolean(interactiveObj?.list_reply)) {
+          interactiveType = "list_reply";
+        } else if (interactiveObj?.type === "button_reply" || Boolean(interactiveObj?.button_reply)) {
+          interactiveType = "button_reply";
+        } else if (
+          typeof m.body === "string" &&
+          (m.body.startsWith("booking_select:") || m.body.startsWith("service_select:"))
+        ) {
+          interactiveType = "list_reply";
+        } else {
+          // Default fallback for interactive messages when unspecified
+          interactiveType = "button_reply";
+        }
+      }
+
       return {
         id: m.id,
         wamid: m.wamid,
@@ -354,6 +378,7 @@ export async function getWhatsAppConversationMessagesAction(
         senderRole,
         adminEmail,
         deliveryStatus,
+        interactiveType,
         createdAt: m.createdAt.toISOString(),
       };
     });
@@ -500,6 +525,7 @@ export async function sendAdminWhatsAppReplyAction(
         body: newMessage.body,
         senderRole: "admin",
         adminEmail: session.email,
+        interactiveType: null,
         createdAt: newMessage.createdAt.toISOString(),
       },
     };

@@ -28,6 +28,8 @@ import {
   Video as VideoIcon,
   Smile,
   MapPin,
+  MousePointerClick,
+  List,
 } from "lucide-react";
 import Container from "@/app/components/Container";
 import {
@@ -121,6 +123,36 @@ function renderMessageBody(msg: AdminMessageItem) {
       <div className="flex items-center gap-1.5 font-medium">
         <MapPin className="w-4 h-4 shrink-0 opacity-80" />
         <span>Location Shared</span>
+      </div>
+    );
+  }
+
+  if (msg.type === "interactive") {
+    const isList =
+      msg.interactiveType === "list_reply" ||
+      (typeof msg.body === "string" &&
+        (msg.body.startsWith("booking_select:") || msg.body.startsWith("service_select:")));
+    const displayTitle = msg.body || "Selection Made";
+
+    if (isList) {
+      return (
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-semibold opacity-75 uppercase tracking-wider">
+            <List className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+            <span>List Selection</span>
+          </div>
+          <div className="font-medium text-sm break-words">{displayTitle}</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center gap-1.5 text-xs font-semibold opacity-75 uppercase tracking-wider">
+          <MousePointerClick className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          <span>Button Selected</span>
+        </div>
+        <div className="font-medium text-sm break-words">{displayTitle}</div>
       </div>
     );
   }
