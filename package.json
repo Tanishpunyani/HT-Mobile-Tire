@@ -6,6 +6,7 @@
     "frontend"
   ],
   "scripts": {
+    "postinstall": "prisma generate --schema=frontend/prisma/schema.prisma",
     "dev": "npm run dev --prefix frontend",
     "build": "npm run build --prefix frontend",
     "start": "npm run start --prefix frontend",
