@@ -2,18 +2,22 @@
   "name": "tire-mobile-clinic-next",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test": "node tests/run-all.mjs",
-    "test:unit": "node tests/unit/run.mjs",
-    "test:integration": "node tests/integration/run.mjs",
-    "test:e2e": "node tests/e2e/run.mjs",
-    "test:all": "node tests/run-all.mjs",
-    "set-admin": "node --env-file=.env scripts/set-admin.mjs",
-    "delete-user": "node --env-file=.env scripts/delete-user.mjs"
+    "postinstall": "prisma generate --schema=frontend/prisma/schema.prisma",
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "start": "npm run start --prefix frontend",
+    "lint": "npm run lint --prefix frontend",
+    "test": "node backend/tests/run-all.mjs",
+    "test:unit": "node backend/tests/unit/run.mjs",
+    "test:integration": "node backend/tests/integration/run.mjs",
+    "test:e2e": "node backend/tests/e2e/run.mjs",
+    "test:all": "node backend/tests/run-all.mjs",
+    "set-admin": "node --env-file=frontend/.env backend/scripts/set-admin.mjs",
+    "delete-user": "node --env-file=frontend/.env backend/scripts/delete-user.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

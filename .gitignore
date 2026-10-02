@@ -14,11 +14,14 @@
 /coverage
 
 # next.js
-/.next/
+.next/
+frontend/.next/
 /out/
+frontend/out/
 
 # production
 /build
+frontend/build/
 
 # misc
 .DS_Store
@@ -30,8 +33,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (strictly ignore all .env files, preserving .env.example)
 .env*
+frontend/.env*
+backend/.env*
+!.env.example
+!frontend/.env.example
+!backend/.env.example
 
 # vercel
 .vercel
@@ -39,8 +47,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+frontend/next-env.d.ts
 
+# generated prisma
 /app/generated/prisma
+/generated/prisma
+frontend/src/generated/prisma
 
 # Local AI/development tool files
 .agents/
