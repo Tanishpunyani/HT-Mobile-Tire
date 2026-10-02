@@ -13,6 +13,7 @@ jobs:
 
     env:
       NODE_ENV: test
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
       ADMIN_SESSION_SECRET: test_admin_session_secret_32_characters_long_ci
       TECHNICIAN_DISPATCH_SECRET: test_tech_dispatch_secret_32_characters_ci
       NEXT_PUBLIC_SUPABASE_URL: https://mock-supabase.supabase.co
