@@ -25,12 +25,8 @@ import { runNotificationRecipientsUnitTests } from "./unit/notification-recipien
 import { runNotificationIdentityUnitTests } from "./unit/notification-identity.test.mjs";
 import { runPhase4BWorkflowTests } from "./unit/phase-4b-workflow.test.mjs";
 import { runPhase4B3PhonePersistenceTests } from "./unit/phase-4b3-phone-persistence.test.mjs";
-import { runWhatsAppWorkflowCompletionUnitTests } from "./unit/whatsapp-workflow-completion.test.mjs";
-import { runWhatsAppInboundWebhookUnitTests } from "./unit/whatsapp-inbound-webhook.test.mjs";
-import { runWhatsAppContextResolverUnitTests } from "./unit/whatsapp-context-resolver.test.mjs";
-import { runWhatsAppResponseRouterUnitTests } from "./unit/whatsapp-response-router.test.mjs";
-import { runWhatsAppHumanHandoffUnitTests } from "./unit/whatsapp-human-handoff.test.mjs";
-import { runWhatsAppProductionHardeningUnitTests } from "./unit/whatsapp-production-hardening.test.mjs";
+import { runEmailServiceUnitTests } from "./unit/email-service.test.mjs";
+import { runEmailLifecycleRewiringUnitTests } from "./unit/email-lifecycle-rewiring.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -50,7 +46,6 @@ import { runPhase6BLifecycleTests } from "./integration/phase-6b-lifecycle.test.
 import { runPhase6DPaymentHardeningTests } from "./integration/phase-6d-payment-hardening.test.mjs";
 import { runPhase6FCustomerHardeningTests } from "./integration/phase-6f-customer-hardening.test.mjs";
 import { runPhase6HAdminOperationalTests } from "./integration/phase-6h-admin-operational.test.mjs";
-import { runWhatsAppCoexistenceE2EIntegrationTests } from "./integration/whatsapp-coexistence-e2e.test.mjs";
 
 // E2E Suites
 import { runCustomerJourneyE2ETests } from "./e2e/customer-journey.test.mjs";
@@ -82,12 +77,8 @@ runNotificationRecipientsUnitTests();
 runNotificationIdentityUnitTests();
 runPhase4BWorkflowTests();
 runPhase4B3PhonePersistenceTests();
-runWhatsAppWorkflowCompletionUnitTests();
-runWhatsAppInboundWebhookUnitTests();
-runWhatsAppContextResolverUnitTests();
-runWhatsAppResponseRouterUnitTests();
-runWhatsAppHumanHandoffUnitTests();
-runWhatsAppProductionHardeningUnitTests();
+runEmailServiceUnitTests();
+runEmailLifecycleRewiringUnitTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();
@@ -107,7 +98,6 @@ runPhase6BLifecycleTests();
 runPhase6DPaymentHardeningTests();
 runPhase6FCustomerHardeningTests();
 runPhase6HAdminOperationalTests();
-runWhatsAppCoexistenceE2EIntegrationTests();
 
 // 3. E2E SUITES
 runCustomerJourneyE2ETests();

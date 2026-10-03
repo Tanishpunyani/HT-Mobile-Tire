@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 import { logger } from "@/lib/logger";
-import { dispatchWhatsAppDirect } from "@/lib/notifications/whatsapp";
 import {
   dispatchEmailDirect as dispatchEmailDirectService,
   sendEmailDirect as sendEmailDirectService,
@@ -73,7 +72,7 @@ function getResendClient() {
 // TYPES
 // ============================================================================
 
-export type NotificationChannel = "sms" | "email" | "whatsapp";
+export type NotificationChannel = "sms" | "email";
 
 export type NotificationType =
   | "booking_confirmation"
@@ -243,76 +242,6 @@ export async function sendEmail({
 }
 
 
-/**
- * Sends a WhatsApp message via Meta WhatsApp Business Platform / Cloud API
- * and creates a NotificationLog entry.
- * Idempotent: checks providerEventId to prevent duplicate customer alerts.
- */
-export async function sendWhatsApp({
-  to,
-  body,
-  type,
-  entityId,
-  entityType,
-  providerEventId,
-  templateName,
-  templateParameters,
-}: {
-  to: string;
-  body: string;
-  type: NotificationType;
-  entityId?: string;
-  entityType: "booking" | "emergency_request" | "contact_message" | string;
-  providerEventId?: string;
-  templateName?: string;
-  templateParameters?: Array<{ type: "text"; text: string }>;
-}): Promise<{ success: boolean; messageId?: string; error?: string; skipped?: boolean }> {
-  // Idempotency check: avoid duplicate customer WhatsApp messages if providerEventId exists
-  if (providerEventId) {
-    const existing = await prisma.notificationLog.findFirst({
-      where: {
-        channel: "whatsapp",
-        providerEventId,
-        status: "SENT",
-      },
-    });
-
-    if (existing) {
-      logger.info("notifications.whatsapp.duplicate_suppressed", {
-        providerEventId,
-        type,
-        entityId,
-      });
-      return { success: true, skipped: true, messageId: existing.messageId || undefined };
-    }
-  }
-
-  const result = await dispatchWhatsAppDirect({
-    to,
-    body,
-    type,
-    entityId,
-    entityType,
-    templateName,
-    templateParameters,
-  });
-
-  await logNotification({
-    channel: "whatsapp",
-    recipient: to,
-    type,
-    entityType,
-    entityId,
-    status: result.success ? "sent" : "failed",
-    subject: `WhatsApp: ${type}`,
-    body,
-    errorMessage: result.success ? undefined : result.error,
-    messageId: result.messageId,
-    providerEventId,
-  });
-
-  return result;
-}
 
 async function logNotification(data: {
   channel: string;
@@ -366,12 +295,6 @@ async function logNotification(data: {
 /**
  * 1. Customer: Booking Received (BOOKING_CREATED)
  * Dispatches branded HTML confirmation Email to Customer.
- * Active WhatsApp dispatch removed in Phase 10C.4.
- *
- * Dormant WhatsApp Reference (preserved for invariant testing):
- * const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
- * // request for booking ${bookingRef}
- * // Support: ${BUSINESS_PHONE_DISPLAY}
  */
 export async function sendBookingConfirmation(booking: BookingNotificationPayload): Promise<{
   success: boolean;
@@ -402,15 +325,6 @@ export async function sendEmergencyAlert(emergency: EmergencyNotificationPayload
 /**
  * Triggered on new Booking creation:
  * Alerts central dispatch / admin via Email.
- * Active WhatsApp dispatch removed in Phase 10C.4.
- *
- * Dormant WhatsApp Reference (preserved for invariant testing):
- * const adminPhone = process.env.TECHNICIAN_PHONE_NUMBER;
- * const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
- * const adminBookingUrl = `${APP_URL}/admin/bookings/${booking.id}`;
- * const _ref = `NEW BOOKING REQUEST ${booking.id.slice(-6).toUpperCase()}`;
- * const _eid = `admin_booking_created_${booking.id}`;
- * const _type = { type: "BOOKING_CREATED" };
  */
 export async function sendAdminBookingCreatedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
@@ -467,11 +381,6 @@ export async function sendAdminBookingCancelledAlert(params: BookingCancelledAle
 /**
  * 1. Customer Alert: Booking Confirmed (BOOKING_CONFIRMED)
  * Dispatches email confirmation to customer.
- * Active WhatsApp dispatch removed in Phase 10C.4.
- *
- * Dormant WhatsApp Reference (preserved for invariant testing):
- * const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
- * // appointment for booking ${bookingRef}
  */
 export async function sendCustomerBookingConfirmedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
@@ -537,15 +446,6 @@ export async function sendCustomerTechnicianArrivedAlert(booking: BookingNotific
 /**
  * Customer Alert: Service Started (SERVICE_STARTED)
  * Dispatches email alert when technician begins work on vehicle.
- * Active WhatsApp dispatch removed in Phase 10C.4.
- *
- * Dormant WhatsApp Reference (preserved for invariant testing):
- * const _startedRef = {
- *   header: "HT Mobile Tires — Service Started",
- *   hotline: BUSINESS_PHONE_DISPLAY,
- *   type: "SERVICE_STARTED",
- *   providerEventId: `service_started_${booking.id}`,
- * };
  */
 export async function sendCustomerServiceStartedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
@@ -560,15 +460,6 @@ export async function sendCustomerServiceStartedAlert(booking: BookingNotificati
 /**
  * Customer Alert: Service Completed (SERVICE_COMPLETED)
  * Dispatches dedicated operational email alert when service work is completed.
- * Active WhatsApp dispatch removed in Phase 10C.4.
- *
- * Dormant WhatsApp Reference (preserved for invariant testing):
- * const _completedRef = {
- *   header: "HT Mobile Tires — Service Completed",
- *   hotline: BUSINESS_PHONE_DISPLAY,
- *   type: "SERVICE_COMPLETED",
- *   providerEventId: `service_completed_${booking.id}`,
- * };
  */
 export async function sendCustomerServiceCompletedAlert(
   booking: BookingNotificationPayload & { pdfBytes?: Uint8Array }
@@ -806,8 +697,8 @@ export async function sendQuoteReadyNotification({
 
 /**
  * Re-attempts delivery for failed notifications (max 3 retries)
- * Retries active delivery channels (email, whatsapp).
- * Legacy SMS records are safely filtered out to prevent clogging retry queues.
+ * Retries active delivery channel (email).
+ * Legacy SMS and WhatsApp records are safely marked terminal/skipped to prevent clogging retry queues.
  */
 export async function retryFailedNotifications(limit = 10) {
   try {
@@ -815,7 +706,7 @@ export async function retryFailedNotifications(limit = 10) {
       where: {
         status: "FAILED",
         retryCount: { lt: 3 },
-        channel: { in: ["email", "whatsapp"] },
+        channel: { in: ["email", "sms", "whatsapp"] },
       },
       take: limit,
       orderBy: { createdAt: "asc" },
@@ -857,6 +748,19 @@ export async function retryFailedNotifications(limit = 10) {
         continue;
       }
 
+      // Legacy WhatsApp records are skipped since WhatsApp channel is decommissioned
+      if (log.channel === "whatsapp") {
+        logger.info("notifications.retry.whatsapp_skipped", { id: log.id });
+        await prisma.notificationLog.update({
+          where: { id: log.id },
+          data: {
+            retryCount: 3,
+            errorMessage: "WhatsApp channel decommissioned",
+          },
+        });
+        continue;
+      }
+
       const entityId = log.entityId || log.bookingId || log.emergencyRequestId || undefined;
       const entityType = (log.entityType as "booking" | "emergency_request" | undefined) || (log.emergencyRequestId ? "emergency_request" : "booking");
 
@@ -879,28 +783,6 @@ export async function retryFailedNotifications(limit = 10) {
           to: log.recipient,
           subject: log.subject,
           html: log.body,
-          type: log.type as NotificationType,
-          entityId,
-          entityType,
-        });
-      }
-
-      if (log.channel === "whatsapp") {
-        if (!log.recipient || !log.body) {
-          await prisma.notificationLog.update({
-            where: { id: log.id },
-            data: {
-              status: "FAILED",
-              errorMessage: "Non-retryable: Missing recipient phone or body payload",
-              retryCount: 3,
-            },
-          });
-          continue;
-        }
-
-        result = await dispatchWhatsAppDirect({
-          to: log.recipient,
-          body: log.body,
           type: log.type as NotificationType,
           entityId,
           entityType,
