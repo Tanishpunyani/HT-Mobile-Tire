@@ -24,6 +24,8 @@ import { runWhatsAppContextResolverUnitTests } from "./whatsapp-context-resolver
 import { runWhatsAppResponseRouterUnitTests } from "./whatsapp-response-router.test.mjs";
 import { runWhatsAppHumanHandoffUnitTests } from "./whatsapp-human-handoff.test.mjs";
 import { runWhatsAppProductionHardeningUnitTests } from "./whatsapp-production-hardening.test.mjs";
+import { runEmailServiceUnitTests } from "./email-service.test.mjs";
+import { runEmailLifecycleRewiringUnitTests } from "./email-lifecycle-rewiring.test.mjs";
 
 console.log("\x1b[1m\x1b[35m==================================================\x1b[0m");
 console.log("\x1b[1m\x1b[35m   RUNNING UNIT TEST SUITE (PHASE 7 & 10)        \x1b[0m");
@@ -51,5 +53,7 @@ runWhatsAppContextResolverUnitTests();
 runWhatsAppResponseRouterUnitTests();
 runWhatsAppHumanHandoffUnitTests();
 runWhatsAppProductionHardeningUnitTests();
+runEmailServiceUnitTests();
+runEmailLifecycleRewiringUnitTests();
 
 printSummaryAndExit();

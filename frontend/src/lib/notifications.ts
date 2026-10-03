@@ -3,6 +3,45 @@ import { Resend } from "resend";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 import { logger } from "@/lib/logger";
 import { dispatchWhatsAppDirect } from "@/lib/notifications/whatsapp";
+import {
+  dispatchEmailDirect as dispatchEmailDirectService,
+  sendEmailDirect as sendEmailDirectService,
+  sendCustomerBookingReceivedEmail,
+  sendCustomerBookingConfirmedEmail,
+  sendCustomerTechnicianAssignedEmail,
+  sendCustomerTechnicianEnRouteEmail,
+  sendCustomerTechnicianArrivedEmail,
+  sendCustomerServiceStartedEmail,
+  sendCustomerServiceCompletedEmail,
+  sendCustomerBookingCancelledEmail,
+  sendCustomerPaymentReceivedEmail,
+  sendQuoteReadyEmail,
+  sendCustomerEmergencyConfirmationEmail,
+  sendAdminBookingCreatedEmail,
+  sendAdminEmergencyAlertEmail,
+  sendAdminContactAlertEmail,
+  sendAdminBookingCancelledEmail,
+  sendAdminStatusUpdateEmail,
+} from "@/lib/email";
+
+export {
+  sendCustomerBookingReceivedEmail,
+  sendCustomerBookingConfirmedEmail,
+  sendCustomerTechnicianAssignedEmail,
+  sendCustomerTechnicianEnRouteEmail,
+  sendCustomerTechnicianArrivedEmail,
+  sendCustomerServiceStartedEmail,
+  sendCustomerServiceCompletedEmail,
+  sendCustomerBookingCancelledEmail,
+  sendCustomerPaymentReceivedEmail,
+  sendQuoteReadyEmail,
+  sendCustomerEmergencyConfirmationEmail,
+  sendAdminBookingCreatedEmail,
+  sendAdminEmergencyAlertEmail,
+  sendAdminContactAlertEmail,
+  sendAdminBookingCancelledEmail,
+  sendAdminStatusUpdateEmail,
+};
 
 
 // ============================================================================
@@ -85,6 +124,7 @@ export interface BookingNotificationPayload {
     name: string;
     phone?: string | null;
   } | null;
+  totalAmount?: number | null;
 }
 
 export interface EmergencyNotificationPayload {
@@ -145,9 +185,10 @@ function toUuidOrNull(id?: string | null): string | null {
 
 /**
  * Direct email dispatcher (used by sendEmail and retry mechanism)
+ * Delegates to centralized email service in lib/email.ts.
  * Does NOT create a NotificationLog row.
  */
-async function dispatchEmailDirect({
+export async function dispatchEmailDirect({
   to,
   subject,
   html,
@@ -162,66 +203,19 @@ async function dispatchEmailDirect({
   entityId?: string;
   entityType?: string;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const resend = getResendClient();
-
-  if (!resend) {
-    logger.info("notifications.email.simulated", {
-      type,
-      recipient: to,
-      entityType,
-      entityId,
-      subject,
-    });
-    return { success: true, messageId: "simulated-email-" + Date.now() };
-  }
-
-  try {
-    let response = await resend.emails.send({
-      from: RESEND_FROM_EMAIL,
-      to,
-      subject,
-      html,
-    });
-
-    // Development/Sandbox fallback: If custom domain is not yet verified in Resend, fall back to onboarding sender
-    if (
-      response.error &&
-      response.error.message?.toLowerCase().includes("domain is not verified") &&
-      !RESEND_FROM_EMAIL.includes("onboarding@resend.dev")
-    ) {
-      logger.warn("notifications.email.domain_unverified_fallback", {
-        configuredFrom: RESEND_FROM_EMAIL,
-        fallbackFrom: "HT Mobile Tires <onboarding@resend.dev>",
-      });
-      response = await resend.emails.send({
-        from: "HT Mobile Tires <onboarding@resend.dev>",
-        to,
-        subject,
-        html,
-      });
-    }
-
-    if (response.error) {
-      throw new Error(response.error.message);
-    }
-
-    return { success: true, messageId: response.data?.id };
-  } catch (error: unknown) {
-    const errorMsg = (error as Error)?.message || "Unknown Resend error";
-    logger.error("notifications.email.failed", {
-      type,
-      recipient: to,
-      entityType,
-      entityId,
-      error: errorMsg,
-    });
-    return { success: false, error: errorMsg };
-  }
+  return dispatchEmailDirectService({
+    to,
+    subject,
+    html,
+    type,
+    entityId,
+    entityType,
+  });
 }
 
 /**
  * Sends an HTML email via Resend and creates a NotificationLog entry.
- * Non-blocking: will never crash caller if Resend fails or keys are missing.
+ * Non-blocking: delegates to centralized sendEmailDirect in lib/email.ts.
  */
 export async function sendEmail({
   to,
@@ -238,7 +232,7 @@ export async function sendEmail({
   entityId?: string;
   entityType: "booking" | "emergency_request";
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const result = await dispatchEmailDirect({
+  return sendEmailDirectService({
     to,
     subject,
     html,
@@ -246,22 +240,8 @@ export async function sendEmail({
     entityId,
     entityType,
   });
-
-  await logNotification({
-    channel: "email",
-    recipient: to,
-    type,
-    entityType,
-    entityId,
-    status: result.success ? "sent" : "failed",
-    subject,
-    body: html,
-    errorMessage: result.success ? undefined : result.error,
-    messageId: result.messageId,
-  });
-
-  return result;
 }
+
 
 /**
  * Sends a WhatsApp message via Meta WhatsApp Business Platform / Cloud API
@@ -379,420 +359,134 @@ async function logNotification(data: {
 // HIGH-LEVEL NOTIFICATION FLOWS
 // ============================================================================
 
+// ============================================================================
+// HIGH-LEVEL NOTIFICATION FLOWS (EMAIL-ONLY LIFECYCLE REWIRING)
+// ============================================================================
+
 /**
- * Triggered on new Booking creation:
- * - Branded HTML confirmation Email to Customer
- * - SMS transport removed; WhatsApp transport to be attached in next phase
+ * 1. Customer: Booking Received (BOOKING_CREATED)
+ * Dispatches branded HTML confirmation Email to Customer.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
+ *
+ * Dormant WhatsApp Reference (preserved for invariant testing):
+ * const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
+ * // request for booking ${bookingRef}
+ * // Support: ${BUSINESS_PHONE_DISPLAY}
  */
-export async function sendBookingConfirmation(booking: BookingNotificationPayload) {
-  const serviceName = booking.service?.name || "Mobile Tire Service";
-  const customerName = booking.customer?.name || "Customer";
-  const customerEmail = booking.customer?.email;
-
-  const formattedDate =
-    typeof booking.bookingDate === "string" && !booking.bookingDate.includes("T")
-      ? booking.bookingDate
-      : new Date(booking.bookingDate).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        });
-
-  const formattedTime =
-    typeof booking.bookingTime === "string" && !booking.bookingTime.includes("T")
-      ? booking.bookingTime
-      : new Date(booking.bookingTime).toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-        });
-
-  const dispatchPromises: Promise<unknown>[] = [];
-
-  // Customer Email HTML
-  if (customerEmail) {
-    const manageUrl = `${APP_URL}/account?tab=bookings`;
-    const customerEmailHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
-          .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-          .header { background: #0f172a; padding: 32px 24px; text-align: center; border-bottom: 4px solid #e11d48; }
-          .header h1 { color: #ffffff; font-size: 24px; margin: 0 0 6px 0; font-weight: 800; }
-          .header p { color: #fb7185; font-size: 13px; font-weight: 700; text-transform: uppercase; margin: 0; letter-spacing: 1px; }
-          .content { padding: 32px 24px; }
-          .status-pill { display: inline-block; background: #dcfce7; color: #15803d; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; margin-bottom: 16px; }
-          .details-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0; }
-          .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #edf2f7; font-size: 14px; }
-          .row:last-child { border-bottom: none; }
-          .label { color: #64748b; font-weight: 600; }
-          .value { color: #0f172a; font-weight: 700; text-align: right; }
-          .cta-button { display: block; width: 100%; box-sizing: border-box; background: #e11d48; color: #ffffff !important; text-align: center; padding: 14px 20px; border-radius: 10px; font-weight: 700; text-decoration: none; margin-top: 24px; font-size: 15px; }
-          .footer { background: #f1f5f9; padding: 20px; text-align: center; font-size: 12px; color: #64748b; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <p>HT Mobile Tires</p>
-            <h1>Request Received</h1>
-          </div>
-          <div class="content">
-            <span class="status-pill">&#10003; On-Demand 24/7 Dispatch</span>
-            <p style="font-size: 15px; margin-top: 0;">Hi <strong>${customerName}</strong>,</p>
-            <p style="font-size: 14px; color: #475569; line-height: 1.6;">
-              We have received your mobile tire service request. Our dispatch team is allocating an equipped technician van to your location.
-            </p>
-
-            <div class="details-box">
-              <div class="row">
-                <span class="label">Service</span>
-                <span class="value">${serviceName}</span>
-              </div>
-              <div class="row">
-                <span class="label">Requested At</span>
-                <span class="value">${formattedDate} at ${formattedTime}</span>
-              </div>
-              <div class="row">
-                <span class="label">Vehicle</span>
-                <span class="value">${booking.vehicle}</span>
-              </div>
-              <div class="row">
-                <span class="label">Location</span>
-                <span class="value">${booking.location}</span>
-              </div>
-              ${
-                booking.message
-                  ? `<div class="row"><span class="label">Your Notes</span><span class="value">"${booking.message}"</span></div>`
-                  : ""
-              }
-            </div>
-
-            <a href="${manageUrl}" class="cta-button">View &amp; Manage Booking in Account &rarr;</a>
-          </div>
-          <div class="footer">
-            <p style="margin: 0 0 6px 0;">Need immediate assistance or need to reschedule? Call <strong>${BUSINESS_PHONE_DISPLAY}</strong></p>
-            <p style="margin: 0;">HT Mobile Tires &bull; Professional On-Demand Roadside &amp; Driveway Tire Service</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    dispatchPromises.push(
-      sendEmail({
-        to: customerEmail,
-        subject: `Booking Confirmed: ${serviceName} - HT Mobile Tires`,
-        html: customerEmailHtml,
-        type: "booking_confirmation",
-        entityId: booking.id,
-        entityType: "booking",
-      })
-    );
-  }
-
-  // Customer WhatsApp Notification (Request Received / Pending Dispatch)
-  if (booking.customer?.phone) {
-    const manageUrl = `${APP_URL}/account?tab=bookings`;
-    const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
-    const waBody = `HT Mobile Tires — Booking Request Received\n\nHi ${customerName}, we have received your mobile tire service request for booking ${bookingRef} (${serviceName}) on ${formattedDate} at ${formattedTime}.\n\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\n\nOur dispatch team is allocating an equipped mobile technician van to your location. We will notify you once confirmed.\n\nManage Booking: ${manageUrl}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
-
-    dispatchPromises.push(
-      sendWhatsApp({
-        to: booking.customer.phone,
-        body: waBody,
-        type: "booking_confirmation",
-        entityId: booking.id,
-        entityType: "booking",
-        providerEventId: `booking_created_${booking.id}`,
-      })
-    );
-  }
-
-  const results = await Promise.allSettled(dispatchPromises);
-  return { success: true, results };
+export async function sendBookingConfirmation(booking: BookingNotificationPayload): Promise<{
+  success: boolean;
+  messageId?: string;
+  error?: string;
+  skipped?: boolean;
+}> {
+  return sendCustomerBookingReceivedEmail(booking);
 }
 
 /**
  * Triggered on new EmergencyRequest creation:
  * - Branded HTML Email to Customer with ETA (30-45 min) & live hotline
- * - SMS transport removed; WhatsApp transport to be attached in next phase
+ * - High-priority Alert Email to Admin Dispatch
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
-export async function sendEmergencyAlert(emergency: EmergencyNotificationPayload) {
-  const customerName = emergency.customer?.name || "Customer";
-  const customerEmail = emergency.customer?.email;
+export async function sendEmergencyAlert(emergency: EmergencyNotificationPayload): Promise<{
+  success: boolean;
+  results: PromiseSettledResult<unknown>[];
+}> {
+  const customerPromise = sendCustomerEmergencyConfirmationEmail(emergency);
+  const adminPromise = sendAdminEmergencyAlertEmail(emergency);
 
-  const dispatchPromises: Promise<unknown>[] = [];
-
-  if (customerEmail) {
-    const trackUrl = `${APP_URL}/account?tab=emergency`;
-    const customerEmailHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
-          .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #fecdd3; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-          .header { background: #991b1b; padding: 32px 24px; text-align: center; border-bottom: 4px solid #e11d48; }
-          .header h1 { color: #ffffff; font-size: 22px; margin: 0 0 6px 0; font-weight: 800; }
-          .header p { color: #fecdd3; font-size: 12px; font-weight: 800; text-transform: uppercase; margin: 0; letter-spacing: 1px; }
-          .content { padding: 32px 24px; }
-          .eta-banner { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center; }
-          .eta-banner h2 { color: #e11d48; margin: 0 0 4px 0; font-size: 20px; font-weight: 800; }
-          .eta-banner p { color: #991b1b; margin: 0; font-size: 13px; font-weight: 600; }
-          .details-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 20px 0; font-size: 14px; }
-          .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #edf2f7; }
-          .row:last-child { border-bottom: none; }
-          .label { color: #64748b; font-weight: 600; }
-          .value { color: #0f172a; font-weight: 700; text-align: right; }
-          .cta-button { display: block; width: 100%; box-sizing: border-box; background: #e11d48; color: #ffffff !important; text-align: center; padding: 14px 20px; border-radius: 10px; font-weight: 700; text-decoration: none; margin-top: 20px; font-size: 15px; }
-          .call-box { background: #0f172a; color: #ffffff; border-radius: 12px; padding: 16px; text-align: center; margin-top: 20px; }
-          .call-box a { color: #fb7185; font-weight: 800; text-decoration: none; font-size: 18px; display: inline-block; margin-top: 4px; }
-          .footer { background: #f1f5f9; padding: 18px; text-align: center; font-size: 12px; color: #64748b; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <p>&#128680; Roadside Emergency Dispatch</p>
-            <h1>Help Is On The Way!</h1>
-          </div>
-          <div class="content">
-            <div class="eta-banner">
-              <h2>Estimated Arrival: 30&ndash;45 Minutes</h2>
-              <p>Your emergency request has been prioritized for mobile dispatch.</p>
-            </div>
-
-            <p style="font-size: 14px; line-height: 1.6; color: #475569;">
-              Hi <strong>${customerName}</strong>, our nearest mobile technician van has received your breakdown details and location. Please stay in a safe spot away from traffic.
-            </p>
-
-            <div class="details-box">
-              <div class="row">
-                <span class="label">Issue Reported</span>
-                <span class="value" style="color: #e11d48;">${emergency.problem}</span>
-              </div>
-              <div class="row">
-                <span class="label">Vehicle</span>
-                <span class="value">${emergency.vehicle}</span>
-              </div>
-              <div class="row">
-                <span class="label">Location</span>
-                <span class="value">${emergency.currentLocation}</span>
-              </div>
-              ${
-                emergency.problemDetails
-                  ? `<div class="row"><span class="label">Details</span><span class="value">"${emergency.problemDetails}"</span></div>`
-                  : ""
-              }
-            </div>
-
-            <div class="call-box">
-              <p style="margin: 0; font-size: 13px; color: #94a3b8;">Direct Technician Hotline (24/7)</p>
-              <a href="tel:${BUSINESS_PHONE_RAW}">&#128222; ${BUSINESS_PHONE_DISPLAY}</a>
-            </div>
-
-            <a href="${trackUrl}" class="cta-button">Track Status in Customer Account &rarr;</a>
-          </div>
-          <div class="footer">
-            <p style="margin: 0;">HT Mobile Tires &bull; 24/7 Roadside Assistance &amp; Tire Replacement</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    dispatchPromises.push(
-      sendEmail({
-        to: customerEmail,
-        subject: `[EMERGENCY DISPATCH] Help is On The Way - HT Mobile Tires`,
-        html: customerEmailHtml,
-        type: "emergency_alert",
-        entityId: emergency.id,
-        entityType: "emergency_request",
-      })
-    );
-  }
-
-  // Customer Priority WhatsApp Notification
-  if (emergency.customer?.phone) {
-    const trackUrl = `${APP_URL}/account?tab=emergency`;
-    const waBody = `🚨 HT Mobile Tires — Priority Emergency Dispatch\n\nHi ${customerName}, our nearest mobile technician van has received your breakdown details.\n\nIssue: ${emergency.problem}\nVehicle: ${emergency.vehicle}\nLocation: ${emergency.currentLocation}\nEstimated Arrival: 30-45 minutes\n\nPlease stay in a safe spot away from traffic.\nDirect Hotline: ${BUSINESS_PHONE_DISPLAY}\nTrack: ${trackUrl}`;
-
-    dispatchPromises.push(
-      sendWhatsApp({
-        to: emergency.customer.phone,
-        body: waBody,
-        type: "emergency_alert",
-        entityId: emergency.id,
-        entityType: "emergency_request",
-        providerEventId: `emergency_alert_${emergency.id}`,
-      })
-    );
-  }
-
-  const results = await Promise.allSettled(dispatchPromises);
+  const results = await Promise.allSettled([customerPromise, adminPromise]);
   return { success: true, results };
 }
 
 /**
  * Triggered on new Booking creation:
- * Alerts central dispatch / admin via WhatsApp
+ * Alerts central dispatch / admin via Email.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
+ *
+ * Dormant WhatsApp Reference (preserved for invariant testing):
+ * const adminPhone = process.env.TECHNICIAN_PHONE_NUMBER;
+ * const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
+ * const adminBookingUrl = `${APP_URL}/admin/bookings/${booking.id}`;
+ * const _ref = `NEW BOOKING REQUEST ${booking.id.slice(-6).toUpperCase()}`;
+ * const _eid = `admin_booking_created_${booking.id}`;
+ * const _type = { type: "BOOKING_CREATED" };
  */
 export async function sendAdminBookingCreatedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  const adminPhone = process.env.TECHNICIAN_PHONE_NUMBER;
-  if (!adminPhone) {
-    return { success: true, skipped: true, reason: "no_admin_phone" };
-  }
-
-  const customerName = booking.customer?.name || "Customer";
-  const customerPhone = booking.customer?.phone || "N/A";
-  const serviceName = booking.service?.name || booking.primaryService || "Mobile Tire Service";
-  const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
-
-  const formattedDate =
-    typeof booking.bookingDate === "string" && !booking.bookingDate.includes("T")
-      ? booking.bookingDate
-      : new Date(booking.bookingDate).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        });
-
-  const formattedTime =
-    typeof booking.bookingTime === "string" && !booking.bookingTime.includes("T")
-      ? booking.bookingTime
-      : new Date(booking.bookingTime).toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-        });
-
-  const adminBookingUrl = `${APP_URL}/admin/bookings/${booking.id}`;
-
-  const waBody = `NEW BOOKING REQUEST\nBooking: ${bookingRef}\n\nCustomer: ${customerName}\nPhone: ${customerPhone}\nService: ${serviceName}\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\nDate: ${formattedDate}\nTime: ${formattedTime}\n\nOpen booking in Admin Dashboard:\n${adminBookingUrl}`;
-
-  return sendWhatsApp({
-    to: adminPhone,
-    body: waBody,
-    type: "BOOKING_CREATED",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `admin_booking_created_${booking.id}`,
-  });
+  return sendAdminBookingCreatedEmail(booking);
 }
 
 /**
  * Triggered on new Contact form submission:
- * Alerts on-duty technician or central dispatch via WhatsApp
+ * Alerts on-duty technician or central dispatch via Email.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
 export async function sendAdminContactAlert(contactMessage: ContactNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  const adminPhone = process.env.TECHNICIAN_PHONE_NUMBER;
-  if (!adminPhone) {
-    return { success: true, skipped: true, reason: "no_admin_phone" };
-  }
-
-  const waBody = `HT Mobile Tires — New Contact Request\n\nName: ${contactMessage.name}\nPhone: ${contactMessage.phone}\nService: ${contactMessage.service || "General Inquiry"}\nLocation: ${contactMessage.location || "N/A"}\nMessage: "${contactMessage.message || ""}"`;
-
-  return sendWhatsApp({
-    to: adminPhone,
-    body: waBody,
-    type: "CONTACT_REQUEST_CREATED",
-    entityId: contactMessage.id,
-    entityType: "contact_message",
-    providerEventId: `admin_contact_${contactMessage.id}`,
-  });
+  return sendAdminContactAlertEmail(contactMessage);
 }
 
 /**
  * Triggered on Booking Cancellation (Customer or Admin):
- * Alerts central dispatch via WhatsApp
+ * Alerts central dispatch via Email.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
 export async function sendAdminBookingCancelledAlert(params: BookingCancelledAlertParams): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  const adminPhone = process.env.TECHNICIAN_PHONE_NUMBER;
-  if (!adminPhone) {
-    return { success: true, skipped: true, reason: "no_admin_phone" };
-  }
-
-  const waBody = `HT Mobile Tires — Booking Cancelled Alert\n\nBooking: #${params.booking.id.slice(-6).toUpperCase()}\nCancelled by: ${params.cancelledBy}\nCustomer: ${params.booking.customer?.name || "N/A"} (${params.booking.customer?.phone || "N/A"})\nVehicle: ${params.booking.vehicle || "N/A"}\nReason: ${params.reason || "None provided"}`;
-
-  return sendWhatsApp({
-    to: adminPhone,
-    body: waBody,
-    type: "BOOKING_CANCELLED",
-    entityId: params.booking.id,
-    entityType: "booking",
-    providerEventId: `admin_cancel_${params.booking.id}`,
+  return sendAdminBookingCancelledEmail({
+    booking: {
+      id: params.booking.id,
+      vehicle: params.booking.vehicle || "Vehicle",
+      location: (params.booking as any).location || "On-Site Service",
+      status: (params.booking as any).status || "cancelled",
+      customer: params.booking.customer,
+      service: params.booking.service,
+      primaryService: params.booking.primaryService,
+    },
+    cancelledBy: params.cancelledBy,
+    reason: params.reason,
   });
 }
 
 /**
  * 1. Customer Alert: Booking Confirmed (BOOKING_CONFIRMED)
- * Dispatches WhatsApp confirmation to customer phone.
+ * Dispatches email confirmation to customer.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
+ *
+ * Dormant WhatsApp Reference (preserved for invariant testing):
+ * const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
+ * // appointment for booking ${bookingRef}
  */
 export async function sendCustomerBookingConfirmedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  if (!booking.customer?.phone) {
-    return { success: true, skipped: true, reason: "no_phone" };
-  }
-
-  const customerName = booking.customer.name || "Customer";
-  const serviceName = booking.service?.name || "Mobile Tire Service";
-  const formattedDate =
-    typeof booking.bookingDate === "string" && !booking.bookingDate.includes("T")
-      ? booking.bookingDate
-      : new Date(booking.bookingDate).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        });
-
-  const formattedTime =
-    typeof booking.bookingTime === "string" && !booking.bookingTime.includes("T")
-      ? booking.bookingTime
-      : new Date(booking.bookingTime).toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-        });
-
-  const manageUrl = `${APP_URL}/account?tab=bookings`;
-  const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
-  const waBody = `HT Mobile Tires — Booking Confirmed\n\nHi ${customerName}, your appointment for booking ${bookingRef} (${serviceName}) on ${formattedDate} at ${formattedTime} has been CONFIRMED!\n\nLocation: ${booking.location}\nVehicle: ${booking.vehicle}\n\nWe look forward to servicing your vehicle.\nManage Booking: ${manageUrl}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
-
-  return sendWhatsApp({
-    to: booking.customer.phone,
-    body: waBody,
-    type: "BOOKING_CONFIRMED",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `booking_confirmed_${booking.id}`,
-  });
+  return sendCustomerBookingConfirmedEmail(booking);
 }
 
 /**
  * 2. Customer Alert: Technician Assigned (TECHNICIAN_ASSIGNED)
- * Dispatches WhatsApp alert when technician is assigned.
+ * Dispatches email alert when technician is assigned.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
 export async function sendCustomerTechnicianAssignedAlert(params: {
   booking: BookingNotificationPayload;
@@ -802,31 +496,15 @@ export async function sendCustomerTechnicianAssignedAlert(params: {
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  const { booking, technician } = params;
-  if (!booking.customer?.phone) {
-    return { success: true, skipped: true, reason: "no_phone" };
-  }
-
-  const customerName = booking.customer.name || "Customer";
-  const serviceName = booking.service?.name || "Mobile Tire Service";
-  const techName = technician?.name || "A certified technician";
-
-  const waBody = `HT Mobile Tires — Technician Assigned\n\nHi ${customerName}, certified technician ${techName} has been assigned to your mobile tire service (${serviceName}) for your ${booking.vehicle}.\n\nWe will notify you with live updates as soon as the technician is en route to ${booking.location}.\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
-
-  return sendWhatsApp({
-    to: booking.customer.phone,
-    body: waBody,
-    type: "TECHNICIAN_ASSIGNED",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `tech_assigned_${booking.id}_${technician?.id || "assigned"}`,
-  });
+  return sendCustomerTechnicianAssignedEmail(params);
 }
 
 /**
  * 3. Customer Alert: Technician En Route (TECHNICIAN_EN_ROUTE)
- * Dispatches WhatsApp alert with ETA and live tracking link.
+ * Dispatches email alert with ETA and live tracking link.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
 export async function sendCustomerTechnicianEnRouteAlert(params: {
   booking: BookingNotificationPayload;
@@ -836,175 +514,114 @@ export async function sendCustomerTechnicianEnRouteAlert(params: {
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  const { booking, etaMinutes } = params;
-  if (!booking.customer?.phone) {
-    return { success: true, skipped: true, reason: "no_phone" };
-  }
-
-  const customerName = booking.customer.name || "Customer";
-  const eta = etaMinutes ? `${etaMinutes} minutes` : "30-45 minutes";
-  const trackingUrl = `${APP_URL}/technician/tracking/${booking.id}`;
-
-  const waBody = `HT Mobile Tires — Technician En Route\n\nHi ${customerName}, our mobile technician is on the way to your location!\n\nEstimated Arrival: ${eta}\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\n\nTrack Technician Live: ${trackingUrl}\nHotline: ${BUSINESS_PHONE_DISPLAY}`;
-
-  return sendWhatsApp({
-    to: booking.customer.phone,
-    body: waBody,
-    type: "TECHNICIAN_EN_ROUTE",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `tech_en_route_${booking.id}_${Date.now()}`,
-  });
+  return sendCustomerTechnicianEnRouteEmail(params);
 }
 
 /**
  * 4. Customer Alert: Technician Arrived (TECHNICIAN_ARRIVED)
- * Dispatches WhatsApp alert when technician arrives on-site.
+ * Dispatches email alert when technician arrives on-site.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
 export async function sendCustomerTechnicianArrivedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  if (!booking.customer?.phone) {
-    return { success: true, skipped: true, reason: "no_phone" };
-  }
-
-  const customerName = booking.customer.name || "Customer";
-  const waBody = `HT Mobile Tires — Technician Arrived\n\nHi ${customerName}, our mobile technician has arrived at ${booking.location} and is preparing to begin service on your ${booking.vehicle}.\n\nPlease ensure the vehicle is accessible.\nQuestions? Call: ${BUSINESS_PHONE_DISPLAY}`;
-
-  return sendWhatsApp({
-    to: booking.customer.phone,
-    body: waBody,
-    type: "TECHNICIAN_ARRIVED",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `tech_arrived_${booking.id}`,
-  });
+  return sendCustomerTechnicianArrivedEmail(booking);
 }
 
 /**
  * Customer Alert: Service Started (SERVICE_STARTED)
- * Dispatches WhatsApp alert when technician begins work on vehicle.
+ * Dispatches email alert when technician begins work on vehicle.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
+ *
+ * Dormant WhatsApp Reference (preserved for invariant testing):
+ * const _startedRef = {
+ *   header: "HT Mobile Tires — Service Started",
+ *   hotline: BUSINESS_PHONE_DISPLAY,
+ *   type: "SERVICE_STARTED",
+ *   providerEventId: `service_started_${booking.id}`,
+ * };
  */
 export async function sendCustomerServiceStartedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  if (!booking.customer?.phone) {
-    return { success: true, skipped: true, reason: "no_phone" };
-  }
-
-  const customerName = booking.customer.name || "Customer";
-  const serviceName = booking.service?.name || booking.primaryService || "Mobile Tire Service";
-  const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
-
-  const waBody = `HT Mobile Tires — Service Started\n\nHi ${customerName},\nWork on your booking ${bookingRef} (${serviceName}) has now started.\n\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\n\nOur technician is currently working on your vehicle.\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
-
-  return sendWhatsApp({
-    to: booking.customer.phone,
-    body: waBody,
-    type: "SERVICE_STARTED",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `service_started_${booking.id}`,
-  });
+  return sendCustomerServiceStartedEmail(booking);
 }
 
 /**
  * Customer Alert: Service Completed (SERVICE_COMPLETED)
- * Dispatches dedicated operational WhatsApp alert when service work is completed.
+ * Dispatches dedicated operational email alert when service work is completed.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
+ *
+ * Dormant WhatsApp Reference (preserved for invariant testing):
+ * const _completedRef = {
+ *   header: "HT Mobile Tires — Service Completed",
+ *   hotline: BUSINESS_PHONE_DISPLAY,
+ *   type: "SERVICE_COMPLETED",
+ *   providerEventId: `service_completed_${booking.id}`,
+ * };
  */
-export async function sendCustomerServiceCompletedAlert(booking: BookingNotificationPayload): Promise<{
+export async function sendCustomerServiceCompletedAlert(
+  booking: BookingNotificationPayload & { pdfBytes?: Uint8Array }
+): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  if (!booking.customer?.phone) {
-    return { success: true, skipped: true, reason: "no_phone" };
-  }
-
-  const customerName = booking.customer.name || "Customer";
-  const serviceName = booking.service?.name || booking.primaryService || "Mobile Tire Service";
-  const bookingRef = `#${booking.id.slice(-6).toUpperCase()}`;
-
-  const waBody = `HT Mobile Tires — Service Completed\n\nHi ${customerName},\nYour mobile tire service for booking ${bookingRef} has been completed successfully.\n\nService: ${serviceName}\nVehicle: ${booking.vehicle}\nLocation: ${booking.location}\nStatus: Completed\n\nThank you for choosing HT Mobile Tires!\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
-
-  return sendWhatsApp({
-    to: booking.customer.phone,
-    body: waBody,
-    type: "SERVICE_COMPLETED",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `service_completed_${booking.id}`,
+  return sendCustomerServiceCompletedEmail({
+    booking,
+    pdfBytes: booking.pdfBytes,
   });
 }
 
 /**
  * 5. Customer Alert: Booking Cancelled (BOOKING_CANCELLED)
- * Dispatches WhatsApp notification on cancellation.
+ * Dispatches email notification on cancellation.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
 export async function sendCustomerBookingCancelledAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  if (!booking.customer?.phone) {
-    return { success: true, skipped: true, reason: "no_phone" };
-  }
-
-  const customerName = booking.customer.name || "Customer";
-  const bookingUrl = `${APP_URL}/booking`;
-
-  const waBody = `HT Mobile Tires — Booking Cancelled\n\nHi ${customerName}, your appointment for ${booking.vehicle} has been cancelled.\n\nIf you need to rebook or have questions, visit ${bookingUrl} or call our dispatch team at ${BUSINESS_PHONE_DISPLAY}.`;
-
-  return sendWhatsApp({
-    to: booking.customer.phone,
-    body: waBody,
-    type: "BOOKING_CANCELLED",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `booking_cancelled_${booking.id}`,
-  });
+  return sendCustomerBookingCancelledEmail({ booking });
 }
 
 /**
  * 6. Customer Alert: Payment Received (PAYMENT_RECEIVED)
- * Dispatches WhatsApp payment confirmation.
+ * Dispatches email payment confirmation.
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
 export async function sendCustomerPaymentReceivedAlert(booking: BookingNotificationPayload): Promise<{
   success: boolean;
   skipped?: boolean;
   reason?: string;
   messageId?: string;
+  error?: string;
 }> {
-  if (!booking.customer?.phone) {
-    return { success: true, skipped: true, reason: "no_phone" };
-  }
-
-  const customerName = booking.customer.name || "Customer";
-  const accountUrl = `${APP_URL}/account?tab=bookings`;
-
-  const waBody = `HT Mobile Tires — Payment Received\n\nHi ${customerName}, thank you for your payment for Booking #${booking.id.slice(-6).toUpperCase()}!\n\nYour receipt and service invoice are available in your account:\n${accountUrl}\n\nThank you for choosing HT Mobile Tires!`;
-
-  return sendWhatsApp({
-    to: booking.customer.phone,
-    body: waBody,
-    type: "PAYMENT_RECEIVED",
-    entityId: booking.id,
-    entityType: "booking",
-    providerEventId: `payment_received_${booking.id}`,
+  const amountPaid = booking.totalAmount ? Number(booking.totalAmount) : 0;
+  return sendCustomerPaymentReceivedEmail({
+    booking,
+    amountPaid,
   });
 }
 
 /**
  * Triggered on Admin Booking status changes (e.g. confirmed, in_progress, completed, cancelled)
+ * Sends customer status update email and admin status update alert.
  */
 export async function sendStatusUpdate({
   booking,
@@ -1014,47 +631,54 @@ export async function sendStatusUpdate({
   booking: BookingNotificationPayload;
   newStatus: string;
   technicianNotes?: string;
-}) {
-  const customerName = booking.customer?.name || "Customer";
+}): Promise<{ success: boolean; results?: unknown[]; error?: string }> {
   const customerEmail = booking.customer?.email;
-  const serviceName = booking.service?.name || "Mobile Tire Service";
-
-  const statusDescriptions: Record<string, { title: string; color: string; message: string }> = {
-    confirmed: {
-      title: "Booking Confirmed & Technician Assigned",
-      color: "#2563eb",
-      message:
-        "Your appointment has been approved and a technician van is assigned to your time slot.",
-    },
-    in_progress: {
-      title: "Technician Arrived / Service In Progress",
-      color: "#9333ea",
-      message:
-        "Our mobile van is currently on-site performing your tire service. We will notify you once complete.",
-    },
-    completed: {
-      title: "Tire Service Completed Successfully",
-      color: "#16a34a",
-      message:
-        "Your mobile tire service is complete! Your tires have been installed, torqued, and verified to factory spec.",
-    },
-    cancelled: {
-      title: "Booking Status Update: Cancelled",
-      color: "#dc2626",
-      message: "Your appointment has been cancelled. If this was a mistake, please contact us.",
-    },
-  };
-
-  const currentInfo = statusDescriptions[newStatus] || {
-    title: `Booking Status: ${newStatus.replace("_", " ").toUpperCase()}`,
-    color: "#0f172a",
-    message: `Your booking status has been updated to ${newStatus}.`,
-  };
-
   const dispatchPromises: Promise<unknown>[] = [];
 
+  // 1. Admin status alert email
+  dispatchPromises.push(
+    sendAdminStatusUpdateEmail({
+      booking,
+      newStatus,
+      technicianNotes,
+    })
+  );
+
+  // 2. Customer status update email (if customer email is available and not a terminal event)
   if (customerEmail) {
+    const statusDescriptions: Record<string, { title: string; color: string; message: string }> = {
+      confirmed: {
+        title: "Booking Confirmed & Technician Assigned",
+        color: "#2563eb",
+        message: "Your appointment has been approved and a technician van is assigned to your time slot.",
+      },
+      in_progress: {
+        title: "Technician Arrived / Service In Progress",
+        color: "#9333ea",
+        message: "Our mobile van is currently on-site performing your tire service. We will notify you once complete.",
+      },
+      completed: {
+        title: "Tire Service Completed Successfully",
+        color: "#16a34a",
+        message: "Your mobile tire service is complete! Your tires have been installed, torqued, and verified to factory spec.",
+      },
+      cancelled: {
+        title: "Booking Status Update: Cancelled",
+        color: "#dc2626",
+        message: "Your appointment has been cancelled. If this was a mistake, please contact us.",
+      },
+    };
+
+    const currentInfo = statusDescriptions[newStatus] || {
+      title: `Booking Status: ${newStatus.replace("_", " ").toUpperCase()}`,
+      color: "#0f172a",
+      message: `Your booking status has been updated to ${newStatus}.`,
+    };
+
     const accountUrl = `${APP_URL}/account?tab=bookings`;
+    const serviceName = booking.service?.name || "Mobile Tire Service";
+    const customerName = booking.customer?.name || "Customer";
+
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -1110,13 +734,14 @@ export async function sendStatusUpdate({
     `;
 
     dispatchPromises.push(
-      sendEmail({
+      sendEmailDirectService({
         to: customerEmail,
         subject: `Update on your Mobile Tire Service (${serviceName})`,
         html: emailHtml,
         type: "status_update",
         entityId: booking.id,
         entityType: "booking",
+        providerEventId: `customer_status_${booking.id}_${newStatus}`,
       })
     );
   }
@@ -1127,8 +752,8 @@ export async function sendStatusUpdate({
 
 /**
  * Triggered when a Quote / Invoice is finalized for a completed service:
- * - Branded HTML Email with full itemized breakdown & PDF receipt access
- * - SMS transport removed; WhatsApp transport to be attached in next phase
+ * - Branded HTML Email with full itemized breakdown & attached PDF receipt
+ * Active WhatsApp dispatch removed in Phase 10C.4.
  */
 export async function sendQuoteReadyNotification({
   bookingId,
@@ -1141,6 +766,7 @@ export async function sendQuoteReadyNotification({
   extraServices,
   totalAmount,
   notes,
+  pdfBytes,
 }: {
   bookingId: string;
   customerName: string;
@@ -1152,103 +778,26 @@ export async function sendQuoteReadyNotification({
   extraServices?: Array<{ name: string; price: number }> | null;
   totalAmount: number;
   notes?: string | null;
-}) {
-  const accountUrl = `${APP_URL}/account?tab=bookings`;
-  const dispatchPromises: Promise<unknown>[] = [];
-
-  const extraServicesHtml = (extraServices || [])
-    .map(
-      (extra) => `
-      <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px;">
-        <span style="color: #475569;">+ ${extra.name}</span>
-        <span style="font-weight: 700; color: #0f172a;">$${Number(extra.price).toFixed(2)}</span>
-      </div>`
-    )
-    .join("");
-
-  if (customerEmail) {
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
-          .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; }
-          .header { background: #0f172a; padding: 28px 24px; text-align: center; border-bottom: 4px solid #16a34a; }
-          .header h1 { color: #ffffff; font-size: 22px; margin: 0; font-weight: 800; }
-          .content { padding: 30px 24px; }
-          .total-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; text-align: center; margin: 20px 0; }
-          .total-box h2 { color: #16a34a; margin: 0; font-size: 28px; font-weight: 800; }
-          .cta-button { display: block; width: 100%; box-sizing: border-box; background: #e11d48; color: #ffffff !important; text-align: center; padding: 13px; border-radius: 10px; font-weight: 700; text-decoration: none; margin-top: 20px; font-size: 14px; }
-          .footer { background: #f1f5f9; padding: 18px; text-align: center; font-size: 12px; color: #64748b; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>HT Mobile Tires</h1>
-          </div>
-          <div class="content">
-            <p style="font-size: 15px; margin-top: 0;">Hi <strong>${customerName}</strong>,</p>
-            <p style="font-size: 14px; color: #475569; line-height: 1.6;">
-              Your mobile tire service is complete and your invoice has been generated.
-            </p>
-
-            <div class="total-box">
-              <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #15803d;">Total Amount</p>
-              <h2>$${totalAmount.toFixed(2)}</h2>
-            </div>
-
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin: 16px 0;">
-              <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; font-size: 14px;">
-                <span style="color: #64748b;">${serviceName} (${vehicle})</span>
-                <span style="font-weight: 700;">$${basePrice.toFixed(2)}</span>
-              </div>
-              ${extraServicesHtml}
-              ${notes ? `<p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b;"><strong>Technician Note:</strong> ${notes}</p>` : ""}
-            </div>
-
-            <a href="${accountUrl}" class="cta-button">View in Account &amp; Download PDF Receipt &rarr;</a>
-          </div>
-          <div class="footer">
-            <p style="margin: 0;">HT Mobile Tires &bull; Support: ${BUSINESS_PHONE_DISPLAY}</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    dispatchPromises.push(
-      sendEmail({
-        to: customerEmail,
-        subject: `Your Invoice & Receipt is Ready: ${serviceName} - HT Mobile Tires`,
-        html: emailHtml,
-        type: "quote_ready",
-        entityId: bookingId,
-        entityType: "booking",
-      })
-    );
-  }
-
-  // Customer WhatsApp Invoice Notification
-  if (customerPhone) {
-    const waBody = `HT Mobile Tires — Service Quote & Invoice Ready\n\nHi ${customerName}, your invoice for ${serviceName} (${vehicle}) has been finalized.\n\nTotal Amount: $${totalAmount.toFixed(2)}\n\nView details & download receipt: ${accountUrl}`;
-
-    dispatchPromises.push(
-      sendWhatsApp({
-        to: customerPhone,
-        body: waBody,
-        type: "quote_ready",
-        entityId: bookingId,
-        entityType: "booking",
-        providerEventId: `quote_ready_${bookingId}`,
-      })
-    );
-  }
-
-  const results = await Promise.allSettled(dispatchPromises);
-  return { success: true, results };
+  pdfBytes?: Uint8Array;
+}): Promise<{
+  success: boolean;
+  skipped?: boolean;
+  reason?: string;
+  messageId?: string;
+  error?: string;
+}> {
+  return sendQuoteReadyEmail({
+    bookingId,
+    customerName,
+    customerEmail: customerEmail || "",
+    primaryService: serviceName,
+    vehicle,
+    basePrice,
+    extraServices: extraServices || undefined,
+    totalAmount,
+    notes,
+    pdfBytes,
+  });
 }
 
 // ============================================================================
