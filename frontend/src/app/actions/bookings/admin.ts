@@ -131,7 +131,6 @@ export async function startServiceAction(bookingId: string) {
       },
     });
 
-    // Non-blocking Customer Service Started WhatsApp Alert
     try {
       await sendCustomerServiceStartedAlert({
         id: updated.id,

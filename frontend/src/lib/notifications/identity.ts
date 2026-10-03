@@ -120,3 +120,23 @@ export function buildPaymentReceivedKey(bookingId: string): string {
   });
 }
 
+export function buildBookingReceivedKey(bookingId: string): string {
+  return buildNotificationEventKey({
+    eventName: "booking_received",
+    entityId: bookingId,
+  });
+}
+
+export function buildServiceStartedKey(bookingId: string): string {
+  return buildNotificationEventKey({
+    eventName: "service_started",
+    entityId: bookingId,
+  });
+}
+
+export function buildQuoteReadyKey(bookingId: string): string {
+  return buildNotificationEventKey({
+    eventName: "quote_ready",
+    entityId: bookingId,
+  });
+}

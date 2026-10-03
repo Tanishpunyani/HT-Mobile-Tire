@@ -82,3 +82,85 @@ export function resolveCustomerNotificationPhone(
   return normalized && normalized.length >= 10 ? normalized : null;
 }
 
+// ============================================================================
+// EMAIL RECIPIENT RESOLUTION HELPERS (PHASE 10C.3)
+// ============================================================================
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Resolves the primary email address to receive Admin / Central Dispatch operational alerts.
+ *
+ * Hierarchy:
+ * 1. process.env.ADMIN_EMAIL (Configured admin recipient identified in system audit)
+ * 2. process.env.ADMIN_NOTIFICATION_EMAIL (Optional alias if present)
+ * 3. Default fallback: "admin@mobiletire.clinic"
+ *
+ * Returns a valid, trimmed email string. Never throws or returns null.
+ */
+export function resolveAdminNotificationEmail(): string {
+  const envEmail =
+    process.env.ADMIN_EMAIL?.trim() ||
+    process.env.ADMIN_NOTIFICATION_EMAIL?.trim() ||
+    "admin@mobiletire.clinic";
+
+  return envEmail;
+}
+
+/**
+ * Resolves all configured admin notification emails as an array.
+ * Supports comma-separated entries in ADMIN_EMAIL or ADMIN_NOTIFICATION_EMAIL.
+ */
+export function resolveAdminNotificationEmails(): string[] {
+  const primary = resolveAdminNotificationEmail();
+  const rawList = primary.split(",").map((e) => e.trim()).filter(Boolean);
+  const valid = rawList.filter((e) => EMAIL_REGEX.test(e));
+  return valid.length > 0 ? valid : ["admin@mobiletire.clinic"];
+}
+
+export type CustomerEmailSource =
+  | string
+  | {
+      email?: string | null;
+      customer?: { email?: string | null } | null;
+      user?: { email?: string | null } | null;
+    }
+  | null
+  | undefined;
+
+/**
+ * Resolves and validates customer email address from string or booking/user entity objects.
+ *
+ * Safe: returns null on missing/invalid email, never throws.
+ */
+export function resolveCustomerNotificationEmail(
+  source?: CustomerEmailSource
+): string | null {
+  if (!source) {
+    return null;
+  }
+
+  let rawEmail: string | null = null;
+
+  if (typeof source === "string") {
+    rawEmail = source.trim();
+  } else if (typeof source === "object") {
+    rawEmail =
+      source.email?.trim() ||
+      source.customer?.email?.trim() ||
+      source.user?.email?.trim() ||
+      null;
+  }
+
+  if (
+    !rawEmail ||
+    rawEmail === "N/A" ||
+    rawEmail === "undefined" ||
+    rawEmail === "null"
+  ) {
+    return null;
+  }
+
+  const cleaned = rawEmail.toLowerCase().trim();
+  return EMAIL_REGEX.test(cleaned) ? cleaned : null;
+}

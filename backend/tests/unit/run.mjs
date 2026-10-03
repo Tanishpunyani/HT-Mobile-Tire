@@ -18,12 +18,8 @@ import { runNotificationRecipientsUnitTests } from "./notification-recipients.te
 import { runNotificationIdentityUnitTests } from "./notification-identity.test.mjs";
 import { runPhase4BWorkflowTests } from "./phase-4b-workflow.test.mjs";
 import { runPhase4B3PhonePersistenceTests } from "./phase-4b3-phone-persistence.test.mjs";
-import { runWhatsAppWorkflowCompletionUnitTests } from "./whatsapp-workflow-completion.test.mjs";
-import { runWhatsAppInboundWebhookUnitTests } from "./whatsapp-inbound-webhook.test.mjs";
-import { runWhatsAppContextResolverUnitTests } from "./whatsapp-context-resolver.test.mjs";
-import { runWhatsAppResponseRouterUnitTests } from "./whatsapp-response-router.test.mjs";
-import { runWhatsAppHumanHandoffUnitTests } from "./whatsapp-human-handoff.test.mjs";
-import { runWhatsAppProductionHardeningUnitTests } from "./whatsapp-production-hardening.test.mjs";
+import { runEmailServiceUnitTests } from "./email-service.test.mjs";
+import { runEmailLifecycleRewiringUnitTests } from "./email-lifecycle-rewiring.test.mjs";
 
 console.log("\x1b[1m\x1b[35m==================================================\x1b[0m");
 console.log("\x1b[1m\x1b[35m   RUNNING UNIT TEST SUITE (PHASE 7 & 10)        \x1b[0m");
@@ -45,11 +41,7 @@ runNotificationRecipientsUnitTests();
 runNotificationIdentityUnitTests();
 runPhase4BWorkflowTests();
 runPhase4B3PhonePersistenceTests();
-runWhatsAppWorkflowCompletionUnitTests();
-runWhatsAppInboundWebhookUnitTests();
-runWhatsAppContextResolverUnitTests();
-runWhatsAppResponseRouterUnitTests();
-runWhatsAppHumanHandoffUnitTests();
-runWhatsAppProductionHardeningUnitTests();
+runEmailServiceUnitTests();
+runEmailLifecycleRewiringUnitTests();
 
 printSummaryAndExit();

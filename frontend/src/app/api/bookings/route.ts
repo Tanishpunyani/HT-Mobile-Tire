@@ -4,7 +4,7 @@ import { getAuthorizedCustomerIdsForUser } from "@/lib/auth";
 import { serializeDecimal } from "@/lib/utils/serialize-prisma";
 import { calculateCustomerEta } from "@/lib/utils/eta";
 import { bookingSchema } from "@/lib/validations/booking";
-import { sendBookingConfirmation } from "@/lib/notifications";
+import { sendBookingConfirmation, sendAdminBookingCreatedEmail } from "@/lib/notifications";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
@@ -206,6 +206,17 @@ export async function POST(request: Request) {
     // 5. Automated booking alerts (non-blocking)
     try {
       await sendBookingConfirmation({
+        id: booking.id,
+        vehicle: booking.vehicle,
+        location: booking.location,
+        bookingDate: booking.bookingDate,
+        bookingTime: booking.bookingTime,
+        message: booking.message,
+        status: booking.status,
+        customer: booking.customer,
+        service: booking.service,
+      });
+      await sendAdminBookingCreatedEmail({
         id: booking.id,
         vehicle: booking.vehicle,
         location: booking.location,

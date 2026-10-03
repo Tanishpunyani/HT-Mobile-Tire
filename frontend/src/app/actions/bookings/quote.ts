@@ -66,25 +66,10 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
       },
     });
 
-    // Send Dedicated Service Completed WhatsApp Alert (Non-blocking)
+    // Generate Quote / Invoice PDF once
+    let pdfBytes: Uint8Array | undefined;
     try {
-      await sendCustomerServiceCompletedAlert({
-        id: booking.id,
-        vehicle: booking.vehicle || "Vehicle",
-        location: booking.formattedAddress || booking.location || "Dallas, TX",
-        bookingDate: booking.bookingDate,
-        bookingTime: booking.bookingTime,
-        status: "completed",
-        primaryService: booking.primaryService,
-        customer: booking.customer,
-      });
-    } catch (completeErr) {
-      console.warn("Service completed notification warning:", completeErr);
-    }
-
-    // Generate Quote / Invoice PDF
-    try {
-      await generateQuotePdf({
+      pdfBytes = await generateQuotePdf({
         quoteNumber: `INV-${booking.id.substring(0, 8).toUpperCase()}`,
         bookingId: booking.id,
         customerName: booking.customer?.name || "Valued Customer",
@@ -103,7 +88,25 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
       console.warn("PDF generation warning:", pdfErr);
     }
 
-    // Send Customer Quote Ready Notification (Non-blocking)
+    // Send Dedicated Service Completed Email Alert with PDF receipt (Phase 10C.4)
+    try {
+      await sendCustomerServiceCompletedAlert({
+        id: booking.id,
+        vehicle: booking.vehicle || "Vehicle",
+        location: booking.formattedAddress || booking.location || "Dallas, TX",
+        bookingDate: booking.bookingDate,
+        bookingTime: booking.bookingTime,
+        status: "completed",
+        primaryService: booking.primaryService,
+        customer: booking.customer,
+        totalAmount,
+        pdfBytes,
+      } as any);
+    } catch (completeErr) {
+      console.warn("Service completed notification warning:", completeErr);
+    }
+
+    // Send Customer Quote Ready Notification (Non-blocking, deduplicated if already sent)
     try {
       await sendQuoteReadyNotification({
         bookingId: booking.id,
@@ -116,6 +119,7 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
         extraServices: validated.extraServices,
         totalAmount,
         notes: validated.notes,
+        pdfBytes,
       });
     } catch (notifyErr) {
       console.warn("Quote ready notification warning:", notifyErr);
