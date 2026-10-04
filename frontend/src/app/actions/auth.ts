@@ -5,14 +5,27 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { logger } from "@/lib/logger";
 
-export async function signup(formData: FormData) {
+export type AuthActionResult = {
+  success: boolean;
+  error?: string;
+};
+
+export async function signup(formData: FormData): Promise<AuthActionResult | void> {
   const supabase = await createClient();
-  const email = (formData.get("email") as string)?.trim();
+  const rawEmail = (formData.get("email") as string) || "";
+  const email = rawEmail.trim().toLowerCase();
   const password = formData.get("password") as string;
   const firstName = (formData.get("firstName") as string)?.trim() || "";
   const lastName = (formData.get("lastName") as string)?.trim() || "";
   const phone = (formData.get("phone") as string)?.trim() || "";
   const name = (formData.get("name") as string)?.trim() || "";
+
+  if (!email || !password) {
+    return {
+      success: false,
+      error: "Please enter both your email and password.",
+    };
+  }
 
   const resolvedFirstName = firstName || name.split(" ")[0] || "";
   const resolvedLastName = lastName || name.split(" ").slice(1).join(" ") || "";
@@ -32,12 +45,18 @@ export async function signup(formData: FormData) {
   });
 
   if (authError) {
-    throw new Error(authError.message);
+    return {
+      success: false,
+      error: authError.message || "Failed to create account. Please try again.",
+    };
   }
 
   const userId = authData.user?.id;
   if (!userId) {
-    throw new Error("User creation failed.");
+    return {
+      success: false,
+      error: "User creation failed. Please try again.",
+    };
   }
 
   try {
@@ -128,12 +147,21 @@ function sanitizeRedirectTarget(target: unknown, fallback = "/account"): string 
   return trimmed;
 }
 
-export async function login(formData: FormData) {
-  const supabase = await createClient();
-  const email = (formData.get("email") as string)?.trim();
-  const password = formData.get("password") as string;
+export async function login(formData: FormData): Promise<AuthActionResult | void> {
+  const rawEmail = (formData.get("email") as string) || "";
+  const email = rawEmail.trim().toLowerCase();
+  const password = (formData.get("password") as string) || "";
   const rawRedirect = (formData.get("redirect") as string) || "/account";
   const redirectTarget = sanitizeRedirectTarget(rawRedirect, "/account");
+
+  if (!email || !password) {
+    return {
+      success: false,
+      error: "Please enter both your email and password.",
+    };
+  }
+
+  const supabase = await createClient();
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -141,11 +169,34 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    throw new Error(error.message);
+    const errorMsg = error.message?.toLowerCase() || "";
+    if (
+      errorMsg.includes("invalid login credentials") ||
+      errorMsg.includes("invalid credentials") ||
+      errorMsg.includes("user not found")
+    ) {
+      return {
+        success: false,
+        error: "Invalid email or password. Please check your credentials and try again.",
+      };
+    }
+    if (errorMsg.includes("email not confirmed")) {
+      return {
+        success: false,
+        error: "Please verify your email address before signing in. Check your inbox for the confirmation link.",
+      };
+    }
+    return {
+      success: false,
+      error: error.message || "Invalid email or password. Please check your credentials.",
+    };
   }
 
-  if (!data.user) {
-    throw new Error("Unable to authenticate user.");
+  if (!data?.user) {
+    return {
+      success: false,
+      error: "Unable to authenticate user. Please try again.",
+    };
   }
 
   try {

@@ -29,9 +29,21 @@ function SignupForm() {
     }
 
     try {
-      await signup(formData);
+      const result = await signup(formData);
+      if (result && !result.success) {
+        setError(result.error || "Failed to create account. Please try again.");
+        setLoading(false);
+      }
     } catch (err: any) {
-      setError(err?.message || "Failed to create account. Please try again.");
+      if (err?.digest?.startsWith?.("NEXT_REDIRECT") || err?.message === "NEXT_REDIRECT") {
+        return;
+      }
+      const rawMsg = err?.message || "";
+      if (rawMsg.includes("Minified React error") || rawMsg.includes("Server Components render")) {
+        setError("Failed to create account. Please try again.");
+      } else {
+        setError(rawMsg || "Failed to create account. Please try again.");
+      }
       setLoading(false);
     }
   }

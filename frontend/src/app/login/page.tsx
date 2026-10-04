@@ -19,9 +19,21 @@ function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      await login(formData);
+      const result = await login(formData);
+      if (result && !result.success) {
+        setError(result.error || "Invalid email or password. Please try again.");
+        setLoading(false);
+      }
     } catch (err: any) {
-      setError(err?.message || "Invalid email or password.");
+      if (err?.digest?.startsWith?.("NEXT_REDIRECT") || err?.message === "NEXT_REDIRECT") {
+        return;
+      }
+      const rawMsg = err?.message || "";
+      if (rawMsg.includes("Minified React error") || rawMsg.includes("Server Components render")) {
+        setError("Invalid email or password. Please try again.");
+      } else {
+        setError(rawMsg || "Invalid email or password. Please try again.");
+      }
       setLoading(false);
     }
   }
