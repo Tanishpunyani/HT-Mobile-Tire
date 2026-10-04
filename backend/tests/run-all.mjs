@@ -27,6 +27,7 @@ import { runPhase4BWorkflowTests } from "./unit/phase-4b-workflow.test.mjs";
 import { runPhase4B3PhonePersistenceTests } from "./unit/phase-4b3-phone-persistence.test.mjs";
 import { runEmailServiceUnitTests } from "./unit/email-service.test.mjs";
 import { runEmailLifecycleRewiringUnitTests } from "./unit/email-lifecycle-rewiring.test.mjs";
+import { runEmergencyNotificationRenderingTests } from "./unit/emergency-notification-rendering.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -79,6 +80,7 @@ runPhase4BWorkflowTests();
 runPhase4B3PhonePersistenceTests();
 runEmailServiceUnitTests();
 runEmailLifecycleRewiringUnitTests();
+runEmergencyNotificationRenderingTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();

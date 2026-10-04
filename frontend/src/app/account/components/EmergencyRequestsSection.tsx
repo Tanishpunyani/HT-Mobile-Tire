@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Siren, ShieldCheck } from "lucide-react";
 import { EmergencyRequest } from "../types";
+import EmergencyCommunicationBody from "./EmergencyCommunicationBody";
 
 interface EmergencyRequestsSectionProps {
   emergencyRequests: EmergencyRequest[];
@@ -151,9 +152,7 @@ export default function EmergencyRequestsSection({
                               })}
                             </span>
                           </div>
-                          <p className="mt-2 text-xs font-medium leading-relaxed text-slate-800 whitespace-pre-wrap break-words">
-                            {update.body}
-                          </p>
+                          <EmergencyCommunicationBody body={update.body} subject={update.subject} />
                         </div>
                       ))}
                     </div>
