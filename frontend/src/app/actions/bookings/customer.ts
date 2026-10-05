@@ -49,6 +49,10 @@ export async function createBookingRequestAction(formData: {
       data: { user },
     } = await supabase.auth.getUser();
 
+    // Normalize submitted email safely
+    const rawSubmittedEmail = formData.email ? String(formData.email).trim().toLowerCase() : "";
+    const normalizedEmail = rawSubmittedEmail && rawSubmittedEmail.includes("@") ? rawSubmittedEmail : null;
+
     // 1. Resolve or create customer profile using unified identity resolver
     let customerId: string | null = null;
     const submittedPhone =
@@ -59,21 +63,28 @@ export async function createBookingRequestAction(formData: {
     if (user) {
       const resolvedCustomer = await getOrCreateCustomerForUser({
         id: user.id,
-        email: formData.email || user.email || "",
+        email: normalizedEmail || user.email || "",
         name: formData.name,
         phone: formData.phone,
       });
       customerId = resolvedCustomer.id;
 
-      // Ensure database customer row reflects explicitly submitted booking phone
+      // Ensure database customer row reflects explicitly submitted booking phone/email if missing
+      const customerUpdate: { phone?: string; email?: string } = {};
       if (submittedPhone && resolvedCustomer.phone !== submittedPhone) {
+        customerUpdate.phone = submittedPhone;
+      }
+      if (normalizedEmail && !resolvedCustomer.email) {
+        customerUpdate.email = normalizedEmail;
+      }
+      if (Object.keys(customerUpdate).length > 0) {
         try {
           await prisma.customer.update({
             where: { id: resolvedCustomer.id },
-            data: { phone: submittedPhone },
+            data: customerUpdate,
           });
         } catch (updateErr: any) {
-          console.warn("Failed to synchronize customer phone in booking action:", updateErr);
+          console.warn("Failed to synchronize customer data in booking action:", updateErr);
         }
       }
     } else {
@@ -81,7 +92,7 @@ export async function createBookingRequestAction(formData: {
         where: {
           OR: [
             ...(formData.phone ? [{ phone: formData.phone }] : []),
-            ...(formData.email ? [{ email: formData.email }] : []),
+            ...(normalizedEmail ? [{ email: normalizedEmail }] : []),
           ],
         },
       });
@@ -89,21 +100,28 @@ export async function createBookingRequestAction(formData: {
         customer = await prisma.customer.create({
           data: {
             name: formData.name,
-            email: formData.email || null,
+            email: normalizedEmail,
             phone: formData.phone || "N/A",
           },
         });
       } else {
-        // If an existing customer was matched for a guest booking (e.g. by email),
-        // update customer.phone if a valid new phone was submitted
+        // If an existing customer was matched for a guest booking (e.g. by phone),
+        // update customer.phone and/or customer.email if missing
+        const guestUpdate: { phone?: string; email?: string } = {};
         if (submittedPhone && customer.phone !== submittedPhone) {
+          guestUpdate.phone = submittedPhone;
+        }
+        if (normalizedEmail && !customer.email) {
+          guestUpdate.email = normalizedEmail;
+        }
+        if (Object.keys(guestUpdate).length > 0) {
           try {
             customer = await prisma.customer.update({
               where: { id: customer.id },
-              data: { phone: submittedPhone },
+              data: guestUpdate,
             });
           } catch (updateErr: any) {
-            console.warn("Failed to update guest customer phone:", updateErr);
+            console.warn("Failed to update guest customer data:", updateErr);
           }
         }
       }
@@ -194,10 +212,11 @@ export async function createBookingRequestAction(formData: {
         : "Standard Vehicle");
     const locStr = formData.formattedAddress || formData.address || formData.location || "Dallas, TX";
 
-    // 4. Create Booking
+    // 4. Create Booking with immutable booking-level customerEmail
     const booking = await prisma.booking.create({
       data: {
         customerId,
+        customerEmail: normalizedEmail,
         serviceId: formData.serviceId || null,
         primaryService,
         bookingDate: bookingDateObj,
@@ -217,9 +236,10 @@ export async function createBookingRequestAction(formData: {
       },
     });
 
-    // 5. Non-blocking Notification Dispatch with Preserved GPS Coordinates
+    // 5. Non-blocking Notification Dispatch (Step 8: New booking is ADMIN ONLY)
     const notificationPayload = {
       id: booking.id,
+      customerEmail: normalizedEmail,
       status: "pending",
       bookingDate: bookingDateObj,
       bookingTime: scheduledTimeStr,
@@ -231,19 +251,13 @@ export async function createBookingRequestAction(formData: {
       customer: {
         name: formData.name,
         phone: formData.phone,
-        email: formData.email,
+        email: normalizedEmail,
       },
       service: {
         name: primaryService,
       },
       message: booking.message,
     };
-
-    try {
-      await sendBookingConfirmation(notificationPayload);
-    } catch (notifErr) {
-      console.warn("Failed to dispatch booking notification:", notifErr);
-    }
 
     try {
       await sendAdminBookingCreatedAlert(notificationPayload);
@@ -324,6 +338,7 @@ export async function cancelCustomerBookingAction(bookingId: string) {
     try {
       await sendCustomerBookingCancelledAlert({
         id: booking.id,
+        customerEmail: booking.customerEmail,
         vehicle: booking.vehicle,
         location: booking.location,
         bookingDate: booking.bookingDate,

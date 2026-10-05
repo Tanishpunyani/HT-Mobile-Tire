@@ -45,6 +45,7 @@ export type BookingMinAggregateOutputType = {
   customerId: string | null
   serviceId: string | null
   technicianId: string | null
+  customerEmail: string | null
   primaryService: string | null
   vehicle: string | null
   location: string | null
@@ -74,6 +75,7 @@ export type BookingMaxAggregateOutputType = {
   customerId: string | null
   serviceId: string | null
   technicianId: string | null
+  customerEmail: string | null
   primaryService: string | null
   vehicle: string | null
   location: string | null
@@ -103,6 +105,7 @@ export type BookingCountAggregateOutputType = {
   customerId: number
   serviceId: number
   technicianId: number
+  customerEmail: number
   primaryService: number
   extraServices: number
   vehicle: number
@@ -149,6 +152,7 @@ export type BookingMinAggregateInputType = {
   customerId?: true
   serviceId?: true
   technicianId?: true
+  customerEmail?: true
   primaryService?: true
   vehicle?: true
   location?: true
@@ -178,6 +182,7 @@ export type BookingMaxAggregateInputType = {
   customerId?: true
   serviceId?: true
   technicianId?: true
+  customerEmail?: true
   primaryService?: true
   vehicle?: true
   location?: true
@@ -207,6 +212,7 @@ export type BookingCountAggregateInputType = {
   customerId?: true
   serviceId?: true
   technicianId?: true
+  customerEmail?: true
   primaryService?: true
   extraServices?: true
   vehicle?: true
@@ -324,6 +330,7 @@ export type BookingGroupByOutputType = {
   customerId: string | null
   serviceId: string | null
   technicianId: string | null
+  customerEmail: string | null
   primaryService: string
   extraServices: runtime.JsonValue | null
   vehicle: string
@@ -377,6 +384,7 @@ export type BookingWhereInput = {
   customerId?: Prisma.UuidNullableFilter<"Booking"> | string | null
   serviceId?: Prisma.UuidNullableFilter<"Booking"> | string | null
   technicianId?: Prisma.UuidNullableFilter<"Booking"> | string | null
+  customerEmail?: Prisma.StringNullableFilter<"Booking"> | string | null
   primaryService?: Prisma.StringFilter<"Booking"> | string
   extraServices?: Prisma.JsonNullableFilter<"Booking">
   vehicle?: Prisma.StringFilter<"Booking"> | string
@@ -412,6 +420,7 @@ export type BookingOrderByWithRelationInput = {
   customerId?: Prisma.SortOrderInput | Prisma.SortOrder
   serviceId?: Prisma.SortOrderInput | Prisma.SortOrder
   technicianId?: Prisma.SortOrderInput | Prisma.SortOrder
+  customerEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   primaryService?: Prisma.SortOrder
   extraServices?: Prisma.SortOrderInput | Prisma.SortOrder
   vehicle?: Prisma.SortOrder
@@ -450,6 +459,7 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   customerId?: Prisma.UuidNullableFilter<"Booking"> | string | null
   serviceId?: Prisma.UuidNullableFilter<"Booking"> | string | null
   technicianId?: Prisma.UuidNullableFilter<"Booking"> | string | null
+  customerEmail?: Prisma.StringNullableFilter<"Booking"> | string | null
   primaryService?: Prisma.StringFilter<"Booking"> | string
   extraServices?: Prisma.JsonNullableFilter<"Booking">
   vehicle?: Prisma.StringFilter<"Booking"> | string
@@ -485,6 +495,7 @@ export type BookingOrderByWithAggregationInput = {
   customerId?: Prisma.SortOrderInput | Prisma.SortOrder
   serviceId?: Prisma.SortOrderInput | Prisma.SortOrder
   technicianId?: Prisma.SortOrderInput | Prisma.SortOrder
+  customerEmail?: Prisma.SortOrderInput | Prisma.SortOrder
   primaryService?: Prisma.SortOrder
   extraServices?: Prisma.SortOrderInput | Prisma.SortOrder
   vehicle?: Prisma.SortOrder
@@ -523,6 +534,7 @@ export type BookingScalarWhereWithAggregatesInput = {
   customerId?: Prisma.UuidNullableWithAggregatesFilter<"Booking"> | string | null
   serviceId?: Prisma.UuidNullableWithAggregatesFilter<"Booking"> | string | null
   technicianId?: Prisma.UuidNullableWithAggregatesFilter<"Booking"> | string | null
+  customerEmail?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   primaryService?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   extraServices?: Prisma.JsonNullableWithAggregatesFilter<"Booking">
   vehicle?: Prisma.StringWithAggregatesFilter<"Booking"> | string
@@ -550,6 +562,7 @@ export type BookingScalarWhereWithAggregatesInput = {
 
 export type BookingCreateInput = {
   id?: string
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -585,6 +598,7 @@ export type BookingUncheckedCreateInput = {
   customerId?: string | null
   serviceId?: string | null
   technicianId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -614,6 +628,7 @@ export type BookingUncheckedCreateInput = {
 
 export type BookingUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -649,6 +664,7 @@ export type BookingUncheckedUpdateInput = {
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -681,6 +697,7 @@ export type BookingCreateManyInput = {
   customerId?: string | null
   serviceId?: string | null
   technicianId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -708,6 +725,7 @@ export type BookingCreateManyInput = {
 
 export type BookingUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -738,6 +756,7 @@ export type BookingUncheckedUpdateManyInput = {
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -778,6 +797,7 @@ export type BookingCountOrderByAggregateInput = {
   customerId?: Prisma.SortOrder
   serviceId?: Prisma.SortOrder
   technicianId?: Prisma.SortOrder
+  customerEmail?: Prisma.SortOrder
   primaryService?: Prisma.SortOrder
   extraServices?: Prisma.SortOrder
   vehicle?: Prisma.SortOrder
@@ -815,6 +835,7 @@ export type BookingMaxOrderByAggregateInput = {
   customerId?: Prisma.SortOrder
   serviceId?: Prisma.SortOrder
   technicianId?: Prisma.SortOrder
+  customerEmail?: Prisma.SortOrder
   primaryService?: Prisma.SortOrder
   vehicle?: Prisma.SortOrder
   location?: Prisma.SortOrder
@@ -844,6 +865,7 @@ export type BookingMinOrderByAggregateInput = {
   customerId?: Prisma.SortOrder
   serviceId?: Prisma.SortOrder
   technicianId?: Prisma.SortOrder
+  customerEmail?: Prisma.SortOrder
   primaryService?: Prisma.SortOrder
   vehicle?: Prisma.SortOrder
   location?: Prisma.SortOrder
@@ -1063,6 +1085,7 @@ export type BookingUpdateOneRequiredWithoutTechnicianLocationNestedInput = {
 
 export type BookingCreateWithoutServiceInput = {
   id?: string
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1096,6 +1119,7 @@ export type BookingUncheckedCreateWithoutServiceInput = {
   id?: string
   customerId?: string | null
   technicianId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1157,6 +1181,7 @@ export type BookingScalarWhereInput = {
   customerId?: Prisma.UuidNullableFilter<"Booking"> | string | null
   serviceId?: Prisma.UuidNullableFilter<"Booking"> | string | null
   technicianId?: Prisma.UuidNullableFilter<"Booking"> | string | null
+  customerEmail?: Prisma.StringNullableFilter<"Booking"> | string | null
   primaryService?: Prisma.StringFilter<"Booking"> | string
   extraServices?: Prisma.JsonNullableFilter<"Booking">
   vehicle?: Prisma.StringFilter<"Booking"> | string
@@ -1184,6 +1209,7 @@ export type BookingScalarWhereInput = {
 
 export type BookingCreateWithoutCustomerInput = {
   id?: string
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1217,6 +1243,7 @@ export type BookingUncheckedCreateWithoutCustomerInput = {
   id?: string
   serviceId?: string | null
   technicianId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1272,6 +1299,7 @@ export type BookingUpdateManyWithWhereWithoutCustomerInput = {
 
 export type BookingCreateWithoutReviewsInput = {
   id?: string
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1306,6 +1334,7 @@ export type BookingUncheckedCreateWithoutReviewsInput = {
   customerId?: string | null
   serviceId?: string | null
   technicianId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1350,6 +1379,7 @@ export type BookingUpdateToOneWithWhereWithoutReviewsInput = {
 
 export type BookingUpdateWithoutReviewsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1384,6 +1414,7 @@ export type BookingUncheckedUpdateWithoutReviewsInput = {
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1412,6 +1443,7 @@ export type BookingUncheckedUpdateWithoutReviewsInput = {
 
 export type BookingCreateWithoutTechnicianInput = {
   id?: string
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1445,6 +1477,7 @@ export type BookingUncheckedCreateWithoutTechnicianInput = {
   id?: string
   customerId?: string | null
   serviceId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1500,6 +1533,7 @@ export type BookingUpdateManyWithWhereWithoutTechnicianInput = {
 
 export type BookingCreateWithoutTechnicianLocationInput = {
   id?: string
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1534,6 +1568,7 @@ export type BookingUncheckedCreateWithoutTechnicianLocationInput = {
   customerId?: string | null
   serviceId?: string | null
   technicianId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1578,6 +1613,7 @@ export type BookingUpdateToOneWithWhereWithoutTechnicianLocationInput = {
 
 export type BookingUpdateWithoutTechnicianLocationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1612,6 +1648,7 @@ export type BookingUncheckedUpdateWithoutTechnicianLocationInput = {
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1642,6 +1679,7 @@ export type BookingCreateManyServiceInput = {
   id?: string
   customerId?: string | null
   technicianId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1669,6 +1707,7 @@ export type BookingCreateManyServiceInput = {
 
 export type BookingUpdateWithoutServiceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1702,6 +1741,7 @@ export type BookingUncheckedUpdateWithoutServiceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1733,6 +1773,7 @@ export type BookingUncheckedUpdateManyWithoutServiceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1762,6 +1803,7 @@ export type BookingCreateManyCustomerInput = {
   id?: string
   serviceId?: string | null
   technicianId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1789,6 +1831,7 @@ export type BookingCreateManyCustomerInput = {
 
 export type BookingUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1822,6 +1865,7 @@ export type BookingUncheckedUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1853,6 +1897,7 @@ export type BookingUncheckedUpdateManyWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   technicianId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1882,6 +1927,7 @@ export type BookingCreateManyTechnicianInput = {
   id?: string
   customerId?: string | null
   serviceId?: string | null
+  customerEmail?: string | null
   primaryService?: string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle: string
@@ -1909,6 +1955,7 @@ export type BookingCreateManyTechnicianInput = {
 
 export type BookingUpdateWithoutTechnicianInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1942,6 +1989,7 @@ export type BookingUncheckedUpdateWithoutTechnicianInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1973,6 +2021,7 @@ export type BookingUncheckedUpdateManyWithoutTechnicianInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   serviceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   primaryService?: Prisma.StringFieldUpdateOperationsInput | string
   extraServices?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   vehicle?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2034,6 +2083,7 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   customerId?: boolean
   serviceId?: boolean
   technicianId?: boolean
+  customerEmail?: boolean
   primaryService?: boolean
   extraServices?: boolean
   vehicle?: boolean
@@ -2070,6 +2120,7 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   customerId?: boolean
   serviceId?: boolean
   technicianId?: boolean
+  customerEmail?: boolean
   primaryService?: boolean
   extraServices?: boolean
   vehicle?: boolean
@@ -2103,6 +2154,7 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   customerId?: boolean
   serviceId?: boolean
   technicianId?: boolean
+  customerEmail?: boolean
   primaryService?: boolean
   extraServices?: boolean
   vehicle?: boolean
@@ -2136,6 +2188,7 @@ export type BookingSelectScalar = {
   customerId?: boolean
   serviceId?: boolean
   technicianId?: boolean
+  customerEmail?: boolean
   primaryService?: boolean
   extraServices?: boolean
   vehicle?: boolean
@@ -2161,7 +2214,7 @@ export type BookingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "serviceId" | "technicianId" | "primaryService" | "extraServices" | "vehicle" | "location" | "formattedAddress" | "latitude" | "longitude" | "city" | "state" | "zipCode" | "tireSize" | "bookingDate" | "bookingTime" | "message" | "notes" | "status" | "paymentStatus" | "totalAmount" | "serviceConfirmedAt" | "arrivedAt" | "estimatedDurationMinutes" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "serviceId" | "technicianId" | "customerEmail" | "primaryService" | "extraServices" | "vehicle" | "location" | "formattedAddress" | "latitude" | "longitude" | "city" | "state" | "zipCode" | "tireSize" | "bookingDate" | "bookingTime" | "message" | "notes" | "status" | "paymentStatus" | "totalAmount" | "serviceConfirmedAt" | "arrivedAt" | "estimatedDurationMinutes" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
 export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.Booking$customerArgs<ExtArgs>
   service?: boolean | Prisma.Booking$serviceArgs<ExtArgs>
@@ -2195,6 +2248,7 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     customerId: string | null
     serviceId: string | null
     technicianId: string | null
+    customerEmail: string | null
     primaryService: string
     extraServices: runtime.JsonValue | null
     vehicle: string
@@ -2650,6 +2704,7 @@ export interface BookingFieldRefs {
   readonly customerId: Prisma.FieldRef<"Booking", 'String'>
   readonly serviceId: Prisma.FieldRef<"Booking", 'String'>
   readonly technicianId: Prisma.FieldRef<"Booking", 'String'>
+  readonly customerEmail: Prisma.FieldRef<"Booking", 'String'>
   readonly primaryService: Prisma.FieldRef<"Booking", 'String'>
   readonly extraServices: Prisma.FieldRef<"Booking", 'Json'>
   readonly vehicle: Prisma.FieldRef<"Booking", 'String'>

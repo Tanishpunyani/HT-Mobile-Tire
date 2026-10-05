@@ -122,7 +122,7 @@ export async function GET(
       bookingId: booking.id,
       customerName: booking.customer?.name || "Valued Customer",
       customerPhone: booking.customer?.phone || "N/A",
-      customerEmail: booking.customer?.email,
+      customerEmail: booking.customerEmail || undefined,
       vehicle: booking.vehicle,
       location: booking.formattedAddress || booking.location,
       primaryService: primaryServiceName,

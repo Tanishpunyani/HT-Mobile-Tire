@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 import { logger } from "@/lib/logger";
+import { resolveCustomerNotificationEmail, resolveBookingCustomerEmail } from "@/lib/notifications/recipients";
 import {
   dispatchEmailDirect as dispatchEmailDirectService,
   sendEmailDirect as sendEmailDirectService,
@@ -100,6 +101,7 @@ export type NotificationType =
 
 export interface BookingNotificationPayload {
   id: string;
+  customerEmail?: string | null;
   vehicle: string;
   location: string;
   formattedAddress?: string | null;
@@ -523,7 +525,7 @@ export async function sendStatusUpdate({
   newStatus: string;
   technicianNotes?: string;
 }): Promise<{ success: boolean; results?: unknown[]; error?: string }> {
-  const customerEmail = booking.customer?.email;
+  const customerEmail = resolveBookingCustomerEmail(booking.customerEmail);
   const dispatchPromises: Promise<unknown>[] = [];
 
   // 1. Admin status alert email
@@ -536,7 +538,11 @@ export async function sendStatusUpdate({
   );
 
   // 2. Customer status update email (if customer email is available and not a terminal event)
-  if (customerEmail) {
+  // CRITICAL RULE: If newStatus is 'confirmed', customer confirmation requires technicianId !== null
+  const shouldSkipCustomerConfirmed =
+    newStatus === "confirmed" && !(booking as any).technicianId;
+
+  if (customerEmail && !shouldSkipCustomerConfirmed) {
     const statusDescriptions: Record<string, { title: string; color: string; message: string }> = {
       confirmed: {
         title: "Booking Confirmed & Technician Assigned",

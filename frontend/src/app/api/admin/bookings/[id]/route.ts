@@ -151,21 +151,27 @@ export async function PATCH(
     if (!isNoop) {
       try {
         if (status === "confirmed") {
-          await sendCustomerBookingConfirmedAlert({
-            id: updatedBooking.id,
-            vehicle: updatedBooking.vehicle,
-            location: updatedBooking.location,
-            bookingDate: updatedBooking.bookingDate,
-            bookingTime: updatedBooking.bookingTime,
-            status: updatedBooking.status,
-            primaryService: updatedBooking.primaryService,
-            customer: updatedBooking.customer,
-            service: updatedBooking.service,
-          });
+          // STEP 10 & 11: Confirmation rule: ONLY send customer confirmation when BOTH confirmed and technician assigned
+          if (updatedBooking.technicianId && updatedBooking.customerEmail) {
+            await sendCustomerBookingConfirmedAlert({
+              id: updatedBooking.id,
+              customerEmail: updatedBooking.customerEmail,
+              vehicle: updatedBooking.vehicle,
+              location: updatedBooking.location,
+              bookingDate: updatedBooking.bookingDate,
+              bookingTime: updatedBooking.bookingTime,
+              status: updatedBooking.status,
+              primaryService: updatedBooking.primaryService,
+              customer: updatedBooking.customer,
+              service: updatedBooking.service,
+              technician: updatedBooking.technician,
+            });
+          }
         } else {
           await sendStatusUpdate({
             booking: {
               id: updatedBooking.id,
+              customerEmail: updatedBooking.customerEmail,
               vehicle: updatedBooking.vehicle,
               location: updatedBooking.location,
               bookingDate: updatedBooking.bookingDate,

@@ -118,9 +118,43 @@ export function resolveAdminNotificationEmails(): string[] {
   return valid.length > 0 ? valid : ["admin@mobiletire.clinic"];
 }
 
+/**
+ * Resolves the authoritative customer notification email specifically for a Booking.
+ * Strictly checks booking.customerEmail (or direct email string).
+ * NEVER falls back to Customer.email, User.email, or admin email.
+ * If customerEmail is missing, empty, or invalid, returns null.
+ */
+export function resolveBookingCustomerEmail(
+  source?: string | { customerEmail?: string | null } | null
+): string | null {
+  if (!source) {
+    return null;
+  }
+
+  let rawEmail: string | null = null;
+  if (typeof source === "string") {
+    rawEmail = source.trim();
+  } else if (typeof source === "object") {
+    rawEmail = source.customerEmail?.trim() || null;
+  }
+
+  if (
+    !rawEmail ||
+    rawEmail === "N/A" ||
+    rawEmail === "undefined" ||
+    rawEmail === "null"
+  ) {
+    return null;
+  }
+
+  const cleaned = rawEmail.toLowerCase().trim();
+  return EMAIL_REGEX.test(cleaned) ? cleaned : null;
+}
+
 export type CustomerEmailSource =
   | string
   | {
+      customerEmail?: string | null;
       email?: string | null;
       customer?: { email?: string | null } | null;
       user?: { email?: string | null } | null;
@@ -130,8 +164,10 @@ export type CustomerEmailSource =
 
 /**
  * Resolves and validates customer email address from string or booking/user entity objects.
+ * For Booking objects (having customerEmail property): ONLY customerEmail is authoritative.
+ * For non-booking entities: falls back to direct email, customer.email, user.email.
  *
- * Safe: returns null on missing/invalid email, never throws.
+ * Safe: returns null on missing/invalid email, never throws, and NEVER falls back to admin email.
  */
 export function resolveCustomerNotificationEmail(
   source?: CustomerEmailSource
@@ -145,11 +181,18 @@ export function resolveCustomerNotificationEmail(
   if (typeof source === "string") {
     rawEmail = source.trim();
   } else if (typeof source === "object") {
-    rawEmail =
-      source.email?.trim() ||
-      source.customer?.email?.trim() ||
-      source.user?.email?.trim() ||
-      null;
+    // If source represents a booking notification (i.e. has "customerEmail" property):
+    // Strict isolation rule: For bookings, ONLY customerEmail is authoritative.
+    // If customerEmail is null or empty, DO NOT fall back to customer.email or user.email.
+    if ("customerEmail" in source) {
+      rawEmail = source.customerEmail?.trim() || null;
+    } else {
+      rawEmail =
+        source.email?.trim() ||
+        source.customer?.email?.trim() ||
+        source.user?.email?.trim() ||
+        null;
+    }
   }
 
   if (

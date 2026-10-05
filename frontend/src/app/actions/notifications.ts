@@ -37,6 +37,7 @@ export async function notifyBookingCreatedAction(bookingId: string) {
       bookingTime: booking.bookingTime,
       message: booking.message,
       status: booking.status,
+      customerEmail: booking.customerEmail,
       customer: booking.customer,
       service: booking.service,
     };
@@ -120,6 +121,7 @@ export async function notifyStatusUpdateAction({
       bookingTime: booking.bookingTime,
       message: booking.message,
       status: booking.status,
+      customerEmail: booking.customerEmail,
       customer: booking.customer,
       service: booking.service,
     };

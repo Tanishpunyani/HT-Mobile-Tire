@@ -44,14 +44,14 @@ export function runEmailLifecycleRewiringUnitTests() {
   const contactApiSrc = fs.readFileSync(CONTACT_API_PATH, "utf-8");
 
   describe("Phase 10C.4: Customer Email Lifecycle Wiring", () => {
-    test("1. Booking Received delegates to sendCustomerBookingReceivedEmail", () => {
+    test("1. Booking Received delegates to sendCustomerBookingReceivedEmail (creation sends admin only)", () => {
       assert(
         notifSrc.includes("return sendCustomerBookingReceivedEmail(booking);"),
         "sendBookingConfirmation must delegate to sendCustomerBookingReceivedEmail"
       );
       assert(
-        bookingsApiSrc.includes("sendBookingConfirmation"),
-        "POST /api/bookings must trigger booking confirmation"
+        bookingsApiSrc.includes("sendAdminBookingCreatedEmail"),
+        "POST /api/bookings must trigger admin booking created alert"
       );
     });
 

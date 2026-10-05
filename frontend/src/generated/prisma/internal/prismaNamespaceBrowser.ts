@@ -130,6 +130,7 @@ export const BookingScalarFieldEnum = {
   customerId: 'customerId',
   serviceId: 'serviceId',
   technicianId: 'technicianId',
+  customerEmail: 'customerEmail',
   primaryService: 'primaryService',
   extraServices: 'extraServices',
   vehicle: 'vehicle',

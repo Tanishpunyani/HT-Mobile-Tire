@@ -6,6 +6,7 @@ import { generateQuotePdf, QuotePdfData } from "@/lib/receipts";
 import {
   resolveAdminNotificationEmail,
   resolveCustomerNotificationEmail,
+  resolveBookingCustomerEmail,
   CustomerEmailSource,
 } from "@/lib/notifications/recipients";
 import {
@@ -315,6 +316,7 @@ export async function sendEmailDirect(options: DispatchEmailOptions): Promise<Di
 
 export interface CustomerNotificationBookingPayload {
   id: string;
+  customerEmail?: string | null;
   vehicle: string;
   location: string;
   bookingDate?: Date | string | null;
@@ -346,7 +348,7 @@ export interface CustomerNotificationBookingPayload {
 export async function sendCustomerBookingReceivedEmail(
   booking: CustomerNotificationBookingPayload
 ): Promise<DispatchResult> {
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -382,7 +384,7 @@ export async function sendCustomerBookingReceivedEmail(
 export async function sendCustomerBookingConfirmedEmail(
   booking: CustomerNotificationBookingPayload
 ): Promise<DispatchResult> {
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -419,7 +421,7 @@ export async function sendCustomerTechnicianAssignedEmail(params: {
   technician?: { id?: string; name: string } | null;
 }): Promise<DispatchResult> {
   const { booking, technician } = params;
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -458,7 +460,7 @@ export async function sendCustomerTechnicianEnRouteEmail(params: {
   etaMinutes?: number | null;
 }): Promise<DispatchResult> {
   const { booking, etaMinutes } = params;
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -495,7 +497,7 @@ export async function sendCustomerTechnicianEnRouteEmail(params: {
 export async function sendCustomerTechnicianArrivedEmail(
   booking: CustomerNotificationBookingPayload
 ): Promise<DispatchResult> {
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -529,7 +531,7 @@ export async function sendCustomerTechnicianArrivedEmail(
 export async function sendCustomerServiceStartedEmail(
   booking: CustomerNotificationBookingPayload
 ): Promise<DispatchResult> {
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -566,7 +568,7 @@ export async function sendCustomerServiceCompletedEmail(params: {
   pdfBytes?: Uint8Array;
 }): Promise<DispatchResult> {
   const { booking, quoteData } = params;
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -626,7 +628,7 @@ export async function sendCustomerBookingCancelledEmail(params: {
   cancelledBy?: string | null;
 }): Promise<DispatchResult> {
   const { booking, reason, cancelledBy } = params;
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -662,7 +664,7 @@ export async function sendCustomerPaymentReceivedEmail(params: {
   paymentMethod?: string;
 }): Promise<DispatchResult> {
   const { booking, amountPaid, paymentMethod } = params;
-  const email = resolveCustomerNotificationEmail(booking);
+  const email = resolveBookingCustomerEmail(booking);
   if (!email) {
     return { success: true, skipped: true, error: "no_customer_email" };
   }
@@ -711,7 +713,7 @@ export interface SendQuoteEmailParams {
 
 export async function sendQuoteReadyEmail(params: SendQuoteEmailParams): Promise<DispatchResult> {
   const shortId = params.bookingId.slice(-6).toUpperCase();
-  const customerEmail = resolveCustomerNotificationEmail(params.customerEmail);
+  const customerEmail = resolveBookingCustomerEmail(params.customerEmail);
 
   if (!customerEmail) {
     return { success: true, skipped: true, error: "invalid_customer_email" };
@@ -863,7 +865,7 @@ export async function sendAdminBookingCreatedEmail(
     bookingId: booking.id,
     customerName: booking.customer?.name,
     customerPhone: booking.customer?.phone,
-    customerEmail: booking.customer?.email,
+    customerEmail: booking.customerEmail || booking.customer?.email,
     serviceName,
     vehicle: booking.vehicle,
     location: booking.location,

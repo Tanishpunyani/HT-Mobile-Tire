@@ -61,24 +61,31 @@ export async function confirmBookingAction(bookingId: string) {
       include: {
         customer: true,
         service: true,
+        technician: true,
       },
     });
 
-    // Non-blocking Customer Booking Confirmation SMS (Phase 3C)
-    try {
-      await sendCustomerBookingConfirmedAlert({
-        id: updated.id,
-        vehicle: updated.vehicle,
-        location: updated.location,
-        bookingDate: updated.bookingDate,
-        bookingTime: updated.bookingTime,
-        status: updated.status,
-        primaryService: updated.primaryService,
-        customer: updated.customer,
-        service: updated.service,
-      });
-    } catch (notifErr) {
-      console.warn("Failed to dispatch customer booking confirmation SMS:", notifErr);
+    // STEP 10 & 11: Confirmation rule: ONLY send customer confirmation when BOTH:
+    // 1. status === "confirmed"
+    // 2. technicianId !== null
+    if (updated.technicianId && updated.customerEmail) {
+      try {
+        await sendCustomerBookingConfirmedAlert({
+          id: updated.id,
+          customerEmail: updated.customerEmail,
+          vehicle: updated.vehicle,
+          location: updated.location,
+          bookingDate: updated.bookingDate,
+          bookingTime: updated.bookingTime,
+          status: updated.status,
+          primaryService: updated.primaryService,
+          customer: updated.customer,
+          service: updated.service,
+          technician: updated.technician,
+        });
+      } catch (notifErr) {
+        console.warn("Failed to dispatch customer booking confirmation:", notifErr);
+      }
     }
 
     revalidatePath("/admin/bookings");
@@ -134,6 +141,7 @@ export async function startServiceAction(bookingId: string) {
     try {
       await sendCustomerServiceStartedAlert({
         id: updated.id,
+        customerEmail: updated.customerEmail,
         vehicle: updated.vehicle,
         location: updated.location,
         bookingDate: updated.bookingDate,
@@ -204,6 +212,7 @@ export async function cancelBookingAction(bookingId: string, reason?: string) {
     try {
       await sendCustomerBookingCancelledAlert({
         id: booking.id,
+        customerEmail: booking.customerEmail,
         vehicle: booking.vehicle,
         location: booking.location,
         bookingDate: booking.bookingDate,
@@ -301,11 +310,28 @@ export async function assignTechnicianAction(bookingId: string, technicianId: st
       },
     });
 
-    // Phase 6H (G-03.C): Trigger canonical BOOKING_CONFIRMED notification exactly once if auto-confirmed
-    if (isAutoConfirming) {
+    // Step 10, 11, 12: Enforce Confirmation Rule: status === "confirmed" && technicianId !== null
+    // If confirmation has not been sent yet (either auto-confirmed from pending or previously confirmed without tech),
+    // dispatch the canonical confirmation email now that technician is assigned.
+    let existingConfirmation = null;
+    try {
+      existingConfirmation = await prisma.notificationLog.findFirst({
+        where: {
+          channel: "email",
+          entityId: updated.id,
+          type: "BOOKING_CONFIRMED",
+          status: "SENT",
+        },
+      });
+    } catch (logErr) {
+      console.warn("Failed to check existing confirmation log:", logErr);
+    }
+
+    if (!existingConfirmation && updated.status === "confirmed" && updated.customerEmail) {
       try {
         await sendCustomerBookingConfirmedAlert({
           id: updated.id,
+          customerEmail: updated.customerEmail,
           vehicle: updated.vehicle,
           location: updated.location,
           bookingDate: updated.bookingDate,
@@ -314,34 +340,40 @@ export async function assignTechnicianAction(bookingId: string, technicianId: st
           primaryService: updated.primaryService,
           customer: updated.customer,
           service: updated.service,
+          technician: {
+            id: technician.id,
+            name: technician.name,
+            phone: technician.phone,
+          },
         });
       } catch (notifErr) {
-        console.warn("Failed to dispatch customer booking confirmation SMS during auto-confirm:", notifErr);
+        console.warn("Failed to dispatch customer booking confirmation during technician assignment:", notifErr);
       }
-    }
-
-    // Non-blocking Customer Technician Assigned SMS (Phase 3C)
-    try {
-      await sendCustomerTechnicianAssignedAlert({
-        booking: {
-          id: updated.id,
-          vehicle: updated.vehicle,
-          location: updated.location,
-          bookingDate: updated.bookingDate,
-          bookingTime: updated.bookingTime,
-          status: updated.status,
-          primaryService: updated.primaryService,
-          customer: updated.customer,
-          service: updated.service,
-        },
-        technician: {
-          id: technician.id,
-          name: technician.name,
-          phone: technician.phone,
-        },
-      });
-    } catch (notifErr) {
-      console.warn("Failed to dispatch customer technician assigned SMS:", notifErr);
+    } else if (existingConfirmation && updated.customerEmail) {
+      // Reassignment to another technician: send technician assigned update
+      try {
+        await sendCustomerTechnicianAssignedAlert({
+          booking: {
+            id: updated.id,
+            customerEmail: updated.customerEmail,
+            vehicle: updated.vehicle,
+            location: updated.location,
+            bookingDate: updated.bookingDate,
+            bookingTime: updated.bookingTime,
+            status: updated.status,
+            primaryService: updated.primaryService,
+            customer: updated.customer,
+            service: updated.service,
+          },
+          technician: {
+            id: technician.id,
+            name: technician.name,
+            phone: technician.phone,
+          },
+        });
+      } catch (notifErr) {
+        console.warn("Failed to dispatch customer technician assigned alert:", notifErr);
+      }
     }
 
     revalidatePath("/admin/bookings");

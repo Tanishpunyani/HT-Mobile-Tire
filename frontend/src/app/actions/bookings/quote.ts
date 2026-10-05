@@ -68,13 +68,14 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
 
     // Generate Quote / Invoice PDF once
     let pdfBytes: Uint8Array | undefined;
+    const authoritativeCustomerEmail = booking.customerEmail;
     try {
       pdfBytes = await generateQuotePdf({
         quoteNumber: `INV-${booking.id.substring(0, 8).toUpperCase()}`,
         bookingId: booking.id,
         customerName: booking.customer?.name || "Valued Customer",
         customerPhone: booking.customer?.phone || "",
-        customerEmail: booking.customer?.email,
+        customerEmail: authoritativeCustomerEmail,
         vehicle: booking.vehicle || "Vehicle",
         location: booking.formattedAddress || booking.location || "Dallas, TX",
         primaryService: booking.primaryService || "Flat Tire Repair",
@@ -98,6 +99,7 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
         bookingTime: booking.bookingTime,
         status: "completed",
         primaryService: booking.primaryService,
+        customerEmail: authoritativeCustomerEmail,
         customer: booking.customer,
         totalAmount,
         pdfBytes,
@@ -112,7 +114,7 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
         bookingId: booking.id,
         customerName: booking.customer?.name || "Customer",
         customerPhone: booking.customer?.phone,
-        customerEmail: booking.customer?.email,
+        customerEmail: authoritativeCustomerEmail,
         serviceName: booking.primaryService || "Mobile Tire Service",
         vehicle: booking.vehicle || "Vehicle",
         basePrice: validated.basePrice,
@@ -189,6 +191,7 @@ export async function markBookingPaidAction(bookingId: string) {
         bookingTime: updated.bookingTime,
         status: updated.status,
         primaryService: updated.primaryService,
+        customerEmail: updated.customerEmail,
         customer: updated.customer,
         service: updated.service,
       });

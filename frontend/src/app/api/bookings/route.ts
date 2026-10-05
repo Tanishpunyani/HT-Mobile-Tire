@@ -4,7 +4,7 @@ import { getAuthorizedCustomerIdsForUser } from "@/lib/auth";
 import { serializeDecimal } from "@/lib/utils/serialize-prisma";
 import { calculateCustomerEta } from "@/lib/utils/eta";
 import { bookingSchema } from "@/lib/validations/booking";
-import { sendBookingConfirmation, sendAdminBookingCreatedEmail } from "@/lib/notifications";
+import { sendAdminBookingCreatedEmail } from "@/lib/notifications";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
@@ -171,6 +171,7 @@ export async function POST(request: Request) {
       const createdBooking = await tx.booking.create({
         data: {
           customerId: customer.id,
+          customerEmail: email ? email.trim().toLowerCase() : null,
           serviceId: selectedService.id,
           primaryService: selectedService.name,
           vehicle,
@@ -203,21 +204,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // 5. Automated booking alerts (non-blocking)
+    // 5. Automated booking alerts (Step 8: New booking is ADMIN ONLY)
     try {
-      await sendBookingConfirmation({
-        id: booking.id,
-        vehicle: booking.vehicle,
-        location: booking.location,
-        bookingDate: booking.bookingDate,
-        bookingTime: booking.bookingTime,
-        message: booking.message,
-        status: booking.status,
-        customer: booking.customer,
-        service: booking.service,
-      });
       await sendAdminBookingCreatedEmail({
         id: booking.id,
+        customerEmail: booking.customerEmail || booking.customer?.email,
         vehicle: booking.vehicle,
         location: booking.location,
         bookingDate: booking.bookingDate,

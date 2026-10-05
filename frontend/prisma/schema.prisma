@@ -61,6 +61,7 @@ model Booking {
   customerId       String?             @map("customer_id") @db.Uuid
   serviceId        String?             @map("service_id") @db.Uuid
   technicianId     String?             @map("technician_id") @db.Uuid
+  customerEmail    String?             @map("customer_email")
   primaryService   String              @default("Flat Tire Repair") @map("primary_service")
   extraServices    Json?               @map("extra_services") // Array of { name: string, price: number }
   vehicle          String

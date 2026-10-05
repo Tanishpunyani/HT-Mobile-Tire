@@ -21,6 +21,7 @@ import { runPhase4B3PhonePersistenceTests } from "./phase-4b3-phone-persistence.
 import { runEmailServiceUnitTests } from "./email-service.test.mjs";
 import { runEmailLifecycleRewiringUnitTests } from "./email-lifecycle-rewiring.test.mjs";
 import { runEmergencyNotificationRenderingTests } from "./emergency-notification-rendering.test.mjs";
+import { runEmailNotificationFixTests } from "./email-notification-fix.test.mjs";
 
 console.log("\x1b[1m\x1b[35m==================================================\x1b[0m");
 console.log("\x1b[1m\x1b[35m   RUNNING UNIT TEST SUITE (PHASE 7 & 10)        \x1b[0m");
@@ -45,5 +46,6 @@ runPhase4B3PhonePersistenceTests();
 runEmailServiceUnitTests();
 runEmailLifecycleRewiringUnitTests();
 runEmergencyNotificationRenderingTests();
+runEmailNotificationFixTests();
 
 printSummaryAndExit();
