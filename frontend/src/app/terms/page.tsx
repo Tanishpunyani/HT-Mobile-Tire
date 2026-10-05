@@ -3,8 +3,8 @@ import Container from "../components/Container";
 import SectionHeading from "../components/SectionHeading";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | HT Mobile Tires",
-  description: "Terms and conditions for scheduling and receiving mobile tire services from HT Mobile Tires.",
+  title: "Terms of Service | HT Mobile Tire",
+  description: "Terms and conditions for scheduling and receiving mobile tire services from HT Mobile Tire.",
 };
 
 export default function TermsPage() {
@@ -20,7 +20,7 @@ export default function TermsPage() {
 
           <div className="mt-8 space-y-6 text-sm leading-7 text-text-secondary">
             <p>
-              Welcome to HT Mobile Tires. By booking appointments, requesting emergency roadside aid, or using our mobile tire services, you agree to comply with and be bound by the following terms and conditions.
+              Welcome to HT Mobile Tire. By booking appointments, requesting emergency roadside aid, or using our mobile tire services, you agree to comply with and be bound by the following terms and conditions.
             </p>
 
             <h3 className="text-base font-bold text-foreground">1. Mobile Service Delivery & Accessibility</h3>

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOrCreateCustomerForUser, getAuthorizedCustomerIdsForUser } from "@/lib/auth";
 import { validateBookingTransition } from "@/lib/bookings/state-machine";
 import { checkSlotCapacity } from "@/lib/bookings/availability";
+import { isSlotInPast, getTorontoTodayString } from "@/lib/utils/timezone";
 import {
   sendBookingConfirmation,
   sendAdminBookingCreatedAlert,
@@ -128,12 +129,13 @@ export async function createBookingRequestAction(formData: {
       customerId = customer.id;
     }
 
-    // 2. Validate and Parse Date & Time
+    // 2. Validate and Parse Date & Time using America/Toronto
     const rawDateStr = String(formData.scheduledDate || formData.bookingDate || "").trim();
     const rawTimeStr = String(formData.scheduledTime || formData.bookingTime || "").trim();
 
     const now = new Date();
     const todayUtc = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const todayToronto = getTorontoTodayString();
 
     let bookingDateObj: Date;
     if (rawDateStr) {
@@ -150,16 +152,17 @@ export async function createBookingRequestAction(formData: {
       ) {
         return { success: false, error: "Invalid calendar date provided." };
       }
-      if (candidateDate < todayUtc) {
+      if (candidateDate < todayUtc || rawDateStr < todayToronto) {
         return { success: false, error: "Preferred appointment date cannot be in the past." };
       }
       bookingDateObj = candidateDate;
     } else {
-      bookingDateObj = todayUtc;
+      const [year, month, day] = todayToronto.split("-").map(Number);
+      bookingDateObj = new Date(Date.UTC(year, month - 1, day));
     }
 
-    let bookingTimeObj: Date = now;
-    let scheduledTimeStr = "09:00 AM";
+    let bookingTimeObj: Date = new Date();
+    let scheduledTimeStr = "08:00 AM";
 
     if (rawTimeStr) {
       const match12 = rawTimeStr.match(/^([0]?[1-9]|1[0-2]):([0-5][0-9])\s*(AM|PM)$/i);
@@ -169,7 +172,7 @@ export async function createBookingRequestAction(formData: {
         return { success: false, error: "Invalid appointment time format." };
       }
 
-      let hours = 9;
+      let hours = 8;
       let minutes = 0;
 
       if (match12) {
@@ -191,17 +194,9 @@ export async function createBookingRequestAction(formData: {
       bookingTimeObj = new Date(Date.UTC(1970, 0, 1, hours, minutes, 0));
     }
 
-    // 3. Capacity Check
-    const capacityCheck = await checkSlotCapacity(prisma, {
-      bookingDate: bookingDateObj,
-      bookingTime: scheduledTimeStr,
-    });
-
-    if (!capacityCheck.available) {
-      return {
-        success: false,
-        error: "Selected time slot is no longer available. Please select another slot.",
-      };
+    const effectiveDateStr = rawDateStr || todayToronto;
+    if (isSlotInPast(effectiveDateStr, scheduledTimeStr)) {
+      return { success: false, error: "Selected time has already passed." };
     }
 
     const primaryService = formData.service || formData.serviceType || "Flat Tire Repair";
@@ -210,31 +205,71 @@ export async function createBookingRequestAction(formData: {
       (formData.vehicleDetails
         ? `${formData.vehicleDetails.year} ${formData.vehicleDetails.make} ${formData.vehicleDetails.model}`
         : "Standard Vehicle");
-    const locStr = formData.formattedAddress || formData.address || formData.location || "Dallas, TX";
+    const locStr = formData.formattedAddress || formData.address || formData.location || "Customer Location";
 
-    // 4. Create Booking with immutable booking-level customerEmail
-    const booking = await prisma.booking.create({
-      data: {
-        customerId,
-        customerEmail: normalizedEmail,
-        serviceId: formData.serviceId || null,
-        primaryService,
-        bookingDate: bookingDateObj,
-        bookingTime: bookingTimeObj,
-        vehicle: vehicleStr,
-        location: locStr,
-        formattedAddress: formData.formattedAddress || null,
-        latitude: formData.latitude ?? null,
-        longitude: formData.longitude ?? null,
-        city: formData.city ?? null,
-        state: formData.state ?? null,
-        zipCode: formData.zipCode ?? null,
-        tireSize: formData.tireSize ?? null,
-        message: formData.message || formData.notes || null,
-        status: "pending",
-        paymentStatus: "pending",
+    // 3. Concurrency Protection & Capacity Check + Booking Creation in Single Transaction
+    const txResult = await prisma.$transaction(
+      async (tx) => {
+        try {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(74629471)`;
+        } catch {
+          // Fallback if DB/mock does not support advisory lock
+        }
+
+        const capacityCheck = await checkSlotCapacity(tx, {
+          bookingDate: bookingDateObj,
+          bookingTime: scheduledTimeStr,
+          durationMinutes: 120,
+          maxCapacity: 1,
+        });
+
+        if (!capacityCheck.available) {
+          return {
+            success: false as const,
+            error: "Selected time slot is no longer available. Please select another slot.",
+          };
+        }
+
+        const createdBooking = await tx.booking.create({
+          data: {
+            customerId,
+            customerEmail: normalizedEmail,
+            serviceId: formData.serviceId || null,
+            primaryService,
+            bookingDate: bookingDateObj,
+            bookingTime: bookingTimeObj,
+            estimatedDurationMinutes: 120,
+            vehicle: vehicleStr,
+            location: locStr,
+            formattedAddress: formData.formattedAddress || null,
+            latitude: formData.latitude ?? null,
+            longitude: formData.longitude ?? null,
+            city: formData.city ?? null,
+            state: formData.state ?? null,
+            zipCode: formData.zipCode ?? null,
+            tireSize: formData.tireSize ?? null,
+            message: formData.message || formData.notes || null,
+            status: "pending",
+            paymentStatus: "pending",
+          },
+        });
+
+        return { success: true as const, booking: createdBooking };
       },
-    });
+      {
+        maxWait: 15000,
+        timeout: 20000,
+      }
+    );
+
+    if (!txResult.success || !txResult.booking) {
+      return {
+        success: false,
+        error: txResult.error || "Selected time slot is no longer available. Please select another slot.",
+      };
+    }
+
+    const booking = txResult.booking;
 
     // 5. Non-blocking Notification Dispatch (Step 8: New booking is ADMIN ONLY)
     const notificationPayload = {

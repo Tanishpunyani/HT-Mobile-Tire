@@ -257,7 +257,7 @@ function TechnicianTrackingContent({ bookingId }: { bookingId: string }) {
         if (code === 1 /* PERMISSION_DENIED */) {
           console.warn("[GPS] Location permission denied by technician/browser");
           userMessage =
-            "Location access is blocked. Allow location permission for HT Mobile Tires in your browser/device settings, then try again.";
+            "Location access is blocked. Allow location permission for HT Mobile Tire in your browser/device settings, then try again.";
           setIsSharing(false);
           if (watchIdRef.current !== null) {
             navigator.geolocation.clearWatch(watchIdRef.current);

@@ -154,9 +154,7 @@ export default function LiveVanTracker({
               Service Completed — Thank You!
             </h4>
             <p className="text-xs text-emerald-800 mt-0.5">
-              {trackingData?.technician?.name
-                ? `${trackingData.technician.name} has finished mounting, balancing, and calibrating your tires.`
-                : "Your technician has completed the service."}{" "}
+              Your HT Mobile Technician has finished mounting, balancing, and calibrating your tires.{" "}
               You can download your receipt and leave a review below.
             </p>
           </div>

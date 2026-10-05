@@ -15,8 +15,8 @@ import { getAllCities } from "@/lib/cities";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 
 export const metadata: Metadata = {
-  title: "Service Areas | HT Mobile Tires Dallas-Fort Worth",
-  description: "Explore our mobile tire service coverage areas across Dallas, Fort Worth, Plano, Arlington, Irving, Garland, and Frisco. 25-35 minute average mobile response.",
+  title: "Service Areas | HT Mobile Tire",
+  description: "Explore our mobile tire service coverage areas across Brampton, Toronto, Mississauga, Etobicoke, North York, Vaughan, Woodbridge, Milton, and Georgetown.",
   alternates: {
     canonical: "https://mobiletire.clinic/service-areas",
   },
@@ -33,7 +33,7 @@ export default function ServiceAreasPage() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3.5 py-1 text-xs font-bold text-primary border border-primary/30">
               <Sparkles size={14} />
-              DFW Metroplex Coverage
+              Ontario Service Coverage
             </div>
 
             <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
@@ -41,7 +41,7 @@ export default function ServiceAreasPage() {
             </h1>
 
             <p className="mt-6 text-base leading-8 text-slate-300 sm:text-lg">
-              We bring professional tire repair, mounting, and laser balancing directly to your vehicle anywhere in the Dallas-Fort Worth metropolitan area.
+              We bring professional tire repair, mounting, and balancing directly to your vehicle across our confirmed service locations.
             </p>
           </div>
         </Container>
@@ -64,7 +64,7 @@ export default function ServiceAreasPage() {
                         {city.name}, {city.state}
                       </h2>
                       <p className="mt-0.5 text-xs text-text-secondary">
-                        {city.neighborhoods.length} Primary Neighborhoods
+                        Dedicated Mobile Dispatch
                       </p>
                     </div>
 
@@ -77,30 +77,23 @@ export default function ServiceAreasPage() {
                   <div className="mt-5 space-y-3 text-xs text-slate-600">
                     <div className="flex items-center gap-2">
                       <Clock3 size={15} className="text-primary shrink-0" />
-                      <span>Average Arrival: <strong>{city.averageResponseTime}</strong></span>
+                      <span>Service: <strong>{city.averageResponseTime}</strong></span>
                     </div>
 
                     <div className="flex items-start gap-2">
                       <ShieldCheck size={15} className="text-green-600 shrink-0 mt-0.5" />
-                      <span>Key Areas: {city.neighborhoods.slice(0, 3).join(", ")}</span>
+                      <span>Direct On-Site Van Service</span>
                     </div>
                   </div>
 
-                  {/* Zip code sample */}
-                  <div className="mt-5 flex flex-wrap gap-1.5">
-                    {city.zipCodes.slice(0, 4).map((zip) => (
-                      <span
-                        key={zip}
-                        className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-600"
-                      >
-                        {zip}
-                      </span>
+                  {/* Highlights list */}
+                  <div className="mt-5 space-y-1.5 text-xs text-slate-500">
+                    {city.serviceHighlights.slice(0, 2).map((highlight, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5">
+                        <span className="text-primary">•</span>
+                        <span>{highlight}</span>
+                      </div>
                     ))}
-                    {city.zipCodes.length > 4 && (
-                      <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-500">
-                        +{city.zipCodes.length - 4} more
-                      </span>
-                    )}
                   </div>
                 </div>
 
@@ -124,13 +117,13 @@ export default function ServiceAreasPage() {
               <div>
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-red-600/30 px-3 py-1 text-xs font-bold text-red-400 border border-red-500/40">
                   <Siren size={13} />
-                  24/7 Roadside Assistance
+                  Roadside Assistance
                 </div>
                 <h3 className="mt-3 text-2xl font-bold text-white sm:text-3xl">
-                  Stuck On A DFW Highway Right Now?
+                  Need Mobile Tire Assistance Right Now?
                 </h3>
                 <p className="mt-2 text-sm text-slate-300 max-w-xl">
-                  We dispatch emergency roadside tire vans with heavy-duty jacks, replacement tires, and laser balancing 24 hours a day, 7 days a week.
+                  We dispatch mobile tire vans with jacks, replacement tires, and computerized balancing tools directly to your vehicle.
                 </p>
               </div>
 

@@ -56,7 +56,7 @@ export async function generateQuotePdf(data: QuotePdfData): Promise<Uint8Array> 
   });
 
   // Brand Header
-  page.drawText("HT MOBILE TIRES", {
+  page.drawText("HT MOBILE TIRE", {
     x: 40,
     y: height - 55,
     size: 22,

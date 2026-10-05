@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock3, ShieldCheck, Zap, Star } from "lucide-react";
+import { ArrowRight, Clock3, ShieldCheck, Zap } from "lucide-react";
 import Container from "./Container";
 
 export default function Hero() {
@@ -14,18 +14,6 @@ export default function Hero() {
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary">
                 <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
                 MOBILE TIRE SERVICE
-              </div>
-
-              <div
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-sm"
-                aria-label="Rated 4.9 out of 5 stars based on 200+ verified customer reviews"
-              >
-                <div className="flex items-center gap-0.5" aria-hidden="true">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} size={13} className="fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <span><strong>4.9/5</strong> (200+ Verified Reviews)</span>
               </div>
             </div>
 
@@ -97,7 +85,7 @@ export default function Hero() {
               <Image
 
                 src="/images/hero-mobile-tire-clinic.webp"
-                alt="HT Mobile Tires technician providing professional tire service"
+                alt="HT Mobile Tire technician providing professional tire service"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 50vw"

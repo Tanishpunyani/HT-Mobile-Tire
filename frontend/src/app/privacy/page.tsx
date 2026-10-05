@@ -4,8 +4,8 @@ import SectionHeading from "../components/SectionHeading";
 import { BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | HT Mobile Tires",
-  description: "Learn how HT Mobile Tires collects, protects, and uses customer information for mobile tire services.",
+  title: "Privacy Policy | HT Mobile Tire",
+  description: "Learn how HT Mobile Tire collects, protects, and uses customer information for mobile tire services.",
 };
 
 export default function PrivacyPage() {
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
           <div className="mt-8 space-y-6 text-sm leading-7 text-text-secondary">
             <p>
-              HT Mobile Tires (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) values your trust and is committed to protecting your personal information. This Privacy Policy describes our practices concerning data collection, usage, and disclosure when you use our website and mobile tire services.
+              HT Mobile Tire (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) values your trust and is committed to protecting your personal information. This Privacy Policy describes our practices concerning data collection, usage, and disclosure when you use our website and mobile tire services.
             </p>
 
             <h3 className="text-base font-bold text-foreground">1. Information We Collect</h3>

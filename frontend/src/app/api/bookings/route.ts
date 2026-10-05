@@ -7,6 +7,8 @@ import { bookingSchema } from "@/lib/validations/booking";
 import { sendAdminBookingCreatedEmail } from "@/lib/notifications";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
+import { checkSlotCapacity } from "@/lib/bookings/availability";
+import { isSlotInPast, getTorontoTodayString } from "@/lib/utils/timezone";
 
 export async function POST(request: Request) {
   try {
@@ -64,6 +66,64 @@ export async function POST(request: Request) {
       message,
     } = result.data;
 
+    const todayToronto = getTorontoTodayString();
+    const rawDateStr = date ? String(date).trim() : todayToronto;
+
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(rawDateStr)) {
+      return Response.json(
+        { success: false, error: "Invalid appointment date format. Expected YYYY-MM-DD." },
+        { status: 400 }
+      );
+    }
+    if (rawDateStr < todayToronto) {
+      return Response.json(
+        { success: false, error: "Preferred appointment date cannot be in the past." },
+        { status: 400 }
+      );
+    }
+
+    const rawTimeStr = time ? String(time).trim() : "08:00 AM";
+    const match12 = rawTimeStr.match(/^([0]?[1-9]|1[0-2]):([0-5][0-9])\s*(AM|PM)$/i);
+    const match24 = rawTimeStr.match(/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/);
+
+    if (!match12 && !match24) {
+      return Response.json(
+        { success: false, error: "Invalid appointment time format." },
+        { status: 400 }
+      );
+    }
+
+    let hours = 8;
+    let minutes = 0;
+    let scheduledTimeStr = "08:00 AM";
+
+    if (match12) {
+      let h = parseInt(match12[1], 10);
+      minutes = parseInt(match12[2], 10);
+      const meridiem = match12[3].toUpperCase();
+      if (meridiem === "PM" && h < 12) h += 12;
+      if (meridiem === "AM" && h === 12) h = 0;
+      hours = h;
+      scheduledTimeStr = `${match12[1].padStart(2, "0")}:${match12[2]} ${meridiem}`;
+    } else if (match24) {
+      hours = parseInt(match24[1], 10);
+      minutes = parseInt(match24[2], 10);
+      const meridiem = hours >= 12 ? "PM" : "AM";
+      const h12 = hours % 12 || 12;
+      scheduledTimeStr = `${String(h12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${meridiem}`;
+    }
+
+    const [year, month, day] = rawDateStr.split("-").map(Number);
+    const validDate = new Date(Date.UTC(year, month - 1, day));
+    const validTime = new Date(Date.UTC(1970, 0, 1, hours, minutes, 0));
+
+    if (isSlotInPast(rawDateStr, scheduledTimeStr)) {
+      return Response.json(
+        { success: false, error: "Selected time has already passed." },
+        { status: 400 }
+      );
+    }
+
     const email = user.email || "";
     const name =
       user.user_metadata?.full_name ||
@@ -79,6 +139,13 @@ export async function POST(request: Request) {
 
     // Execute atomic transaction for user/customer resolution and booking creation
     const { booking, errorResponse } = await prisma.$transaction(async (tx) => {
+      // Concurrency lock
+      try {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(74629471)`;
+      } catch {
+        // Fallback for non-postgres / mock DB
+      }
+
       // 1. Find or create User safely
       if (email) {
         await tx.user.upsert({
@@ -160,14 +227,26 @@ export async function POST(request: Request) {
         };
       }
 
-      const now = new Date();
-      const parsedDate = date ? new Date(`${date}T00:00:00`) : now;
-      const validDate = isNaN(parsedDate.getTime()) ? now : parsedDate;
-      const cleanTime = time && time.includes(":") ? (time.length === 5 ? time : time.slice(0, 5)) : null;
-      const parsedTime = cleanTime ? new Date(`1970-01-01T${cleanTime}:00`) : now;
-      const validTime = isNaN(parsedTime.getTime()) ? now : parsedTime;
+      // 4. Capacity & Overlap Check (maxCapacity: 1 for customer booking)
+      const capacityCheck = await checkSlotCapacity(tx, {
+        bookingDate: validDate,
+        bookingTime: scheduledTimeStr,
+        durationMinutes: 120,
+        maxCapacity: 1,
+      });
 
-      // 4. Create booking
+      if (!capacityCheck.available) {
+        return {
+          booking: null,
+          errorResponse: {
+            success: false,
+            error: "Selected time slot is no longer available. Please select another slot.",
+            status: 409,
+          },
+        };
+      }
+
+      // 5. Create booking atomically
       const createdBooking = await tx.booking.create({
         data: {
           customerId: customer.id,
@@ -178,6 +257,7 @@ export async function POST(request: Request) {
           location,
           bookingDate: validDate,
           bookingTime: validTime,
+          estimatedDurationMinutes: 120,
           message: message || null,
           status: "pending",
           paymentStatus: "pending",

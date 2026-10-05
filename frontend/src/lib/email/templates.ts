@@ -1,5 +1,5 @@
 export const BUSINESS_PHONE_DISPLAY =
-  process.env.NEXT_PUBLIC_BUSINESS_PHONE_DISPLAY || "(800) 555-TIRE (8473)";
+  process.env.NEXT_PUBLIC_BUSINESS_PHONE_DISPLAY || "+1 (647) 995-6665";
 
 export interface BrandedEmailLayoutOptions {
   badgeText: string;
@@ -15,7 +15,7 @@ export interface BrandedEmailLayoutOptions {
 }
 
 /**
- * Base responsive branded HTML layout wrapper for all HT Mobile Tires notification emails.
+ * Base responsive branded HTML layout wrapper for all HT Mobile Tire notification emails.
  * Table-based and inline-styled for universal email client compatibility (Apple Mail, Gmail, Outlook).
  */
 export function renderBrandedEmailLayout({
@@ -80,7 +80,7 @@ export function renderBrandedEmailLayout({
                 ${badgeText}
               </div>
               <h1 style="margin: 0 0 6px 0; color: #ffffff; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
-                HT Mobile Tires
+                HT Mobile Tire
               </h1>
               <p style="margin: 0; color: #94a3b8; font-size: 13px; font-weight: 500;">
                 ${subtitle}
@@ -99,13 +99,13 @@ export function renderBrandedEmailLayout({
             <td style="background-color: #f8fafc; padding: 24px 28px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; line-height: 1.5;">
               ${footerNotice ? `<p style="margin: 0 0 10px 0; color: #475569;">${footerNotice}</p>` : ""}
               <p style="margin: 0 0 6px 0; font-weight: 700; color: #334155;">
-                HT Mobile Tires &bull; Fast Roadside &amp; On-Site Tire Care
+                HT Mobile Tire &bull; Fast Roadside &amp; On-Site Tire Care
               </p>
               <p style="margin: 0 0 4px 0;">
                 Need immediate assistance or dispatch support? Call <strong><a href="tel:${BUSINESS_PHONE_DISPLAY.replace(/[^0-9+]/g, "")}" style="color: #0f172a; text-decoration: none;">${BUSINESS_PHONE_DISPLAY}</a></strong>
               </p>
               <p style="margin: 0; color: #94a3b8; font-size: 11px;">
-                &copy; ${new Date().getFullYear()} HT Mobile Tires. All rights reserved.
+                &copy; ${new Date().getFullYear()} HT Mobile Tire. All rights reserved.
               </p>
             </td>
           </tr>
@@ -202,15 +202,15 @@ export function renderBookingReceivedEmail(data: CustomerBookingTemplateData): {
   const dateStr = formatDisplayDate(data.bookingDate);
   const timeStr = formatDisplayTime(data.bookingTime);
 
-  const subject = `Booking Received: #${shortId} - HT Mobile Tires`;
-  const text = `HT Mobile Tires — Booking Received\n\nHi ${name},\n\nWe have received your mobile tire service request for booking #${shortId} (${data.serviceName}).\n\nVehicle: ${data.vehicle}\nLocation: ${data.location}\nScheduled: ${dateStr} at ${timeStr}\n\nOur dispatch team is allocating an equipped mobile technician van to your location.\n\nManage Booking: ${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=bookings"}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+  const subject = `Booking Received: #${shortId} - HT Mobile Tire`;
+  const text = `HT Mobile Tire — Booking Received\n\nHi ${name},\n\nWe have received your mobile tire service request for booking #${shortId} (${data.serviceName}).\n\nVehicle: ${data.vehicle}\nLocation: ${data.location}\nScheduled: ${dateStr} at ${timeStr}\n\nOur dispatch team is allocating an equipped mobile technician van to your location.\n\nManage Booking: ${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=bookings"}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
     <p style="font-size: 16px; margin-top: 0; color: #0f172a;">
       Hello <strong>${name}</strong>,
     </p>
     <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-      Thank you for choosing <strong>HT Mobile Tires</strong>! We have received your service request. Our central dispatch team is reviewing your schedule and allocating an equipped mobile service van.
+      Thank you for choosing <strong>HT Mobile Tire</strong>! We have received your service request. Our central dispatch team is reviewing your schedule and allocating an equipped mobile service van.
     </p>
 
     ${renderDetailsTable([
@@ -252,7 +252,7 @@ export function renderBookingConfirmedEmail(data: CustomerBookingTemplateData): 
   const dateStr = formatDisplayDate(data.bookingDate);
   const timeStr = formatDisplayTime(data.bookingTime);
 
-  const subject = `Booking Confirmed: #${shortId} (${data.serviceName}) - HT Mobile Tires`;
+  const subject = `Booking Confirmed: #${shortId} (${data.serviceName}) - HT Mobile Tire`;
   const text = `Hi ${name},\n\nYour mobile tire appointment for booking #${shortId} (${data.serviceName}) has been CONFIRMED!\n\nDate & Time: ${dateStr} at ${timeStr}\nVehicle: ${data.vehicle}\nLocation: ${data.location}\n\nManage Booking: ${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=bookings"}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
@@ -298,18 +298,18 @@ export function renderBookingConfirmedEmail(data: CustomerBookingTemplateData): 
 export function renderTechnicianAssignedEmail(data: CustomerBookingTemplateData): { subject: string; html: string; text: string } {
   const shortId = data.bookingId.slice(-6).toUpperCase();
   const name = data.customerName || "Customer";
-  const techName = data.technicianName || "Certified Mobile Technician";
+  const techName = data.technicianName || "HT Mobile Technician";
   const dateStr = formatDisplayDate(data.bookingDate);
 
-  const subject = `Technician Assigned: #${shortId} - HT Mobile Tires`;
-  const text = `Hi ${name},\n\nCertified technician ${techName} has been assigned to your booking #${shortId} (${data.serviceName}) for your ${data.vehicle}.\n\nScheduled Date: ${dateStr}\nLocation: ${data.location}\n\nWe will notify you with live updates as soon as the technician is en route.\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+  const subject = `Technician Assigned: #${shortId} - HT Mobile Tire`;
+  const text = `Hi ${name},\n\nYour ${techName} has been assigned to your booking #${shortId} (${data.serviceName}) for your ${data.vehicle}.\n\nScheduled Date: ${dateStr}\nLocation: ${data.location}\n\nWe will notify you with live updates as soon as the technician is en route.\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
     <p style="font-size: 16px; margin-top: 0; color: #0f172a;">
       Hello <strong>${name}</strong>,
     </p>
     <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-      A dedicated technician has been assigned to your upcoming mobile tire service appointment.
+      A dedicated mobile technician has been assigned to your upcoming service appointment.
     </p>
 
     <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; border-radius: 12px; padding: 18px; text-align: center; margin: 18px 0;">
@@ -317,7 +317,7 @@ export function renderTechnicianAssignedEmail(data: CustomerBookingTemplateData)
       <div style="font-size: 20px; font-weight: 800; color: #1e3a8a; margin-top: 4px;">
         ${techName}
       </div>
-      <p style="margin: 4px 0 0 0; font-size: 12px; color: #3b82f6;">Certified Roadside &amp; Mobile Tire Specialist</p>
+      <p style="margin: 4px 0 0 0; font-size: 12px; color: #3b82f6;">Mobile Tire Specialist</p>
     </div>
 
     ${renderDetailsTable([
@@ -356,7 +356,7 @@ export function renderTechnicianEnRouteEmail(data: CustomerBookingTemplateData):
   const etaText = data.etaMinutes ? `${data.etaMinutes} minutes` : "30-45 minutes";
   const trackingUrl = data.trackingUrl || data.accountUrl;
 
-  const subject = `Technician En Route: #${shortId} (ETA ${etaText}) - HT Mobile Tires`;
+  const subject = `Technician En Route: #${shortId} (ETA ${etaText}) - HT Mobile Tire`;
   const text = `Hi ${name},\n\nOur mobile technician is now on the way to your location for booking #${shortId}!\n\nEstimated Arrival: ${etaText}\nVehicle: ${data.vehicle}\nLocation: ${data.location}\n\nTrack Technician Live: ${trackingUrl || "https://ht-mobile-tire.vercel.app"}\nHotline: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
@@ -381,7 +381,7 @@ export function renderTechnicianEnRouteEmail(data: CustomerBookingTemplateData):
       { label: "Service", value: data.serviceName },
       { label: "Vehicle", value: data.vehicle },
       { label: "Service Destination", value: data.location },
-      ...(data.technicianName ? [{ label: "Technician", value: data.technicianName }] : []),
+      ...(data.technicianName ? [{ label: "Technician", value: "HT Mobile Technician" }] : []),
     ])}
 
     <div style="background-color: #f8fafc; border-left: 4px solid #f59e0b; padding: 12px 16px; margin: 18px 0; font-size: 13px; color: #475569;">
@@ -411,7 +411,7 @@ export function renderTechnicianArrivedEmail(data: CustomerBookingTemplateData):
   const shortId = data.bookingId.slice(-6).toUpperCase();
   const name = data.customerName || "Customer";
 
-  const subject = `Technician Arrived On-Site: #${shortId} - HT Mobile Tires`;
+  const subject = `Technician Arrived On-Site: #${shortId} - HT Mobile Tire`;
   const text = `Hi ${name},\n\nOur mobile tire technician has arrived on-site at ${data.location} for booking #${shortId} (${data.vehicle}).\n\nPlease ensure the vehicle is accessible.\nSupport Hotline: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
@@ -427,7 +427,7 @@ export function renderTechnicianArrivedEmail(data: CustomerBookingTemplateData):
       { label: "Service", value: data.serviceName },
       { label: "Vehicle", value: data.vehicle },
       { label: "Location", value: data.location },
-      ...(data.technicianName ? [{ label: "Technician", value: data.technicianName }] : []),
+      ...(data.technicianName ? [{ label: "Technician", value: "HT Mobile Technician" }] : []),
     ])}
 
     <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: #166534; line-height: 1.5;">
@@ -456,7 +456,7 @@ export function renderServiceStartedEmail(data: CustomerBookingTemplateData): { 
   const shortId = data.bookingId.slice(-6).toUpperCase();
   const name = data.customerName || "Customer";
 
-  const subject = `Service Started: #${shortId} - HT Mobile Tires`;
+  const subject = `Service Started: #${shortId} - HT Mobile Tire`;
   const text = `Hi ${name},\n\nWork on your booking #${shortId} (${data.serviceName}) has now started on your ${data.vehicle} at ${data.location}.\n\nOur technician is currently working on your vehicle.\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
@@ -464,7 +464,7 @@ export function renderServiceStartedEmail(data: CustomerBookingTemplateData): { 
       Hello <strong>${name}</strong>,
     </p>
     <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-      Our certified technician has commenced work on your <strong>${data.vehicle}</strong>. All tire mounting, balancing, or repair will be executed to factory specifications.
+      Our mobile technician has commenced work on your <strong>${data.vehicle}</strong>. All tire mounting, balancing, or repair will be executed to factory specifications.
     </p>
 
     ${renderDetailsTable([
@@ -504,8 +504,8 @@ export function renderServiceCompletedEmail(data: CustomerBookingTemplateData & 
   const name = data.customerName || "Customer";
   const amountStr = typeof data.totalAmount === "number" ? `$${data.totalAmount.toFixed(2)}` : null;
 
-  const subject = `Service Completed: #${shortId} - HT Mobile Tires`;
-  const text = `Hi ${name},\n\nYour mobile tire service for booking #${shortId} (${data.serviceName}) has been completed successfully.\n\nVehicle: ${data.vehicle}\nLocation: ${data.location}\n${amountStr ? `Total Amount: ${amountStr}\n` : ""}Status: Completed\n\nThank you for choosing HT Mobile Tires!\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+  const subject = `Service Completed: #${shortId} - HT Mobile Tire`;
+  const text = `Hi ${name},\n\nYour mobile tire service for booking #${shortId} (${data.serviceName}) has been completed successfully.\n\nVehicle: ${data.vehicle}\nLocation: ${data.location}\n${amountStr ? `Total Amount: ${amountStr}\n` : ""}Status: Completed\n\nThank you for choosing HT Mobile Tire!\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
     <p style="font-size: 16px; margin-top: 0; color: #0f172a;">
@@ -535,7 +535,7 @@ export function renderServiceCompletedEmail(data: CustomerBookingTemplateData & 
     }
 
     <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-top: 16px;">
-      Thank you for choosing HT Mobile Tires. We look forward to keeping you safe on the road!
+      Thank you for choosing HT Mobile Tire. We look forward to keeping you safe on the road!
     </p>
   `;
 
@@ -560,7 +560,7 @@ export function renderBookingCancelledEmail(data: CustomerBookingTemplateData): 
   const shortId = data.bookingId.slice(-6).toUpperCase();
   const name = data.customerName || "Customer";
 
-  const subject = `Booking Cancelled: #${shortId} - HT Mobile Tires`;
+  const subject = `Booking Cancelled: #${shortId} - HT Mobile Tire`;
   const text = `Hi ${name},\n\nYour mobile tire appointment #${shortId} for ${data.vehicle} has been cancelled.\n${data.cancellationReason ? `Reason: ${data.cancellationReason}\n` : ""}If you need to rebook or have questions, visit https://ht-mobile-tire.vercel.app/booking or call ${BUSINESS_PHONE_DISPLAY}.`;
 
   const bodyContentHtml = `
@@ -610,8 +610,8 @@ export function renderPaymentReceivedEmail(data: CustomerBookingTemplateData & {
   const name = data.customerName || "Customer";
   const amountStr = `$${Number(data.amountPaid).toFixed(2)}`;
 
-  const subject = `Payment Confirmation: #${shortId} - HT Mobile Tires`;
-  const text = `Hi ${name},\n\nThank you! We have received your payment of ${amountStr} for Booking #${shortId} (${data.serviceName}).\n\nYour receipt and invoice are available in your account:\n${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=bookings"}\n\nThank you for choosing HT Mobile Tires!`;
+  const subject = `Payment Confirmation: #${shortId} - HT Mobile Tire`;
+  const text = `Hi ${name},\n\nThank you! We have received your payment of ${amountStr} for Booking #${shortId} (${data.serviceName}).\n\nYour receipt and invoice are available in your account:\n${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=bookings"}\n\nThank you for choosing HT Mobile Tire!`;
 
   const bodyContentHtml = `
     <p style="font-size: 16px; margin-top: 0; color: #0f172a;">
@@ -695,7 +695,7 @@ export function renderQuoteReadyEmail(data: QuoteEmailData): { subject: string; 
     )
     .join("");
 
-  const subject = `Your Invoice & Quote: #${shortId} - HT Mobile Tires`;
+  const subject = `Your Invoice & Quote: #${shortId} - HT Mobile Tire`;
   const text = `Hi ${name},\n\nYour mobile tire service quote and invoice for booking #${shortId} is ready.\n\nTotal Amount: $${Number(data.totalAmount).toFixed(2)}\nPrimary Service: ${data.primaryService} ($${Number(data.basePrice).toFixed(2)})\n${data.vehicle ? `Vehicle: ${data.vehicle}\n` : ""}\nView details & receipt: ${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=bookings"}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
@@ -797,7 +797,7 @@ export function renderEmergencyRequestCustomerEmail(data: EmergencyEmailData): {
   const shortId = data.id.slice(-6).toUpperCase();
   const name = data.customerName || "Customer";
 
-  const subject = `[EMERGENCY DISPATCH] Help is On The Way - HT Mobile Tires`;
+  const subject = `[EMERGENCY DISPATCH] Help is On The Way - HT Mobile Tire`;
   const text = `Hi ${name},\n\nWe have received your Roadside Emergency Request #${shortId}!\n\nIssue: ${data.problem}\nVehicle: ${data.vehicle}\nLocation: ${data.currentLocation}\nEstimated Arrival: 30-45 minutes\n\nPlease stay in a safe spot away from traffic.\nDirect Hotline: ${BUSINESS_PHONE_DISPLAY}\nTrack: ${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=emergency"}`;
 
   const bodyContentHtml = `
@@ -970,7 +970,7 @@ export function renderAdminContactAlertEmail(data: {
   const isEmergency = Boolean(data.emergency);
 
   const subject = `[ADMIN CONTACT] ${isEmergency ? "URGENT Inquiry" : "New Inquiry"} from ${data.name} (#${shortId})`;
-  const text = `HT Mobile Tires — New Contact Request\n\nName: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email || "N/A"}\nService: ${data.service || "General Inquiry"}\nLocation: ${data.location || "N/A"}\nMessage: "${data.message || ""}"`;
+  const text = `HT Mobile Tire — New Contact Request\n\nName: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email || "N/A"}\nService: ${data.service || "General Inquiry"}\nLocation: ${data.location || "N/A"}\nMessage: "${data.message || ""}"`;
 
   const bodyContentHtml = `
     <p style="font-size: 14px; color: #475569; margin-top: 0;">
@@ -1029,7 +1029,7 @@ export function renderAdminBookingCancelledEmail(data: {
   const shortId = data.bookingId.slice(-6).toUpperCase();
 
   const subject = `[ADMIN ALERT] Booking #${shortId} Cancelled by ${data.cancelledBy}`;
-  const text = `HT Mobile Tires — Booking Cancelled Alert\n\nBooking: #${shortId}\nCancelled by: ${data.cancelledBy}\nCustomer: ${data.customerName || "N/A"} (${data.customerPhone || "N/A"})\nVehicle: ${data.vehicle || "N/A"}\nReason: ${data.reason || "None provided"}`;
+  const text = `HT Mobile Tire — Booking Cancelled Alert\n\nBooking: #${shortId}\nCancelled by: ${data.cancelledBy}\nCustomer: ${data.customerName || "N/A"} (${data.customerPhone || "N/A"})\nVehicle: ${data.vehicle || "N/A"}\nReason: ${data.reason || "None provided"}`;
 
   const bodyContentHtml = `
     <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #991b1b;">

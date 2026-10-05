@@ -54,7 +54,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 export const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL?.trim() ||
   process.env.FROM_EMAIL?.trim() ||
-  "HT Mobile Tires <onboarding@resend.dev>";
+  "HT Mobile Tire <onboarding@resend.dev>";
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ||
@@ -168,11 +168,11 @@ export async function dispatchEmailDirect({
     ) {
       logger.warn("email.dispatch.domain_unverified_fallback", {
         configuredFrom: FROM_EMAIL,
-        fallbackFrom: "HT Mobile Tires <onboarding@resend.dev>",
+        fallbackFrom: "HT Mobile Tire <onboarding@resend.dev>",
       });
 
       response = await resend.emails.send({
-        from: "HT Mobile Tires <onboarding@resend.dev>",
+        from: "HT Mobile Tire <onboarding@resend.dev>",
         to,
         subject,
         html,
@@ -427,7 +427,7 @@ export async function sendCustomerTechnicianAssignedEmail(params: {
   }
 
   const serviceName = booking.service?.name || booking.primaryService || "Mobile Tire Service";
-  const techName = technician?.name || booking.technician?.name || "Certified Mobile Technician";
+  const techName = technician?.name || booking.technician?.name || "HT Mobile Technician";
   const { subject, html, text } = renderTechnicianAssignedEmail({
     customerName: booking.customer?.name,
     bookingId: booking.id,

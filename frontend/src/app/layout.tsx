@@ -26,51 +26,51 @@ function getValidBaseUrl(): string {
 }
 
 const baseUrl = getValidBaseUrl();
-const businessPhone = process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+18005558473";
+const businessPhone = process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+16479956665";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "HT Mobile Tires | On-Demand Mobile Tire Service & 24/7 Roadside Assistance",
-    template: "%s | HT Mobile Tires",
+    default: "HT Mobile Tire | On-Demand Mobile Tire Service & 24/7 Roadside Assistance",
+    template: "%s | HT Mobile Tire",
   },
   description:
-    "Professional mobile tire service that comes to your driveway, workplace, or roadside. New & used tires, rim mounting, laser wheel balancing, flat tire repair, and 24/7 emergency dispatch.",
+    "Professional mobile tire service that comes to your driveway, workplace, or roadside. New & used tires, rim mounting, wheel balancing, flat tire repair, and emergency dispatch.",
   keywords: [
     "mobile tire service",
     "mobile tire repair",
     "emergency flat tire service",
     "roadside tire replacement",
-    "ht mobile tires",
+    "ht mobile tire",
     "on-site wheel balancing",
     "mobile tire installer",
   ],
-  authors: [{ name: "HT Mobile Tires" }],
+  authors: [{ name: "HT Mobile Tire" }],
   alternates: {
     canonical: baseUrl,
   },
   openGraph: {
-    title: "HT Mobile Tires | Professional Mobile Tire Service",
+    title: "HT Mobile Tire | Professional Mobile Tire Service",
     description:
-      "We come to you! On-demand mobile tire repair, new/used tire replacement, wheel balancing, and 24/7 roadside emergency service.",
+      "We come to you! On-demand mobile tire repair, new/used tire replacement, wheel balancing, and roadside emergency service.",
     type: "website",
-    locale: "en_US",
-    siteName: "HT Mobile Tires",
+    locale: "en_CA",
+    siteName: "HT Mobile Tire",
     url: baseUrl,
     images: [
       {
         url: `${baseUrl}/images/hero-mobile-tire-clinic.webp`,
         width: 1200,
         height: 630,
-        alt: "HT Mobile Tires Van & Professional Technician Service",
+        alt: "HT Mobile Tire Van & Professional Service",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HT Mobile Tires | On-Demand Mobile Tire Service",
+    title: "HT Mobile Tire | On-Demand Mobile Tire Service",
     description:
-      "Professional mobile tire service brought directly to your location 24/7. Fast, reliable, and hassle-free tire installation & repair.",
+      "Professional mobile tire service brought directly to your location. Fast, reliable, and convenient mobile tire installation & repair.",
     images: [`${baseUrl}/images/hero-mobile-tire-clinic.webp`],
   },
 };
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "AutoRepair",
-  name: "HT Mobile Tires",
+  name: "HT Mobile Tire",
   image: `${baseUrl}/images/hero-mobile-tire-clinic.webp`,
   description:
     "Professional mobile tire services brought directly to your location. Fast, reliable, and convenient mobile tire installation, flat repair, and wheel balancing.",
@@ -87,23 +87,19 @@ const jsonLd = {
   url: baseUrl,
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Dallas",
-    addressRegion: "TX",
-    addressCountry: "US",
-  },
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: 32.7767,
-    longitude: -96.797,
+    addressRegion: "ON",
+    addressCountry: "CA",
   },
   areaServed: [
-    { "@type": "City", name: "Dallas, TX" },
-    { "@type": "City", name: "Fort Worth, TX" },
-    { "@type": "City", name: "Plano, TX" },
-    { "@type": "City", name: "Arlington, TX" },
-    { "@type": "City", name: "Irving, TX" },
-    { "@type": "City", name: "Frisco, TX" },
-    { "@type": "City", name: "Garland, TX" },
+    { "@type": "City", name: "Brampton, ON" },
+    { "@type": "City", name: "Toronto, ON" },
+    { "@type": "City", name: "Mississauga, ON" },
+    { "@type": "City", name: "Etobicoke, ON" },
+    { "@type": "City", name: "North York, ON" },
+    { "@type": "City", name: "Vaughan, ON" },
+    { "@type": "City", name: "Woodbridge, ON" },
+    { "@type": "City", name: "Milton, ON" },
+    { "@type": "City", name: "Georgetown, ON" },
   ],
   hasOfferCatalog: {
     "@type": "OfferCatalog",
@@ -145,11 +141,6 @@ const jsonLd = {
         },
       },
     ],
-  },
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.9",
-    reviewCount: "215",
   },
   openingHoursSpecification: [
     {

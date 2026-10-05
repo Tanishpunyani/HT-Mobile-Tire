@@ -59,14 +59,10 @@ export async function GET(request: Request) {
     }
 
     const serpApiUrl = new URL("https://serpapi.com/search.json");
-    // Engine set to Google Maps Autocomplete for authentic place and address suggestions
     serpApiUrl.searchParams.set("engine", "google_maps_autocomplete");
     serpApiUrl.searchParams.set("q", query);
-    serpApiUrl.searchParams.set("gl", "us");
+    serpApiUrl.searchParams.set("gl", "ca");
     serpApiUrl.searchParams.set("hl", "en");
-    // Dallas–Fort Worth, Texas geographic center (approx. 32.7767 N, -96.7970 W) at zoom level 9z
-    // to provide local DFW and Texas geographic context across the entire metroplex.
-    serpApiUrl.searchParams.set("ll", "@32.7767,-96.7970,9z");
     serpApiUrl.searchParams.set("api_key", apiKey);
 
     const controller = new AbortController();

@@ -18,7 +18,7 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "Swap Rim Tire On/Off | HT Mobile Tires",
+  title: "Swap Rim Tire On/Off | HT Mobile Tire",
   description: "Professional tire removal and installation service. We swap tires on and off your rims at your location.",
 };
 

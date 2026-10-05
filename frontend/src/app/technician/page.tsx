@@ -236,7 +236,7 @@ function TechnicianPortalContent() {
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h1 className="text-sm font-extrabold text-white tracking-tight">HT Mobile Tires</h1>
+                <h1 className="text-sm font-extrabold text-white tracking-tight">HT Mobile Tire</h1>
                 <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-mono font-bold text-primary border border-primary/30">
                   FIELD
                 </span>
@@ -581,7 +581,7 @@ function TechnicianPortalContent() {
 
         {/* Footer Support Info */}
         <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4 text-center text-xs text-slate-500 space-y-1">
-          <p className="font-semibold text-slate-400">HT Mobile Tires Field Operations Console</p>
+          <p className="font-semibold text-slate-400">HT Mobile Tire Field Operations Console</p>
           <p>Questions about route or assignment? Call Dispatch at {BUSINESS_PHONE_DISPLAY}</p>
         </div>
       </main>

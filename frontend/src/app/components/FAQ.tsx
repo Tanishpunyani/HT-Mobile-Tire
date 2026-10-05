@@ -7,8 +7,8 @@ import SectionHeading from "./SectionHeading";
 
 const FAQS = [
   {
-    q: "How does the HT Mobile Tires service work?",
-    a: "We operate custom Mercedes-Benz Sprinter vans fully outfitted with commercial tire changers, computerized laser balancers, and air compressors. You schedule an appointment or request emergency service, tell us where your car is located, and our certified technician arrives to service your tires right on your driveway, office parking lot, or roadside location.",
+    q: "How does HT Mobile Tire service work?",
+    a: "We operate equipped mobile service vans outfitted with commercial tire changers, computerized wheel balancers, and air compressors. You schedule an appointment or request emergency service, tell us where your vehicle is located, and our technician arrives to service your tires right on your driveway, office parking lot, or roadside location.",
   },
   {
     q: "Do I need to be present while you change my tires?",

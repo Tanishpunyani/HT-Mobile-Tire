@@ -53,6 +53,45 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/service-area/dallas",
+        destination: "/service-areas",
+        permanent: true,
+      },
+      {
+        source: "/service-area/fort-worth",
+        destination: "/service-areas",
+        permanent: true,
+      },
+      {
+        source: "/service-area/plano",
+        destination: "/service-areas",
+        permanent: true,
+      },
+      {
+        source: "/service-area/arlington",
+        destination: "/service-areas",
+        permanent: true,
+      },
+      {
+        source: "/service-area/irving",
+        destination: "/service-areas",
+        permanent: true,
+      },
+      {
+        source: "/service-area/garland",
+        destination: "/service-areas",
+        permanent: true,
+      },
+      {
+        source: "/service-area/frisco",
+        destination: "/service-areas",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -19,7 +19,7 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "Flat Tire Repair | HT Mobile Tires",
+  title: "Flat Tire Repair | HT Mobile Tire",
   description: "Fast and convenient mobile flat tire repair service. We come to your location to get you safely back on the road.",
 };
 

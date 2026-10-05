@@ -61,8 +61,6 @@ export async function POST(request: Request) {
           formattedAddress: `GPS Location: ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
           lat,
           lng,
-          city: "Dallas",
-          state: "TX",
         },
       });
     }

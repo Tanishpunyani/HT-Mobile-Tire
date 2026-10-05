@@ -19,7 +19,7 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "Fleet Tire Service | HT Mobile Tires",
+  title: "Fleet Tire Service | HT Mobile Tire",
   description: "Reliable mobile tire service for businesses. Keep your fleet vehicles moving with convenient on-site tire care.",
 };
 

@@ -32,7 +32,7 @@ export default function CoverageChecker() {
             </div>
 
             <h2 className="mt-4 text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">
-              Check HT Mobile Tires Availability Near You
+              Check HT Mobile Tire Availability Near You
             </h2>
 
             <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
@@ -47,7 +47,7 @@ export default function CoverageChecker() {
                 <input
                   type="text"
                   required
-                  placeholder="Enter Zip Code, City, or Landmark"
+                  placeholder="Enter Postal Code, City, or Address"
                   value={zipOrCity}
                   onChange={(e) => {
                     setZipOrCity(e.target.value);

@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "Schedule your mobile tire service appointment online. Fast, convenient mobile tire repair, new & used tire installation, and wheel balancing brought directly to your home or office.",
   openGraph: {
-    title: "Book Mobile Tire Service | HT Mobile Tires",
+    title: "Book Mobile Tire Service | HT Mobile Tire",
     description:
       "Select your service, tire size, vehicle, and preferred arrival time for on-site mobile tire installation.",
   },

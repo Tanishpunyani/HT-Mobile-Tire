@@ -129,7 +129,7 @@ export async function POST(request: Request) {
         type: "customer_message",
         channel: "account",
         recipient,
-        subject: `HT Mobile Tires - Update on your ${contactMessage.service || "service"} inquiry`,
+        subject: `HT Mobile Tire - Update on your ${contactMessage.service || "service"} inquiry`,
         body: trimmedMessage,
         content: trimmedMessage,
         status: "SENT",
@@ -142,10 +142,10 @@ export async function POST(request: Request) {
       try {
         await sendEmail({
           to: contactMessage.email,
-          subject: `Update on your ${contactMessage.service || "Tire Service"} Request - HT Mobile Tires`,
+          subject: `Update on your ${contactMessage.service || "Tire Service"} Request - HT Mobile Tire`,
           html: `
             <div style="font-family: sans-serif; padding: 20px; color: #1e293b;">
-              <h2 style="color: #e11d48; margin-top: 0;">HT Mobile Tires Dispatch Update</h2>
+              <h2 style="color: #e11d48; margin-top: 0;">HT Mobile Tire Dispatch Update</h2>
               <p>Hi <strong>${contactMessage.name}</strong>,</p>
               <div style="background: #f8fafc; border-left: 4px solid #e11d48; padding: 14px; margin: 16px 0; border-radius: 4px;">
                 <p style="margin: 0; font-size: 15px; line-height: 1.6;">${trimmedMessage.replace(/\n/g, "<br/>")}</p>

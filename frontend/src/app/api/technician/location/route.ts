@@ -4,6 +4,7 @@ import { verifyAdminSession, getAdminSessionToken } from "@/lib/admin-auth";
 import { verifyTechnicianDispatchToken, createTechnicianDispatchToken } from "@/lib/technician-auth";
 import { logger } from "@/lib/logger";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { BUSINESS_PHONE_RAW } from "@/lib/constants/phone";
 
 // Calculate Great-Circle distance between two coordinates in miles (Haversine formula)
 function calculateDistanceMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -373,7 +374,7 @@ export async function GET(request: Request) {
       ? {
           name: booking.technician.name,
           role: booking.technician.role,
-          phone: booking.technician.phone || process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+18005558473",
+          phone: booking.technician.phone || process.env.NEXT_PUBLIC_BUSINESS_PHONE || BUSINESS_PHONE_RAW,
         }
       : null;
 

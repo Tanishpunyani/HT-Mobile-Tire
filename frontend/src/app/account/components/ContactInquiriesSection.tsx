@@ -138,7 +138,7 @@ export default function ContactInquiriesSection({
                                 <CheckCircle2 size={13} />
                               </span>
                               <span className="text-xs font-bold text-emerald-950">
-                                HT Mobile Tires Central Dispatch Update
+                                HT Mobile Tire Central Dispatch Update
                               </span>
                             </div>
                             <span className="text-[11px] text-emerald-700">

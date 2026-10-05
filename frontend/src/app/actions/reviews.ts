@@ -204,8 +204,8 @@ export async function getPublicReviewsAction(limit = 6) {
       _count: { id: true },
     });
 
-    const averageRating = aggregate._avg.rating ? Number(aggregate._avg.rating.toFixed(1)) : 4.9;
-    const totalCount = aggregate._count.id > 0 ? aggregate._count.id : 128; // default verified benchmark
+    const averageRating = aggregate._avg.rating ? Number(aggregate._avg.rating.toFixed(1)) : 0;
+    const totalCount = aggregate._count.id;
 
     return {
       success: true,
@@ -235,44 +235,12 @@ export async function getPublicReviewsAction(limit = 6) {
     };
   } catch (error) {
     logger.error("review_action.get_public_failed", { error });
-    // Return high quality fallback testimonials if database has 0 approved reviews yet
     return {
       success: true,
-      reviews: [
-        {
-          id: "seed-1",
-          rating: 5,
-          comment: "Blew out a tire on I-35 during evening rush hour. Technician arrived in 30 minutes and installed my spare with laser balancing right on the highway shoulder. Saved my night!",
-          customerName: "David M.",
-          serviceName: "Emergency Roadside Tire Service",
-          vehicle: "2023 Tesla Model Y",
-          createdAt: new Date().toISOString(),
-          isVerified: true,
-        },
-        {
-          id: "seed-2",
-          rating: 5,
-          comment: "I had 4 brand new Michelin tires swapped and balanced in my office parking lot while I was in meetings. Incredible touchless rim care and zero wait times.",
-          customerName: "Sarah K.",
-          serviceName: "New and Used Tires",
-          vehicle: "2022 BMW X5",
-          createdAt: new Date().toISOString(),
-          isVerified: true,
-        },
-        {
-          id: "seed-3",
-          rating: 5,
-          comment: "Fast flat tire patch in my driveway. Clean, courteous mobile tech, clear digital PDF receipt, and no hidden call-out fees. Will use again!",
-          customerName: "Robert T.",
-          serviceName: "Flat Tire Repair",
-          vehicle: "2021 Ford F-150",
-          createdAt: new Date().toISOString(),
-          isVerified: true,
-        },
-      ],
+      reviews: [],
       stats: {
-        averageRating: 4.9,
-        totalCount: 145,
+        averageRating: 0,
+        totalCount: 0,
       },
     };
   }

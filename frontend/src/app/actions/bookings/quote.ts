@@ -77,7 +77,7 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
         customerPhone: booking.customer?.phone || "",
         customerEmail: authoritativeCustomerEmail,
         vehicle: booking.vehicle || "Vehicle",
-        location: booking.formattedAddress || booking.location || "Dallas, TX",
+        location: booking.formattedAddress || booking.location || "Customer Location",
         primaryService: booking.primaryService || "Flat Tire Repair",
         basePrice: validated.basePrice,
         extraServices: validated.extraServices,
@@ -94,7 +94,7 @@ export async function completeAndQuoteAction(params: CompleteAndQuoteParams) {
       await sendCustomerServiceCompletedAlert({
         id: booking.id,
         vehicle: booking.vehicle || "Vehicle",
-        location: booking.formattedAddress || booking.location || "Dallas, TX",
+        location: booking.formattedAddress || booking.location || "Customer Location",
         bookingDate: booking.bookingDate,
         bookingTime: booking.bookingTime,
         status: "completed",

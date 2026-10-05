@@ -85,7 +85,7 @@ function ContactFormInner() {
             </p>
 
             <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Get in Touch with HT Mobile Tires
+              Get in Touch with HT Mobile Tire
             </h1>
 
             <p className="mt-6 text-lg leading-8 text-slate-300">
@@ -104,7 +104,7 @@ function ContactFormInner() {
             <div>
               <SectionHeading
                 eyebrow="Get in Touch"
-                title="Contact HT Mobile Tires"
+                title="Contact HT Mobile Tire"
                 description="Choose the easiest way to reach us or send a service request using the form."
               />
 

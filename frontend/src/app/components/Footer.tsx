@@ -23,7 +23,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="inline-block">
               <div className="text-xl font-extrabold tracking-tight">
-                HT Mobile <span className="text-primary">Tires</span>
+                HT Mobile <span className="text-primary">Tire</span>
               </div>
             </Link>
 
@@ -33,7 +33,7 @@ export default function Footer() {
 
             <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-slate-300">
               <ShieldCheck size={16} className="text-primary" />
-              <span>Licensed, Insured & ASE Certified Techs</span>
+              <span>Licensed & Insured Mobile Technicians</span>
             </div>
           </div>
 
@@ -147,19 +147,23 @@ export default function Footer() {
               Primary Service Cities:
             </p>
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-300">
-              <Link href="/service-area/dallas" className="hover:text-primary transition">Dallas, TX</Link>
+              <Link href="/service-area/brampton" className="hover:text-primary transition">Brampton, ON</Link>
               <span className="text-slate-600">•</span>
-              <Link href="/service-area/fort-worth" className="hover:text-primary transition">Fort Worth, TX</Link>
+              <Link href="/service-area/toronto" className="hover:text-primary transition">Toronto, ON</Link>
               <span className="text-slate-600">•</span>
-              <Link href="/service-area/plano" className="hover:text-primary transition">Plano, TX</Link>
+              <Link href="/service-area/mississauga" className="hover:text-primary transition">Mississauga, ON</Link>
               <span className="text-slate-600">•</span>
-              <Link href="/service-area/arlington" className="hover:text-primary transition">Arlington, TX</Link>
+              <Link href="/service-area/etobicoke" className="hover:text-primary transition">Etobicoke, ON</Link>
               <span className="text-slate-600">•</span>
-              <Link href="/service-area/irving" className="hover:text-primary transition">Irving, TX</Link>
+              <Link href="/service-area/north-york" className="hover:text-primary transition">North York, ON</Link>
               <span className="text-slate-600">•</span>
-              <Link href="/service-area/garland" className="hover:text-primary transition">Garland, TX</Link>
+              <Link href="/service-area/vaughan" className="hover:text-primary transition">Vaughan, ON</Link>
               <span className="text-slate-600">•</span>
-              <Link href="/service-area/frisco" className="hover:text-primary transition">Frisco, TX</Link>
+              <Link href="/service-area/woodbridge" className="hover:text-primary transition">Woodbridge, ON</Link>
+              <span className="text-slate-600">•</span>
+              <Link href="/service-area/milton" className="hover:text-primary transition">Milton, ON</Link>
+              <span className="text-slate-600">•</span>
+              <Link href="/service-area/georgetown" className="hover:text-primary transition">Georgetown, ON</Link>
               <span className="text-slate-600">•</span>
               <Link href="/service-areas" className="font-bold text-primary hover:underline">View All Service Areas →</Link>
             </div>
@@ -168,7 +172,7 @@ export default function Footer() {
 
         {/* Bottom Legal & Copyright */}
         <div className="flex flex-col gap-4 border-t border-white/10 py-6 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} HT Mobile Tires Inc. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} HT Mobile Tire. All rights reserved.</p>
 
           <div className="flex flex-wrap items-center gap-6">
             <Link href="/privacy" className="hover:text-white transition-colors">

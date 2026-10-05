@@ -18,7 +18,7 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "Wheel Balancing | HT Mobile Tires",
+  title: "Wheel Balancing | HT Mobile Tire",
   description: "Improve ride quality and tire performance with professional mobile wheel balancing service.",
 };
 

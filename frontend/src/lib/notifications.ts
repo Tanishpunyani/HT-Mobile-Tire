@@ -50,7 +50,7 @@ export {
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL =
-  process.env.RESEND_FROM_EMAIL || "HT Mobile Tires <onboarding@resend.dev>";
+  process.env.RESEND_FROM_EMAIL || "HT Mobile Tire <onboarding@resend.dev>";
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ||
@@ -596,7 +596,7 @@ export async function sendStatusUpdate({
       <body>
         <div class="container">
           <div class="header">
-            <h1>HT Mobile Tires</h1>
+            <h1>HT Mobile Tire</h1>
           </div>
           <div class="content">
             <span class="status-badge">${currentInfo.title}</span>
@@ -623,7 +623,7 @@ export async function sendStatusUpdate({
             <a href="${accountUrl}" class="cta-button">View Account Details &rarr;</a>
           </div>
           <div class="footer">
-            <p style="margin: 0;">HT Mobile Tires &bull; Support: ${BUSINESS_PHONE_DISPLAY}</p>
+            <p style="margin: 0;">HT Mobile Tire &bull; Support: ${BUSINESS_PHONE_DISPLAY}</p>
           </div>
         </div>
       </body>

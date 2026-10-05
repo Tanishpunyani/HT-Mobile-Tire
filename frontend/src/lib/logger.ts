@@ -1,5 +1,5 @@
 /**
- * Lightweight, dependency-free structured server logger for HT Mobile Tires.
+ * Lightweight, dependency-free structured server logger for HT Mobile Tire.
  *
  * Formats logs as JSON in production and structured readable logs in development.
  * Provides built-in PII and secret sanitization to prevent sensitive data leakage.

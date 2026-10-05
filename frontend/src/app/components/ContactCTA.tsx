@@ -20,7 +20,7 @@ export default function ContactCTA() {
               </h2>
 
               <p className="mt-4 text-base leading-7 text-white/85 sm:text-lg">
-                Contact HT Mobile Tires today and get professional tire
+                Contact HT Mobile Tire today and get professional tire
                 service brought directly to your location.
               </p>
             </div>

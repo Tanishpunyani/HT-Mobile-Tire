@@ -1,5 +1,5 @@
 /**
- * HT Mobile Tires — Server-Authoritative Booking & Payment State Machines
+ * HT Mobile Tire — Server-Authoritative Booking & Payment State Machines
  *
  * Single source of truth for all booking status and payment status transitions.
  * Enforces role-based permissions, terminal state immutability, and idempotent operations.

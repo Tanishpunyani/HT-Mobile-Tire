@@ -96,7 +96,7 @@ export default function AdminNavbar() {
               </div>
               <div className="hidden sm:block">
                 <div className="text-sm font-bold leading-tight text-white">
-                  HT Mobile Tires
+                  HT Mobile Tire
                 </div>
                 <div className="text-[10px] font-extrabold uppercase tracking-widest text-primary">
                   Admin Console

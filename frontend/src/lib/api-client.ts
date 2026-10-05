@@ -1,5 +1,5 @@
 /**
- * API Client helper for HT Mobile Tires
+ * API Client helper for HT Mobile Tire
  * Provides unified credentials handling, authentication error trapping, and structured error responses.
  */
 import { logger } from "@/lib/logger";

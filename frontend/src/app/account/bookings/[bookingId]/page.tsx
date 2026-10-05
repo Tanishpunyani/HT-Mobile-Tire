@@ -526,7 +526,7 @@ export default function BookingTrackingPage() {
                     <User size={16} className="text-primary shrink-0" />
                     <div>
                       <span>
-                        Assigned Technician: <strong>{booking.technician.name}</strong> ({booking.technician.role})
+                        Assigned Technician: <strong>HT Mobile Technician</strong>
                       </span>
                     </div>
                   </div>

@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Phone,
   Siren,
-  Star,
   ChevronRight,
   Disc,
   HelpCircle,
@@ -37,12 +36,12 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
 
   if (!city) {
     return {
-      title: "Service Area Not Found | HT Mobile Tires",
+      title: "Service Area Not Found | HT Mobile Tire",
       description: "Mobile tire repair and installation at your location.",
     };
   }
 
-  const title = `${city.headline} | HT Mobile Tires`;
+  const title = `${city.headline} | HT Mobile Tire`;
   const description = city.metaDescription;
   const canonicalUrl = `https://mobiletire.clinic/service-area/${city.slug}`;
 
@@ -56,15 +55,15 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
       title,
       description,
       url: canonicalUrl,
-      siteName: "HT Mobile Tires",
-      locale: "en_US",
+      siteName: "HT Mobile Tire",
+      locale: "en_CA",
       type: "website",
       images: [
         {
           url: "/images/hero-mobile-tire-clinic.webp",
           width: 1200,
           height: 630,
-          alt: `HT Mobile Tires servicing ${city.name}, TX`,
+          alt: `HT Mobile Tire servicing ${city.name}, ON`,
         },
       ],
     },
@@ -92,31 +91,31 @@ export default async function CityLandingPage({ params }: CityPageProps) {
     {
       name: "Flat Tire Repair & Puncture Patch",
       price: "Custom Quote",
-      description: `Full radial patch and bead leak repair in your ${city.name} driveway or office parking lot.`,
+      description: `Full radial patch and bead leak repair at your ${city.name} location.`,
       slug: "flat-tire-repair",
     },
     {
-      name: "Swap Rim Tire & Laser Balancing",
+      name: "Swap Rim Tire & Wheel Balancing",
       price: "Custom Quote",
-      description: `Seasonal tire and rim mounting with high-speed computerized laser wheel balancing on-site.`,
+      description: `Seasonal tire and rim mounting with computerized wheel balancing on-site.`,
       slug: "swap-rim-tire",
     },
     {
       name: "New and Quality Used Tires",
       price: "Custom Quote",
-      description: `Top brands (Michelin, Continental, Goodyear) and inspected pre-owned tires delivered & installed.`,
+      description: `Top brand new and inspected pre-owned tires delivered & installed.`,
       slug: "new-used-tires",
     },
     {
-      name: "Laser Wheel Balancing",
+      name: "Computerized Wheel Balancing",
       price: "Custom Quote",
-      description: `Eliminate highway steering wheel vibration with mobile computerized laser balancing in ${city.name}.`,
+      description: `Eliminate highway steering wheel vibration with mobile computerized balancing in ${city.name}.`,
       slug: "wheel-balancing",
     },
     {
-      name: "24/7 Emergency Roadside Dispatch",
+      name: "Emergency Roadside Tire Service",
       price: "On-Site Assessment",
-      description: `Immediate technician dispatch for highway blowouts, damaged rims, and spare tire installations.`,
+      description: `Rapid dispatch for roadside punctures, damaged rims, and spare tire installations.`,
       slug: "emergency",
       isEmergency: true,
     },
@@ -126,7 +125,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "AutoRepair",
-    name: `HT Mobile Tires - ${city.name}`,
+    name: `HT Mobile Tire - ${city.name}`,
     image: "https://mobiletire.clinic/images/hero-mobile-tire-clinic.webp",
     "@id": `https://mobiletire.clinic/service-area/${city.slug}`,
     url: `https://mobiletire.clinic/service-area/${city.slug}`,
@@ -137,23 +136,12 @@ export default async function CityLandingPage({ params }: CityPageProps) {
       "@type": "PostalAddress",
       addressLocality: city.name,
       addressRegion: city.state,
-      addressCountry: "US",
+      addressCountry: "CA",
     },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: city.lat,
-      longitude: city.lng,
+    areaServed: {
+      "@type": "City",
+      name: `${city.name}, ${city.state}`,
     },
-    areaServed: [
-      {
-        "@type": "City",
-        name: `${city.name}, ${city.state}`,
-      },
-      ...city.neighborhoods.map((n) => ({
-        "@type": "AdministrativeArea",
-        name: `${n}, ${city.name}`,
-      })),
-    ],
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
@@ -170,13 +158,6 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         closes: "23:59",
       },
     ],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.9",
-      reviewCount: "148",
-      bestRating: "5",
-      worstRating: "1",
-    },
   };
 
   return (
@@ -208,7 +189,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               {/* Response Time Pill */}
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-4 py-1.5 text-xs font-bold text-primary backdrop-blur-md">
                 <Clock3 size={14} />
-                <span>⚡ Average {city.name} Response: <strong>{city.averageResponseTime}</strong></span>
+                <span>⚡ {city.name} Mobile Service: <strong>{city.averageResponseTime}</strong></span>
               </div>
 
               <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.1]">
@@ -216,7 +197,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-                {city.subheadline} No waiting at tire shops — our fully equipped mobile clinic vans come directly to you in <strong>{city.name}</strong>.
+                {city.subheadline} No waiting at tire shops — our fully equipped mobile service vans come directly to you in <strong>{city.name}</strong>.
               </p>
 
               {/* Action Buttons */}
@@ -234,7 +215,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/40 bg-red-950/40 px-6 py-4 text-sm font-bold text-red-400 backdrop-blur-sm transition hover:bg-red-900/60 hover:text-white"
                 >
                   <Siren size={17} className="text-red-400" />
-                  <span>24/7 Roadside Emergency</span>
+                  <span>Roadside Emergency</span>
                 </Link>
               </div>
 
@@ -242,15 +223,11 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               <div className="mt-10 flex flex-wrap items-center gap-6 border-t border-white/10 pt-6 text-xs text-slate-300">
                 <span className="flex items-center gap-1.5 font-semibold">
                   <ShieldCheck size={16} className="text-primary" />
-                  Touchless Rim Guarantee
-                </span>
-                <span className="flex items-center gap-1.5 font-semibold">
-                  <Star size={16} className="text-amber-400 fill-amber-400" />
-                  4.9/5 Star Rating
+                  Touchless Rim Care
                 </span>
                 <span className="flex items-center gap-1.5 font-semibold">
                   <Zap size={16} className="text-primary" />
-                  Fast Driveway Service
+                  On-Site Driveway Service
                 </span>
               </div>
             </div>
@@ -273,15 +250,15 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                 <div className="mt-5 space-y-3 text-xs text-slate-300">
                   <div className="flex items-start gap-2.5">
                     <MapPin size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>Serving all <strong>{city.name}</strong> zip codes & highways</span>
+                    <span>Serving <strong>{city.name}</strong> & surrounding areas</span>
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Clock3 size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>Arrival in <strong>{city.averageResponseTime}</strong></span>
+                    <span>Dispatch: <strong>{city.averageResponseTime}</strong></span>
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Disc size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>On-board computerized laser balancing</span>
+                    <span>On-board computerized wheel balancing</span>
                   </div>
                 </div>
 
@@ -298,49 +275,53 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         </Container>
       </section>
 
-      {/* Neighborhoods & Zip Codes Served */}
-      <section className="bg-white py-16 sm:py-20 border-b border-border">
-        <Container>
-          <div className="mx-auto max-w-4xl text-center">
-            <p className="text-xs font-bold uppercase tracking-wider text-primary">
-              Local Service Coverage
-            </p>
-            <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
-              We Serve These {city.name} Neighborhoods & Zip Codes
-            </h2>
-            <p className="mt-3 text-sm text-text-secondary">
-              Our mobile tire service vans are staged in key corridors for immediate response across {city.name}.
-            </p>
-
-            {/* Neighborhood Pills */}
-            <div className="mt-8 flex flex-wrap justify-center gap-2.5">
-              {city.neighborhoods.map((neighborhood) => (
-                <span
-                  key={neighborhood}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-4 py-2 text-xs font-bold text-foreground border border-border"
-                >
-                  <MapPin size={13} className="text-primary" />
-                  {neighborhood}
-                </span>
-              ))}
-            </div>
-
-            {/* Zip Codes */}
-            <div className="mt-6 rounded-2xl bg-background-light p-5 border border-border">
-              <p className="text-xs font-bold text-foreground mb-3">
-                {city.name} Zip Codes Covered:
+      {/* Neighborhoods & Zip Codes Served - only if data exists */}
+      {(city.neighborhoods.length > 0 || city.zipCodes.length > 0) && (
+        <section className="bg-white py-16 sm:py-20 border-b border-border">
+          <Container>
+            <div className="mx-auto max-w-4xl text-center">
+              <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                Local Service Coverage
               </p>
-              <div className="flex flex-wrap justify-center gap-2 text-xs font-mono font-semibold text-text-secondary">
-                {city.zipCodes.map((zip) => (
-                  <span key={zip} className="rounded bg-white px-2.5 py-1 border border-border">
-                    {zip}
-                  </span>
-                ))}
-              </div>
+              <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                We Serve {city.name} and Surrounding Areas
+              </h2>
+              <p className="mt-3 text-sm text-text-secondary">
+                Our mobile tire service vans operate across {city.name} for scheduled and on-demand service.
+              </p>
+
+              {city.neighborhoods.length > 0 && (
+                <div className="mt-8 flex flex-wrap justify-center gap-2.5">
+                  {city.neighborhoods.map((neighborhood) => (
+                    <span
+                      key={neighborhood}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-4 py-2 text-xs font-bold text-foreground border border-border"
+                    >
+                      <MapPin size={13} className="text-primary" />
+                      {neighborhood}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {city.zipCodes.length > 0 && (
+                <div className="mt-6 rounded-2xl bg-background-light p-5 border border-border">
+                  <p className="text-xs font-bold text-foreground mb-3">
+                    Postal Codes Covered:
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2 text-xs font-mono font-semibold text-text-secondary">
+                    {city.zipCodes.map((zip) => (
+                      <span key={zip} className="rounded bg-white px-2.5 py-1 border border-border">
+                        {zip}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        </Container>
-      </section>
+          </Container>
+        </section>
+      )}
 
       {/* Localized Services Grid */}
       <section className="bg-background-light py-20 sm:py-24">
@@ -353,7 +334,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               Mobile Tire Services Available in {city.name}
             </h2>
             <p className="mt-3 text-sm text-text-secondary">
-              Everything a traditional tire shop offers, delivered directly to your vehicle's location.
+              Professional tire services delivered directly to your vehicle's location.
             </p>
           </div>
 
@@ -401,19 +382,19 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         </Container>
       </section>
 
-      {/* City Landmarks & Service Highlights */}
+      {/* City Service Highlights & Map */}
       <section className="bg-white py-20 sm:py-24 border-y border-border">
         <Container>
           <div className="grid gap-12 lg:grid-cols-2 items-center">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-primary">
-                Why {city.name} Drivers Choose Us
+                Why Drivers Choose Us
               </p>
               <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
-                Serving {city.name} Landmarks & Corridors Daily
+                Serving {city.name} Daily
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-                Whether you are parked near {city.localLandmarks.slice(0, 3).join(", ")}, or driving on the surrounding highways, our mobile tire units provide immediate on-site relief.
+                Whether you are parked at home, at work, or on the road, our mobile tire units provide prompt on-site service.
               </p>
 
               <div className="mt-8 space-y-3.5">
@@ -427,28 +408,30 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                 ))}
               </div>
 
-              {/* Local Landmarks */}
-              <div className="mt-8 pt-6 border-t border-border">
-                <p className="text-xs font-bold text-foreground mb-3">
-                  Key {city.name} Destinations in Our Daily Dispatch Zone:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {city.localLandmarks.map((landmark) => (
-                    <span
-                      key={landmark}
-                      className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
-                    >
-                      📍 {landmark}
-                    </span>
-                  ))}
+              {/* Local Landmarks if any */}
+              {city.localLandmarks.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-border">
+                  <p className="text-xs font-bold text-foreground mb-3">
+                    Key {city.name} Destinations:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {city.localLandmarks.map((landmark) => (
+                      <span
+                        key={landmark}
+                        className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                      >
+                        📍 {landmark}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Google Map Embed */}
             <div className="overflow-hidden rounded-[24px] border border-border shadow-lg h-[400px]">
               <iframe
-                title={`Google Map of ${city.name}, TX`}
+                title={`Google Map of ${city.name}, ON`}
                 src={city.mapEmbedUrl}
                 width="100%"
                 height="100%"
@@ -469,7 +452,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
             <div className="text-center">
               <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary">
                 <HelpCircle size={14} />
-                Local Knowledge
+                Local Information
               </div>
               <h2 className="mt-3 text-3xl font-extrabold text-foreground sm:text-4xl">
                 Frequently Asked Questions about {city.name} Mobile Tire Service
@@ -495,7 +478,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         </Container>
       </section>
 
-      {/* Customer Testimonials from Prompt 5 */}
+      {/* Customer Testimonials */}
       <Testimonials />
 
       {/* Nearby Service Areas Internal Linking Grid */}
@@ -503,14 +486,14 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         <Container>
           <div className="text-center max-w-2xl mx-auto mb-10">
             <h3 className="text-2xl font-bold text-foreground">
-              Also Servicing Nearby North Texas Cities
+              Also Servicing Nearby Communities
             </h3>
             <p className="mt-2 text-xs text-text-secondary">
               Need mobile tire service outside {city.name}? Explore our other dedicated service areas.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {otherCities.map((other) => (
               <Link
                 key={other.slug}

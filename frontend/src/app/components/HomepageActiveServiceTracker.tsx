@@ -220,9 +220,7 @@ export default function HomepageActiveServiceTracker() {
 
     if (isArrived) {
       statusHeadline = "Technician Has Arrived";
-      statusSubtext = activeBooking.technician?.name
-        ? `${activeBooking.technician.name} is on-site with your mobile unit.`
-        : "Our technician has arrived on-site.";
+      statusSubtext = "Your HT Mobile Technician is on-site with your mobile unit.";
       badgeLabel = "Arrived";
       badgeStyle = "bg-emerald-900/60 text-emerald-300 border-emerald-700/50";
       iconNode = <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />;
@@ -232,17 +230,13 @@ export default function HomepageActiveServiceTracker() {
         minute: "2-digit",
       });
       statusHeadline = `Expected ~${formattedEta} (${activeBooking.etaMinutes}m)`;
-      statusSubtext = activeBooking.technician?.name
-        ? `${activeBooking.technician.name} is en route to your location.`
-        : "Mobile service unit is en route to your location.";
+      statusSubtext = "Your HT Mobile Technician is en route to your location.";
       badgeLabel = "En Route";
       badgeStyle = "bg-blue-900/60 text-blue-300 border-blue-700/50";
       iconNode = <Car size={18} className="text-blue-400 shrink-0" />;
     } else if (hasTechnician) {
       statusHeadline = "Technician Assigned";
-      statusSubtext = activeBooking.technician?.name
-        ? `${activeBooking.technician.name} is preparing your equipment.`
-        : "Your service request has been scheduled and assigned.";
+      statusSubtext = "Your HT Mobile Technician is preparing your equipment.";
       badgeLabel = "Assigned";
       badgeStyle = "bg-emerald-900/60 text-emerald-300 border-emerald-700/50";
       iconNode = <Car size={18} className="text-emerald-400 shrink-0" />;

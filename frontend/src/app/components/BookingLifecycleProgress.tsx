@@ -75,7 +75,7 @@ export default function BookingLifecycleProgress({
   } else if (booking.status === "completed") {
     activeStepIndex = 3;
     statusSummaryHeadline = "Service Completed";
-    statusSummarySubtitle = "All tire work has been completed. Thank you for choosing HT Mobile Tires!";
+    statusSummarySubtitle = "All tire work has been completed. Thank you for choosing HT Mobile Tire!";
   }
 
   const isConfirmedDone =

@@ -113,7 +113,7 @@ export default async function AdminBookingDetailPage({ params }: PageProps) {
     booking.latitude && booking.longitude
       ? `https://www.google.com/maps/dir/?api=1&destination=${booking.latitude},${booking.longitude}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-          booking.formattedAddress || booking.location || "Dallas, TX"
+          booking.formattedAddress || booking.location || ""
         )}`;
 
   const shortRef = booking.id.replace(/-/g, "").slice(0, 6).toUpperCase();

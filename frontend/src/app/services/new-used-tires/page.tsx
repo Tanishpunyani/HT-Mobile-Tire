@@ -20,7 +20,7 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "New and Used Tires | HT Mobile Tires",
+  title: "New and Used Tires | HT Mobile Tire",
   description: "Quality new and used tires delivered and installed at your location. Mobile tire service that comes to you.",
 };
 

@@ -1,5 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  parseTimeToMinutes,
+  isSlotInPast,
+  CANONICAL_2HOUR_SLOTS,
+  CanonicalSlot,
+} from "@/lib/utils/timezone";
 
 export interface BookingAvailabilityResult {
   available: boolean;
@@ -9,39 +15,29 @@ export interface BookingAvailabilityResult {
   remainingMinutes?: number;
 }
 
+export interface SlotAvailabilityItem {
+  time: string;
+  endTime: string;
+  label: string;
+  available: boolean;
+  reason?: "past" | "occupied";
+}
+
 export const DEFAULT_SERVICE_DURATION_MINUTES = 45;
 export const DEFAULT_BUFFER_MINUTES = 15;
 export const DEFAULT_TOTAL_DURATION_MINUTES = 60; // 45 min service + 15 min buffer
 
 /**
- * Converts a time representation (Date object, string "HH:MM", or ISO string) to minutes from midnight (0-1439).
+ * Converts a time representation (Date object, string "HH:MM", "HH:MM AM/PM", or ISO string) to minutes from midnight (0-1439).
+ * Correctly converts 12-hour AM/PM and 24-hour formats.
  */
 export function timeToMinutes(time: Date | string | null | undefined): number {
-  if (!time) return 0;
-
-  if (time instanceof Date) {
-    return time.getUTCHours() * 60 + time.getUTCMinutes();
-  }
-
-  if (typeof time === "string") {
-    // If format is "HH:MM" or "HH:MM:SS"
-    if (time.includes(":")) {
-      const parts = time.split(":");
-      const hours = parseInt(parts[0], 10) || 0;
-      const minutes = parseInt(parts[1], 10) || 0;
-      return hours * 60 + minutes;
-    }
-    const d = new Date(time);
-    if (!isNaN(d.getTime())) {
-      return d.getUTCHours() * 60 + d.getUTCMinutes();
-    }
-  }
-
-  return 0;
+  return parseTimeToMinutes(time);
 }
 
 /**
  * Checks whether two time windows on the same date overlap.
+ * Uses half-open interval comparison [start, end).
  */
 export function doTimeWindowsOverlap(
   startA: number,
@@ -55,7 +51,9 @@ export function doTimeWindowsOverlap(
 }
 
 /**
- * Checks whether a specific date and time slot has available technician capacity.
+ * Checks whether a specific date and time slot has available capacity.
+ * Supports pending, confirmed, and in_progress reservation.
+ * When maxCapacity is set to 1, any single overlapping booking marks the window unavailable.
  */
 export async function checkSlotCapacity(
   txOrPrisma: any,
@@ -64,6 +62,8 @@ export async function checkSlotCapacity(
     bookingTime: Date | string;
     durationMinutes?: number;
     excludeBookingId?: string;
+    maxCapacity?: number;
+    statuses?: string[];
   }
 ): Promise<{
   available: boolean;
@@ -71,22 +71,27 @@ export async function checkSlotCapacity(
   overlappingBookingsCount: number;
   availableSlotsRemaining: number;
 }> {
-  const duration = params.durationMinutes || DEFAULT_TOTAL_DURATION_MINUTES;
+  const duration = params.durationMinutes || 120;
   const targetTimeMinutes = timeToMinutes(params.bookingTime);
 
-  // 1. Get total active technicians
+  // 1. Determine capacity limit
   const totalActiveTechnicians = await txOrPrisma.technician.count({
     where: { isActive: true },
   });
 
-  const capacity = Math.max(1, totalActiveTechnicians || 5);
+  const capacity =
+    params.maxCapacity !== undefined
+      ? params.maxCapacity
+      : Math.max(1, totalActiveTechnicians || 5);
 
-  // 2. Fetch all confirmed or in_progress bookings on the target date
+  // 2. Fetch all active bookings (pending, confirmed, in_progress) on the target date
   const startOfDay = new Date(params.bookingDate);
   startOfDay.setUTCHours(0, 0, 0, 0);
 
   const endOfDay = new Date(params.bookingDate);
   endOfDay.setUTCHours(23, 59, 59, 999);
+
+  const targetStatuses = params.statuses || ["pending", "confirmed", "in_progress"];
 
   const bookingsOnDate = await txOrPrisma.booking.findMany({
     where: {
@@ -94,7 +99,7 @@ export async function checkSlotCapacity(
         gte: startOfDay,
         lte: endOfDay,
       },
-      status: { in: ["confirmed", "in_progress"] },
+      status: { in: targetStatuses },
       ...(params.excludeBookingId ? { id: { not: params.excludeBookingId } } : {}),
     },
     select: {
@@ -110,7 +115,9 @@ export async function checkSlotCapacity(
   for (const b of bookingsOnDate) {
     const existingStart = timeToMinutes(b.bookingTime);
     const existingDuration =
-      (b.estimatedDurationMinutes || DEFAULT_SERVICE_DURATION_MINUTES) + DEFAULT_BUFFER_MINUTES;
+      b.estimatedDurationMinutes && b.estimatedDurationMinutes >= 120
+        ? b.estimatedDurationMinutes
+        : Math.max(120, (b.estimatedDurationMinutes || DEFAULT_SERVICE_DURATION_MINUTES) + DEFAULT_BUFFER_MINUTES);
 
     if (doTimeWindowsOverlap(targetTimeMinutes, duration, existingStart, existingDuration)) {
       overlappingCount++;
@@ -126,6 +133,78 @@ export async function checkSlotCapacity(
     overlappingBookingsCount: overlappingCount,
     availableSlotsRemaining,
   };
+}
+
+/**
+ * Generates all 2-hour slots for a given date in America/Toronto,
+ * verifying both past-time status and database occupancy.
+ */
+export async function getAvailableSlotsForDate(
+  txOrPrisma: any,
+  dateStr: string,
+  referenceDate: Date = new Date()
+): Promise<SlotAvailabilityItem[]> {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
+
+  const activeBookings = await txOrPrisma.booking.findMany({
+    where: {
+      bookingDate: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+      status: { in: ["pending", "confirmed", "in_progress"] },
+    },
+    select: {
+      id: true,
+      bookingTime: true,
+      estimatedDurationMinutes: true,
+    },
+  });
+
+  return CANONICAL_2HOUR_SLOTS.map((slot: CanonicalSlot) => {
+    // 1. Is slot in the past?
+    if (isSlotInPast(dateStr, slot.value, referenceDate)) {
+      return {
+        time: slot.value,
+        endTime: slot.endTime,
+        label: slot.label,
+        available: false,
+        reason: "past",
+      };
+    }
+
+    // 2. Does slot overlap with any active booking window?
+    const slotStart = slot.startMinutes;
+    const slotDuration = slot.durationMinutes;
+
+    const isOccupied = activeBookings.some((b: any) => {
+      const bStart = timeToMinutes(b.bookingTime);
+      const bDuration =
+        b.estimatedDurationMinutes && b.estimatedDurationMinutes >= 120
+          ? b.estimatedDurationMinutes
+          : Math.max(120, (b.estimatedDurationMinutes || DEFAULT_SERVICE_DURATION_MINUTES) + DEFAULT_BUFFER_MINUTES);
+      return doTimeWindowsOverlap(slotStart, slotDuration, bStart, bDuration);
+    });
+
+    if (isOccupied) {
+      return {
+        time: slot.value,
+        endTime: slot.endTime,
+        label: slot.label,
+        available: false,
+        reason: "occupied",
+      };
+    }
+
+    return {
+      time: slot.value,
+      endTime: slot.endTime,
+      label: slot.label,
+      available: true,
+    };
+  });
 }
 
 /**
@@ -181,7 +260,7 @@ export async function checkTechnicianAvailability(
 }
 
 /**
- * Checks whether HT Mobile Tires currently has active fleet capacity for on-demand service.
+ * Checks whether HT Mobile Tire currently has active fleet capacity for on-demand service.
  * Considers all active mobile tire technicians.
  */
 export async function getBookingAvailability(): Promise<BookingAvailabilityResult> {

@@ -49,7 +49,7 @@ export default function Navbar() {
               </div>
 
               <div className="text-xs font-bold uppercase tracking-widest text-primary">
-                Tires
+                Tire
               </div>
             </div>
           </Link>

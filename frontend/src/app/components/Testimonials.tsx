@@ -20,8 +20,8 @@ interface PublicReview {
 export default function Testimonials() {
   const [reviews, setReviews] = useState<PublicReview[]>([]);
   const [stats, setStats] = useState<{ averageRating: number; totalCount: number }>({
-    averageRating: 4.9,
-    totalCount: 140,
+    averageRating: 0,
+    totalCount: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -44,6 +44,10 @@ export default function Testimonials() {
 
     loadReviews();
   }, []);
+
+  if (!loading && reviews.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-background-light py-20 sm:py-24 border-t border-border">

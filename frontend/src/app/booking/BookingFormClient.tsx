@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, useCallback, FormEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Container from "@/app/components/Container";
 import {
@@ -25,6 +25,15 @@ import TireSizeSelector from "@/app/components/TireSizeSelector";
 import BookingWaitScreen from "@/app/components/BookingWaitScreen";
 import { SERVICE_NAMES, normalizeServiceName } from "@/lib/constants/services";
 import { createBookingRequestAction } from "@/app/actions/bookings";
+import { getTorontoTodayString } from "@/lib/utils/timezone";
+
+interface DynamicSlot {
+  time: string;
+  endTime: string;
+  label: string;
+  available: boolean;
+  reason?: "past" | "occupied";
+}
 
 type CustomerProfile = {
   id: string;
@@ -58,9 +67,11 @@ export default function BookingFormClient({
   const [locationAddress, setLocationAddress] = useState<string>("");
   const [structuredAddress, setStructuredAddress] = useState<StructuredAddress | null>(null);
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getTorontoTodayString();
   const [bookingDate, setBookingDate] = useState<string>(todayStr);
-  const [bookingTime, setBookingTime] = useState<string>("09:00 AM");
+  const [bookingTime, setBookingTime] = useState<string>("");
+  const [slots, setSlots] = useState<DynamicSlot[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   const [tireSize, setTireSize] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -70,6 +81,48 @@ export default function BookingFormClient({
     estimatedCompletionAt?: string;
     remainingMinutes?: number;
   } | null>(null);
+
+  const fetchSlots = useCallback(async (targetDate: string, desiredTime?: string) => {
+    try {
+      setSlotsLoading(true);
+      const res = await fetch(`/api/bookings/availability?date=${targetDate}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data.slots)) {
+        const fetchedSlots: DynamicSlot[] = data.slots;
+        setSlots(fetchedSlots);
+
+        setBookingTime((currentTime) => {
+          const timeToEvaluate = desiredTime !== undefined ? desiredTime : currentTime;
+          if (timeToEvaluate) {
+            const matched = fetchedSlots.find((s) => s.time === timeToEvaluate);
+            if (matched && matched.available) {
+              return timeToEvaluate;
+            }
+          }
+          const firstAvail = fetchedSlots.find((s) => s.available);
+          return firstAvail ? firstAvail.time : "";
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch slots:", err);
+    } finally {
+      setSlotsLoading(false);
+    }
+  }, []);
+
+  // Real-time timer: fetch on date change, and poll every 30 seconds
+  useEffect(() => {
+    fetchSlots(bookingDate);
+
+    const intervalId = setInterval(() => {
+      fetchSlots(bookingDate);
+    }, 30000);
+
+    return () => clearInterval(intervalId);
+  }, [bookingDate, fetchSlots]);
 
   useEffect(() => {
     const serviceQuery = searchParams.get("service");
@@ -145,7 +198,13 @@ export default function BookingFormClient({
     const formData = new FormData(form);
 
     const selectedDateValue = bookingDate || String(formData.get("bookingDate") || "").trim() || todayStr;
-    const selectedTimeValue = bookingTime || String(formData.get("bookingTime") || "").trim() || "09:00 AM";
+    const selectedTimeValue = bookingTime || String(formData.get("bookingTime") || "").trim();
+
+    if (!selectedTimeValue) {
+      setErrorMsg("Please select an available appointment time window.");
+      setLoading(false);
+      return;
+    }
 
     const data = {
       name: String(formData.get("name") || "").trim(),
@@ -464,16 +523,28 @@ export default function BookingFormClient({
                           required
                           min={todayStr}
                           value={bookingDate}
-                          onChange={(e) => setBookingDate(e.target.value)}
+                          onChange={(e) => {
+                            const newDate = e.target.value;
+                            setBookingDate(newDate);
+                            setBookingTime("");
+                            fetchSlots(newDate);
+                          }}
                           className="w-full rounded-xl border border-border bg-slate-50/50 pl-9 pr-4 py-2.5 text-sm font-medium text-foreground outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label htmlFor="bookingTime" className="mb-1 block text-xs font-bold text-foreground">
-                        Preferred Time Window *
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label htmlFor="bookingTime" className="block text-xs font-bold text-foreground">
+                          Preferred Time Window *
+                        </label>
+                        {slotsLoading && (
+                          <span className="text-[11px] text-slate-400 font-medium animate-pulse">
+                            Checking slots...
+                          </span>
+                        )}
+                      </div>
                       <div className="relative">
                         <Clock className="absolute left-3 top-3 text-slate-400" size={16} />
                         <select
@@ -484,12 +555,38 @@ export default function BookingFormClient({
                           onChange={(e) => setBookingTime(e.target.value)}
                           className="w-full rounded-xl border border-border bg-slate-50/50 pl-9 pr-4 py-2.5 text-sm font-medium text-foreground outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
                         >
-                          <option value="08:00 AM">08:00 AM – 10:00 AM (Morning)</option>
-                          <option value="10:00 AM">10:00 AM – 12:00 PM (Late Morning)</option>
-                          <option value="12:00 PM">12:00 PM – 02:00 PM (Midday)</option>
-                          <option value="02:00 PM">02:00 PM – 04:00 PM (Afternoon)</option>
-                          <option value="04:00 PM">04:00 PM – 06:00 PM (Late Afternoon)</option>
-                          <option value="06:00 PM">06:00 PM – 08:00 PM (Evening)</option>
+                          {slots.length === 0 ? (
+                            <option value="" disabled>
+                              Loading available slots...
+                            </option>
+                          ) : (
+                            <>
+                              <option value="" disabled>
+                                -- Select a 2-Hour Time Window --
+                              </option>
+                              {slots.map((slot) => {
+                                const isPast = slot.reason === "past";
+                                const isOccupied = slot.reason === "occupied";
+                                const disabled = !slot.available;
+                                const statusSuffix = isPast
+                                  ? " (Passed)"
+                                  : isOccupied
+                                  ? " (Unavailable / Booked)"
+                                  : "";
+
+                                return (
+                                  <option
+                                    key={slot.time}
+                                    value={slot.time}
+                                    disabled={disabled}
+                                    className={disabled ? "text-slate-400 bg-slate-100" : "text-slate-900"}
+                                  >
+                                    {slot.label}{statusSuffix}
+                                  </option>
+                                );
+                              })}
+                            </>
+                          )}
                         </select>
                       </div>
                     </div>

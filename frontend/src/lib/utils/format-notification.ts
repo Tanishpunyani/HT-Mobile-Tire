@@ -72,15 +72,15 @@ export function formatNotificationBody(raw: string | null | undefined): string {
     }
     if (line === "Roadside Emergency") continue;
     if (
-      line === "HT Mobile Tires" &&
+      (line === "HT Mobile Tires" || line === "HT Mobile Tire") &&
       (rawLines[i + 1] === "On-Demand Roadside & Driveway Tire Service" ||
         rawLines[i - 1] === "Roadside Emergency")
     ) {
       continue;
     }
     if (line === "On-Demand Roadside & Driveway Tire Service") continue;
-    if (line.includes("HT Mobile Tires • Fast Roadside & On-Site Tire Care")) continue;
-    if (line.includes("©") && line.includes("HT Mobile Tires")) continue;
+    if (line.includes("HT Mobile Tires • Fast Roadside & On-Site Tire Care") || line.includes("HT Mobile Tire • Fast Roadside & On-Site Tire Care")) continue;
+    if (line.includes("©") && (line.includes("HT Mobile Tires") || line.includes("HT Mobile Tire"))) continue;
     if (line.startsWith("Track Status in Customer Account")) continue;
     contentLines.push(line);
   }

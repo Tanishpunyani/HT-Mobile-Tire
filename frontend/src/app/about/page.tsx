@@ -41,9 +41,9 @@ const process = [
 ];
 
 export const metadata: Metadata = {
-  title: "About Us | HT Mobile Tires",
+  title: "About Us | HT Mobile Tire",
   description:
-    "Learn about HT Mobile Tires — professional mobile tire services brought directly to your location for your convenience.",
+    "Learn about HT Mobile Tire — professional mobile tire services brought directly to your location for your convenience.",
 };
 
 export default function AboutPage() {
@@ -54,7 +54,7 @@ export default function AboutPage() {
         <Container>
           <div className="max-w-3xl">
             <p className="text-sm font-bold uppercase tracking-wider text-primary">
-              About HT Mobile Tires
+              About HT Mobile Tire
             </p>
 
             <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -62,7 +62,7 @@ export default function AboutPage() {
             </h1>
 
             <p className="mt-6 text-lg leading-8 text-slate-300">
-              HT Mobile Tires is built around a simple idea: tire service
+              HT Mobile Tire is built around a simple idea: tire service
               should be convenient. Instead of making you drive to a shop,
               our mobile approach brings tire service directly to your
               location.
@@ -85,7 +85,7 @@ export default function AboutPage() {
               </h2>
 
               <p className="mt-5 text-base leading-7 text-text-secondary">
-                HT Mobile Tires provides mobile tire services designed to
+                HT Mobile Tire provides mobile tire services designed to
                 make tire care easier for individuals and businesses. Whether
                 you need new or used tires, wheel balancing, tire mounting,
                 flat tire repair, or fleet tire service, we bring the service
@@ -174,7 +174,7 @@ export default function AboutPage() {
               </p>
 
               <p className="mt-4 text-base leading-7 text-text-secondary">
-                That&apos;s why HT Mobile Tires is built around a mobile-first
+                That&apos;s why HT Mobile Tire is built around a mobile-first
                 service model. You tell us where you are and what you need,
                 and we bring the tire service to you.
               </p>
