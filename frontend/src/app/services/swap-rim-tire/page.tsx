@@ -6,8 +6,10 @@ import {
   ArrowRight,
   CheckCircle2,
   Disc3,
+  Phone,
 } from "lucide-react";
 import Container from "../../components/Container";
+import { BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
 
 const features = [
   "Professional tire removal from rims",
@@ -55,21 +57,28 @@ export default function SwapRimTirePage() {
                 professional tire mounting service directly to your location.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/booking?service=swap-rim-tire"
-                  className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-primary px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-lg"
-                >
-                  Book This Service
-                  <ArrowRight size={18} />
-                </Link>
+              <div className="mt-8 space-y-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    href="/booking?service=swap-rim-tire"
+                    className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-primary px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-lg"
+                  >
+                    Book This Service
+                    <ArrowRight size={18} />
+                  </Link>
 
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center rounded-[10px] border border-white/20 px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:bg-white/10"
-                >
-                  Contact Us
-                </Link>
+                  <a
+                    href={BUSINESS_PHONE_TEL}
+                    className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/20 px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:bg-white/10"
+                  >
+                    <Phone size={18} className="text-primary" />
+                    Call Now
+                  </a>
+                </div>
+
+                <p className="text-xs font-medium text-slate-300">
+                  Call Now for Direct Service
+                </p>
               </div>
             </div>
 

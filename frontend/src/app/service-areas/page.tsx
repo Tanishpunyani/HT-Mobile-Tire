@@ -104,11 +104,15 @@ export default function ServiceAreasPage() {
                         <span>{highlight}</span>
                       </div>
                     ))}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-primary">•</span>
+                      <span>Call Now for Direct Service</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* City Link Button */}
-                <div className="mt-8 pt-4 border-t border-border">
+                {/* City Link Button & Call Action */}
+                <div className="mt-8 pt-4 border-t border-border flex flex-col gap-2.5">
                   <Link
                     href={`/service-area/${city.slug}`}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-xs font-bold text-white transition-all group-hover:bg-primary"
@@ -116,6 +120,14 @@ export default function ServiceAreasPage() {
                     <span>View {city.name} City Page</span>
                     <ArrowRight size={15} />
                   </Link>
+
+                  <a
+                    href={BUSINESS_PHONE_TEL}
+                    className="group/call inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 py-3 text-xs font-bold text-slate-800 transition hover:border-primary hover:bg-primary hover:text-white"
+                  >
+                    <Phone size={14} className="text-primary transition group-hover/call:text-white" />
+                    <span>Call Now</span>
+                  </a>
                 </div>
               </div>
             ))}
