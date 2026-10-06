@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Phone } from "lucide-react";
 import Container from "../components/Container";
 import ServiceCard from "../components/ServiceCard";
 import BrandMarquee from "../components/BrandMarquee";
 import PricingTable from "../components/PricingTable";
 import FAQ from "../components/FAQ";
 import ContactCTA from "../components/ContactCTA";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
 
 const services = [
   {
@@ -56,18 +58,45 @@ export default function ServicesPage() {
       {/* Page Header */}
       <section className="bg-secondary py-20 sm:py-24 border-b border-white/10">
         <Container>
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">
-              Full-Service Mobile Shop
-            </p>
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary">
+                Full-Service Mobile Shop
+              </p>
 
-            <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Professional Tire Services That Come to You.
-            </h1>
+              <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                Professional Tire Services That Come to You.
+              </h1>
 
-            <p className="mt-6 text-base leading-8 text-slate-300 sm:text-lg">
-              From new tire replacement and seasonal wheel swaps to emergency flat repairs, our fully equipped mobile service vans handle everything at your home, office, or roadside.
-            </p>
+              <p className="mt-6 text-base leading-8 text-slate-300 sm:text-lg">
+                From new tire replacement and seasonal wheel swaps to emergency flat repairs, our fully equipped mobile service vans handle everything at your home, office, or roadside.
+              </p>
+            </div>
+
+            {/* Call Now Hero CTA */}
+            <div className="shrink-0 lg:max-w-xs w-full">
+              <div className="rounded-[20px] border border-white/15 bg-white/5 p-6 backdrop-blur-sm sm:p-7">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/20 text-primary border border-primary/30">
+                  <Phone size={20} />
+                </div>
+                <h3 className="mt-4 text-base font-bold text-white">
+                  Need Help or Have Questions?
+                </h3>
+                <p className="mt-1 text-2xl font-extrabold text-white tracking-tight">
+                  {BUSINESS_PHONE_DISPLAY}
+                </p>
+                <p className="mt-2 text-xs text-slate-300">
+                  Call our service team directly for immediate assistance or questions.
+                </p>
+                <a
+                  href={BUSINESS_PHONE_TEL}
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-primary px-5 py-3 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover active:scale-95"
+                >
+                  <Phone size={16} />
+                  <span>Call Now</span>
+                </a>
+              </div>
+            </div>
           </div>
         </Container>
       </section>

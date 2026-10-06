@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Container from "@/app/components/Container";
 import { getAllCities } from "@/lib/cities";
-import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
+import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
 
 export const metadata: Metadata = {
   title: "Service Areas | HT Mobile Tire",
@@ -43,6 +43,16 @@ export default function ServiceAreasPage() {
             <p className="mt-6 text-base leading-8 text-slate-300 sm:text-lg">
               We bring professional tire repair, mounting, and balancing directly to your vehicle across our confirmed service locations.
             </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href={BUSINESS_PHONE_TEL}
+                className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-lg"
+              >
+                <Phone size={18} />
+                <span>Call Now: {BUSINESS_PHONE_DISPLAY}</span>
+              </a>
+            </div>
           </div>
         </Container>
       </section>

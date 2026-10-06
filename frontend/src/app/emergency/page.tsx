@@ -16,7 +16,7 @@ import {
 import Container from "../components/Container";
 import AddressAutocomplete, { type StructuredAddress } from "../components/AddressAutocomplete";
 import GpsLocationButton from "../components/GpsLocationButton";
-import { BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
 
 const problems = [
   "Flat Tire",
@@ -129,6 +129,16 @@ export default function EmergencyPage() {
             <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-white border border-white/20 backdrop-blur-sm">
               <Clock3 size={14} className="text-primary" />
               Average Roadside Response: 30–45 Minutes
+            </div>
+
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href={BUSINESS_PHONE_TEL}
+                className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-red-600 px-7 py-3.5 text-base font-bold text-white shadow-lg shadow-red-600/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 active:scale-95"
+              >
+                <Phone size={18} />
+                <span>Call Now: {BUSINESS_PHONE_DISPLAY}</span>
+              </a>
             </div>
           </div>
         </Container>

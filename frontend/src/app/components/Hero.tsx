@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock3, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, Clock3, Phone, ShieldCheck, Zap } from "lucide-react";
 import Container from "./Container";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
 
 export default function Hero() {
   return (
@@ -30,7 +31,7 @@ export default function Hero() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3.5 sm:flex-row sm:items-center">
               <Link
                 href="/booking"
                 className="group inline-flex items-center justify-center gap-2 rounded-[10px] bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-md hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-lg"
@@ -43,13 +44,20 @@ export default function Hero() {
               </Link>
 
               <Link
-               
-  href="/emergency"
+                href="/emergency"
                 className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-bold text-white hover:-translate-y-0.5 hover:bg-white/10"
               >
                 <Zap size={18} className="text-primary" />
                 Emergency Service
               </Link>
+
+              <a
+                href={BUSINESS_PHONE_TEL}
+                className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
+              >
+                <Phone size={18} className="text-primary" />
+                <span>Call Now: {BUSINESS_PHONE_DISPLAY}</span>
+              </a>
             </div>
 
             {/* Trust Points */}
