@@ -34,9 +34,9 @@ export default function BookingHistorySection({
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="lg:col-span-2">
-        <div className="rounded-[20px] border border-border bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex items-center justify-between">
-            <div>
+        <div className="rounded-[20px] border border-border bg-white p-5 sm:p-8 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h2 className="text-xl font-bold text-foreground">Service Bookings</h2>
               <p className="mt-1 text-sm text-text-secondary">
                 View and manage your scheduled mobile tire service visits.
@@ -44,7 +44,7 @@ export default function BookingHistorySection({
             </div>
             <Link
               href="/booking"
-              className="inline-flex items-center gap-2 rounded-[10px] bg-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-primary-hover"
+              className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-primary-hover shrink-0 self-start sm:self-auto"
             >
               <Wrench size={14} />
               Book New

@@ -13,9 +13,9 @@ export default function EmergencyRequestsSection({
   emergencyRequests,
 }: EmergencyRequestsSectionProps) {
   return (
-    <div className="rounded-[20px] border border-border bg-white p-6 shadow-sm sm:p-8">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="rounded-[20px] border border-border bg-white p-5 sm:p-8 shadow-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-xl font-bold text-foreground">Emergency Assistance History</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Review your urgent roadside assistance requests.
@@ -23,7 +23,7 @@ export default function EmergencyRequestsSection({
         </div>
         <Link
           href="/emergency"
-          className="inline-flex items-center gap-2 rounded-[10px] bg-red-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-red-700"
+          className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-red-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-red-700 shrink-0 self-start sm:self-auto"
         >
           <Siren size={14} />
           New Request

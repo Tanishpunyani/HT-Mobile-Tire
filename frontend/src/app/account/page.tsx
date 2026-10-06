@@ -420,123 +420,132 @@ function AccountPageInner() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
-      <Container>
-        <div className="space-y-8">
-          {/* 1. Header Profile Card */}
-          {customer && (
-            <AccountProfileCard
-              customer={customer}
-              bookings={bookings}
-              emergencyRequests={emergencyRequests}
-              contactInquiries={contactInquiries}
-              unauthorizedAdminError={false}
-              onEditProfile={() => setIsEditingProfile(true)}
+    <div className="min-h-screen bg-slate-900 text-slate-100">
+      {/* 1. Header Profile Card */}
+      {customer && (
+        <AccountProfileCard
+          customer={customer}
+          bookings={bookings}
+          emergencyRequests={emergencyRequests}
+          contactInquiries={contactInquiries}
+          unauthorizedAdminError={false}
+          onEditProfile={() => setIsEditingProfile(true)}
+        />
+      )}
+
+      {/* 2. Main Account Area */}
+      <div className="py-8 sm:py-10">
+        <Container>
+          <div className="space-y-8">
+            {/* 2. Navigation Tabs */}
+            <div className="border-b border-slate-700">
+              <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto scrollbar-none pb-px">
+                <button
+                  type="button"
+                  onClick={() => switchTab("bookings")}
+                  className={`shrink-0 pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap px-1 ${
+                    activeTab === "bookings"
+                      ? "border-blue-500 text-blue-400 font-semibold"
+                      : "border-transparent text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <CalendarDays className="w-4 h-4 shrink-0" />
+                  <span>Bookings ({bookings.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchTab("emergency")}
+                  className={`shrink-0 pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap px-1 ${
+                    activeTab === "emergency"
+                      ? "border-amber-500 text-amber-400 font-semibold"
+                      : "border-transparent text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <Siren className="w-4 h-4 shrink-0" />
+                  <span>Emergency ({emergencyRequests.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchTab("inquiries")}
+                  className={`shrink-0 pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap px-1 ${
+                    activeTab === "inquiries"
+                      ? "border-emerald-500 text-emerald-400 font-semibold"
+                      : "border-transparent text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <Mail className="w-4 h-4 shrink-0" />
+                  <span>Inquiries ({contactInquiries.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchTab("settings")}
+                  className={`shrink-0 pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap px-1 ${
+                    activeTab === "settings"
+                      ? "border-purple-500 text-purple-400 font-semibold"
+                      : "border-transparent text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <User className="w-4 h-4 shrink-0" />
+                  <span>Security</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 3. Tab Contents */}
+            <div className="pt-2">
+              {activeTab === "bookings" && (
+                <BookingHistorySection
+                  bookings={bookings}
+                  bookingsLoading={bookingsLoading}
+                />
+              )}
+
+              {activeTab === "emergency" && (
+                <EmergencyRequestsSection emergencyRequests={emergencyRequests} />
+              )}
+
+              {activeTab === "inquiries" && (
+                <ContactInquiriesSection contactInquiries={contactInquiries} />
+              )}
+
+              {activeTab === "settings" && (
+                <AccountSecuritySection
+                  isChangingPassword={isChangingPassword}
+                  setIsChangingPassword={setIsChangingPassword}
+                  newPassword={newPassword}
+                  setNewPassword={setNewPassword}
+                  confirmPassword={confirmPassword}
+                  setConfirmPassword={setConfirmPassword}
+                  passwordSaving={passwordSaving}
+                  passwordMessage={passwordMessage}
+                  onPasswordSubmit={handlePasswordSubmit}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* 4. Modals */}
+          {reviewModalBooking && (
+            <ReviewModal
+              bookingId={reviewModalBooking.id}
+              serviceName={reviewModalBooking.primaryService || reviewModalBooking.service?.name || "Mobile Tire Service"}
+              vehicle={reviewModalBooking.vehicle || "Vehicle"}
+              onClose={() => setReviewModalBooking(null)}
+              onSuccess={() => {
+                setReviewModalBooking(null);
+                void loadBookings();
+              }}
             />
           )}
 
-          {/* 2. Navigation Tabs */}
-          <div className="flex border-b border-slate-700 space-x-4">
-            <button
-              onClick={() => switchTab("bookings")}
-              className={`pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
-                activeTab === "bookings"
-                  ? "border-blue-500 text-blue-400"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <CalendarDays className="w-4 h-4" />
-              Bookings ({bookings.length})
-            </button>
-            <button
-              onClick={() => switchTab("emergency")}
-              className={`pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
-                activeTab === "emergency"
-                  ? "border-amber-500 text-amber-400"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <Siren className="w-4 h-4" />
-              Emergency ({emergencyRequests.length})
-            </button>
-            <button
-              onClick={() => switchTab("inquiries")}
-              className={`pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
-                activeTab === "inquiries"
-                  ? "border-emerald-500 text-emerald-400"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <Mail className="w-4 h-4" />
-              Inquiries ({contactInquiries.length})
-            </button>
-            <button
-              onClick={() => switchTab("settings")}
-              className={`pb-3 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors ${
-                activeTab === "settings"
-                  ? "border-purple-500 text-purple-400"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <User className="w-4 h-4" />
-              Security
-            </button>
-          </div>
-
-          {/* 3. Tab Contents */}
-          <div className="pt-2">
-            {activeTab === "bookings" && (
-              <BookingHistorySection
-                bookings={bookings}
-                bookingsLoading={bookingsLoading}
-              />
-            )}
-
-            {activeTab === "emergency" && (
-              <EmergencyRequestsSection emergencyRequests={emergencyRequests} />
-            )}
-
-            {activeTab === "inquiries" && (
-              <ContactInquiriesSection contactInquiries={contactInquiries} />
-            )}
-
-            {activeTab === "settings" && (
-              <AccountSecuritySection
-                isChangingPassword={isChangingPassword}
-                setIsChangingPassword={setIsChangingPassword}
-                newPassword={newPassword}
-                setNewPassword={setNewPassword}
-                confirmPassword={confirmPassword}
-                setConfirmPassword={setConfirmPassword}
-                passwordSaving={passwordSaving}
-                passwordMessage={passwordMessage}
-                onPasswordSubmit={handlePasswordSubmit}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* 4. Modals */}
-        {reviewModalBooking && (
-          <ReviewModal
-            bookingId={reviewModalBooking.id}
-            serviceName={reviewModalBooking.primaryService || reviewModalBooking.service?.name || "Mobile Tire Service"}
-            vehicle={reviewModalBooking.vehicle || "Vehicle"}
-            onClose={() => setReviewModalBooking(null)}
-            onSuccess={() => {
-              setReviewModalBooking(null);
-              void loadBookings();
-            }}
+          <CancelBookingModal
+            isOpen={cancellingBookingId !== null}
+            isCancelling={isCancellingBooking}
+            onConfirm={handleConfirmCancel}
+            onClose={() => setCancellingBookingId(null)}
           />
-        )}
-
-        <CancelBookingModal
-          isOpen={cancellingBookingId !== null}
-          isCancelling={isCancellingBooking}
-          onConfirm={handleConfirmCancel}
-          onClose={() => setCancellingBookingId(null)}
-        />
-      </Container>
+        </Container>
+      </div>
     </div>
   );
 }

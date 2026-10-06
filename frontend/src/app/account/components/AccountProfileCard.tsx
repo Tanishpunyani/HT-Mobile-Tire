@@ -38,7 +38,7 @@ export default function AccountProfileCard({
     : "CU";
 
   return (
-    <section className="border-b border-border bg-secondary py-12 sm:py-16">
+    <section className="border-b border-border bg-secondary pt-8 pb-10 sm:py-14 lg:py-16">
       <Container>
         {unauthorizedAdminError && (
           <div className="mb-6 flex items-center gap-3 rounded-2xl border border-red-500/50 bg-red-950/60 p-4 text-xs font-semibold text-red-200 backdrop-blur-md">
@@ -50,12 +50,12 @@ export default function AccountProfileCard({
         )}
 
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-5">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-xl font-extrabold text-white shadow-md shadow-primary/20">
+          <div className="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0">
+            <div className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg sm:text-xl font-extrabold text-white shadow-md shadow-primary/20">
               {initials}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 <span className="text-xs font-bold uppercase tracking-wider text-primary">
                   Customer Account
                 </span>
@@ -69,20 +69,26 @@ export default function AccountProfileCard({
                   </span>
                 )}
               </div>
-              <h1 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
+              <h1 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl truncate">
                 {customer.name}
               </h1>
-              <p className="text-sm text-slate-300">
-                {customer.email || "No email linked"} • {customer.phone || "No phone linked"}
-              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs sm:text-sm text-slate-300">
+                <span className="break-all">{customer.email || "No email linked"}</span>
+                {customer.phone && (
+                  <>
+                    <span className="text-slate-500 hidden sm:inline">•</span>
+                    <span className="whitespace-nowrap">{customer.phone}</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 pt-1 sm:pt-0">
             <button
               type="button"
               onClick={onEditProfile}
-              className="inline-flex items-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+              className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
             >
               <Edit3 size={16} />
               Edit Profile
@@ -94,25 +100,25 @@ export default function AccountProfileCard({
         </div>
 
         {/* Quick Stat Badges */}
-        <div className="mt-8 grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-            <p className="text-xs font-medium text-slate-400">Total Bookings</p>
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:p-4 backdrop-blur-sm">
+            <p className="text-xs font-medium text-slate-400 truncate">Total Bookings</p>
             <p className="mt-1 text-2xl font-extrabold text-white">{bookings.length}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-            <p className="text-xs font-medium text-slate-400">Active Services</p>
+          <div className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:p-4 backdrop-blur-sm">
+            <p className="text-xs font-medium text-slate-400 truncate">Active Services</p>
             <p className="mt-1 text-2xl font-extrabold text-primary">{activeBookingsCount}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-            <p className="text-xs font-medium text-slate-400">Completed</p>
+          <div className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:p-4 backdrop-blur-sm">
+            <p className="text-xs font-medium text-slate-400 truncate">Completed</p>
             <p className="mt-1 text-2xl font-extrabold text-green-400">{completedBookingsCount}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-            <p className="text-xs font-medium text-slate-400">Emergency Requests</p>
+          <div className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:p-4 backdrop-blur-sm">
+            <p className="text-xs font-medium text-slate-400 truncate">Emergency Requests</p>
             <p className="mt-1 text-2xl font-extrabold text-amber-400">{emergencyRequests.length}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm col-span-2 sm:col-span-1">
-            <p className="text-xs font-medium text-slate-400">Inquiries & Messages</p>
+          <div className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-3.5 sm:p-4 backdrop-blur-sm col-span-2 sm:col-span-1">
+            <p className="text-xs font-medium text-slate-400 truncate">Inquiries & Messages</p>
             <p className="mt-1 text-2xl font-extrabold text-sky-400">{contactInquiries.length}</p>
           </div>
         </div>
