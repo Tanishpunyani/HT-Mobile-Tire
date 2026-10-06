@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Phone, MapPin, Clock, ShieldCheck, Mail, Siren } from "lucide-react";
@@ -21,10 +22,14 @@ export default function Footer() {
         <div className="grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand & Mission */}
           <div>
-            <Link href="/" className="inline-block">
-              <div className="text-xl font-extrabold tracking-tight">
-                HT Mobile <span className="text-primary">Tire</span>
-              </div>
+            <Link href="/" className="inline-block" aria-label="HT Mobile Tire Home">
+              <Image
+                src="/images/logo.png"
+                alt="HT Mobile Tire"
+                width={180}
+                height={70}
+                className="h-12 w-auto object-contain"
+              />
             </Link>
 
             <p className="mt-4 text-xs leading-6 text-slate-300 sm:text-sm">

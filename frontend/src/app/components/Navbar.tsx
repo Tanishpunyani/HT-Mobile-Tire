@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Phone, Siren, User } from "lucide-react";
@@ -36,22 +37,18 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-3"
+            className="flex items-center"
             onClick={() => setMenuOpen(false)}
+            aria-label="HT Mobile Tire Home"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-[10px] bg-primary text-white shadow-sm shadow-primary/30">
-              <span className="text-lg font-extrabold tracking-wider">HT</span>
-            </div>
-
-            <div>
-              <div className="text-lg font-extrabold leading-tight text-white tracking-tight">
-                HT Mobile
-              </div>
-
-              <div className="text-xs font-bold uppercase tracking-widest text-primary">
-                Tire
-              </div>
-            </div>
+            <Image
+              src="/images/logo.png"
+              alt="HT Mobile Tire"
+              width={180}
+              height={70}
+              priority
+              className="h-10 w-auto object-contain sm:h-12"
+            />
           </Link>
 
           {/* Desktop Navigation */}
