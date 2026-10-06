@@ -68,8 +68,11 @@ export default function TireSizeSelector({
               Select Your Tire Size
             </h3>
           </div>
-          <p className="mt-0.5 text-xs text-text-secondary">
-            Find the three numbers on your tire sidewall (e.g., <strong>225/50R17</strong>)
+          <p className="mt-2 text-sm font-medium text-slate-700 sm:text-base">
+            Find the three numbers on your tire sidewall{" "}
+            <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs font-bold text-slate-800">
+              (e.g., 225/50R17)
+            </span>
           </p>
         </div>
 

@@ -30,34 +30,38 @@ export default function Hero() {
               location.
             </p>
 
-            {/* CTA Buttons */}
-            <div className="mt-8 flex flex-col gap-3.5 sm:flex-row sm:items-center">
-              <Link
-                href="/booking"
-                className="group inline-flex items-center justify-center gap-2 rounded-[10px] bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-md hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-lg"
-              >
-                Book a Service
-                <ArrowRight
-                  size={18}
-                  className="transition-transform duration-200 group-hover:translate-x-1"
-                />
-              </Link>
+            {/* CTA Hierarchy: Primary (Book Now) -> Secondary (Emergency) -> Lower (Call Now) */}
+            <div className="mt-8 flex flex-col gap-3.5">
+              <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center">
+                <Link
+                  href="/booking"
+                  className="group inline-flex items-center justify-center gap-2 rounded-[10px] bg-primary px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-xl sm:text-base"
+                >
+                  Book a Service
+                  <ArrowRight
+                    size={18}
+                    className="transition-transform duration-200 group-hover:translate-x-1"
+                  />
+                </Link>
 
-              <Link
-                href="/emergency"
-                className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-bold text-white hover:-translate-y-0.5 hover:bg-white/10"
-              >
-                <Zap size={18} className="text-primary" />
-                Emergency Service
-              </Link>
+                <Link
+                  href="/emergency"
+                  className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
+                >
+                  <Zap size={18} className="text-primary" />
+                  Emergency Service
+                </Link>
+              </div>
 
-              <a
-                href={BUSINESS_PHONE_TEL}
-                className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
-              >
-                <Phone size={18} className="text-primary" />
-                <span>Call Now: {BUSINESS_PHONE_DISPLAY}</span>
-              </a>
+              <div>
+                <a
+                  href={BUSINESS_PHONE_TEL}
+                  className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/10 hover:text-white"
+                >
+                  <Phone size={16} className="text-primary" />
+                  <span>Call Now: {BUSINESS_PHONE_DISPLAY}</span>
+                </a>
+              </div>
             </div>
 
             {/* Trust Points */}

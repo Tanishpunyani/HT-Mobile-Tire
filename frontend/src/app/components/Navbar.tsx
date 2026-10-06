@@ -8,7 +8,7 @@ import Container from "./Container";
 import Button from "./Button";
 import UserMenu from "./UserMenu";
 import { useAuth } from "@/lib/auth/auth-context";
-import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -81,7 +81,7 @@ export default function Navbar() {
           {/* Desktop Actions */}
           <div className="hidden items-center gap-4 md:flex min-h-[40px]">
             <a
-              href={`tel:${BUSINESS_PHONE_RAW}`}
+              href={BUSINESS_PHONE_TEL}
               className="flex items-center gap-2 text-sm font-semibold text-slate-200 transition-colors hover:text-primary mr-2"
             >
               <Phone size={16} className="text-primary" />
@@ -111,8 +111,18 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Actions: Profile + Hamburger */}
+          {/* Mobile Actions: Call Now + Profile + Hamburger */}
           <div className="flex items-center gap-2 md:hidden">
+            {/* Mobile Call Now CTA */}
+            <a
+              href={BUSINESS_PHONE_TEL}
+              className="flex h-9 items-center gap-1.5 rounded-[10px] bg-primary px-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/40"
+              aria-label="Call HT Mobile Tire"
+            >
+              <Phone size={14} className="shrink-0" />
+              <span>Call</span>
+            </a>
+
             {authLoading ? (
               <div
                 className="h-9 w-9 rounded-full bg-white/10 animate-pulse"
@@ -134,7 +144,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-[10px] text-white hover:bg-white/10"
+              className="flex h-10 w-10 items-center justify-center rounded-[10px] text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary/40"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
             >
@@ -172,7 +182,7 @@ export default function Navbar() {
 
             <div className="mt-4 border-t border-white/10 pt-4">
               <a
-                href={`tel:${BUSINESS_PHONE_RAW}`}
+                href={BUSINESS_PHONE_TEL}
                 className="mb-3 flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white"
               >
                 <Phone size={17} className="text-primary" />
