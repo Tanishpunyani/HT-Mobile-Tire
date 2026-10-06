@@ -24,7 +24,7 @@ export function runPhase4BWorkflowTests() {
       assert(content.includes('min={todayStr}'), "bookingDate must enforce min today");
       assert(content.includes('id="bookingTime"'), "bookingTime select id must exist");
       assert(content.includes('name="bookingTime"'), "bookingTime name must exist");
-      assert(content.includes("6. Preferred Appointment Schedule"), "Schedule section header must exist");
+      assert(content.includes("6. Date & Time"), "Schedule section header must exist");
     });
 
     test("B. Date and time values are packaged in formData for createBookingRequestAction", () => {

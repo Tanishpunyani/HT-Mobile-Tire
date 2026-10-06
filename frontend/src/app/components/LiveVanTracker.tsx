@@ -190,7 +190,7 @@ export default function LiveVanTracker({
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-primary" />
           <div>
             <h4 className="text-sm font-bold text-foreground">Updating your service...</h4>
-            <p className="text-xs text-text-secondary">Retrieving real-time dispatch and GPS details.</p>
+            <p className="text-xs text-text-secondary">Retrieving real-time service and GPS details.</p>
           </div>
         </div>
         <div className="h-44 w-full animate-pulse rounded-xl bg-slate-100" />
@@ -269,7 +269,7 @@ export default function LiveVanTracker({
                 className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-primary-hover active:scale-95"
               >
                 <Phone size={14} />
-                Call Dispatch: {BUSINESS_PHONE_DISPLAY}
+                Call Us: {BUSINESS_PHONE_DISPLAY}
               </a>
             </div>
           </div>
@@ -289,7 +289,7 @@ export default function LiveVanTracker({
               className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"
             >
               <Phone size={14} />
-              Call Dispatch
+              Call Us
             </a>
           </div>
         </div>
@@ -358,7 +358,7 @@ export default function LiveVanTracker({
                 className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-primary-hover active:scale-95"
               >
                 <Phone size={14} />
-                Call Dispatch: {BUSINESS_PHONE_DISPLAY}
+                Call Us: {BUSINESS_PHONE_DISPLAY}
               </a>
             </div>
           </div>
@@ -378,7 +378,7 @@ export default function LiveVanTracker({
               className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"
             >
               <Phone size={14} />
-              Call Dispatch
+              Call Us
             </a>
           </div>
         </div>
@@ -410,7 +410,7 @@ export default function LiveVanTracker({
                 className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-primary-hover shadow-sm"
               >
                 <Phone size={13} />
-                <span>Call Dispatch: {BUSINESS_PHONE_DISPLAY}</span>
+                <span>Call Us: {BUSINESS_PHONE_DISPLAY}</span>
               </a>
             </div>
           </div>
@@ -539,7 +539,7 @@ export default function LiveVanTracker({
                 <Car size={22} />
               </div>
               <span className="mt-1 rounded-full bg-slate-900/90 px-2.5 py-0.5 text-[10px] font-extrabold text-white border border-primary/50 shadow-md">
-                🚐 {techName.split(" ")[0]} (HT Tires)
+                🚐 {techName.split(" ")[0]} (HT Mobile Tire)
               </span>
             </div>
 
@@ -589,7 +589,7 @@ export default function LiveVanTracker({
               className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-primary/20 transition hover:bg-primary-hover active:scale-95"
             >
               <Phone size={14} />
-              Call Dispatch: {BUSINESS_PHONE_DISPLAY}
+              Call Us: {BUSINESS_PHONE_DISPLAY}
             </a>
 
             <a
@@ -620,7 +620,7 @@ export default function LiveVanTracker({
             className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-white shadow-sm"
           >
             <Phone size={14} />
-            Call Dispatch
+            Call Us
           </a>
         </div>
       </div>

@@ -30,6 +30,14 @@ import { cancelCustomerBookingAction } from "@/app/actions/bookings";
 import { createClient } from "@/lib/supabase/client";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 
+const statusLabelMap: Record<string, string> = {
+  pending: "Waiting for Confirmation",
+  confirmed: "Booking Confirmed",
+  in_progress: "Service in Progress",
+  completed: "Service Completed",
+  cancelled: "Cancelled",
+};
+
 type BookingDetail = {
   id: string;
   customerId: string | null;
@@ -394,7 +402,7 @@ export default function BookingTrackingPage() {
               {/* Status Badge */}
               <div className="self-start sm:self-center" aria-live="polite">
                 <span
-                  className={`inline-flex items-center rounded-full px-3.5 py-1 text-xs font-extrabold capitalize border ${
+                  className={`inline-flex items-center rounded-full px-3.5 py-1 text-xs font-extrabold border ${
                     booking.status === "completed"
                       ? "bg-emerald-950/80 text-emerald-300 border-emerald-700"
                       : booking.status === "confirmed"
@@ -406,7 +414,7 @@ export default function BookingTrackingPage() {
                       : "bg-amber-950/80 text-amber-300 border-amber-700"
                   }`}
                 >
-                  {booking.status.replace("_", " ")}
+                  {statusLabelMap[booking.status] || booking.status.replace("_", " ")}
                 </span>
               </div>
             </div>
@@ -449,10 +457,10 @@ export default function BookingTrackingPage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-extrabold text-amber-950">
-                        Booking Request Received
+                        Waiting for Confirmation
                       </h3>
                       <p className="mt-1 text-xs text-amber-900 leading-relaxed">
-                        Our dispatch team is currently reviewing your schedule and allocating a mobile tire service van. You will receive an update as soon as your booking is confirmed.
+                        Our service team is currently reviewing your schedule and assigning a mobile technician. You will receive an update as soon as your booking is confirmed.
                       </p>
                     </div>
                   </div>
@@ -511,10 +519,10 @@ export default function BookingTrackingPage() {
                     <Sparkles size={16} className="mt-0.5 shrink-0 text-primary" />
                     <div>
                       <span className="font-semibold text-text-secondary block">
-                        Dispatch Model
+                        Service Model
                       </span>
                       <span className="font-bold text-foreground">
-                        On-Demand 24/7 Dispatch
+                        24/7 Mobile Service
                       </span>
                     </div>
                   </div>
@@ -678,7 +686,7 @@ export default function BookingTrackingPage() {
                         Need to Cancel Request?
                       </h4>
                       <p className="mt-0.5 text-red-800">
-                        You can cancel your pending request online prior to dispatch confirmation.
+                        You can cancel your pending request online prior to confirmation.
                       </p>
                     </div>
                     <button
@@ -697,13 +705,13 @@ export default function BookingTrackingPage() {
 
             {/* Sidebar Column (1 Col) */}
             <div className="space-y-6">
-              {/* Quick Dispatch Support */}
+              {/* Quick Customer Support */}
               <div className="rounded-2xl border border-border bg-white p-6 shadow-sm space-y-4">
                 <h3 className="text-sm font-extrabold text-foreground uppercase tracking-wider">
-                  Dispatch Support
+                  Customer Support
                 </h3>
                 <p className="text-xs text-text-secondary leading-relaxed">
-                  Questions about your appointment, address update, or tire specifications? Call our central dispatch line directly.
+                  Questions about your appointment, address update, or tire specifications? Call us directly.
                 </p>
 
                 <div className="space-y-2 pt-1">
@@ -712,7 +720,7 @@ export default function BookingTrackingPage() {
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-xs font-bold text-white shadow-md transition hover:bg-primary-hover active:scale-95"
                   >
                     <Phone size={14} />
-                    <span>Call Dispatch: {BUSINESS_PHONE_DISPLAY}</span>
+                    <span>Call Us: {BUSINESS_PHONE_DISPLAY}</span>
                   </a>
 
                   <Link
@@ -734,13 +742,13 @@ export default function BookingTrackingPage() {
                   </h4>
                 </div>
                 <p className="text-xs text-red-900 leading-relaxed">
-                  Stuck on a roadside or highway with a dangerous blowout? Request instant emergency roadside dispatch.
+                  Stuck on a roadside or highway with a dangerous blowout? Request instant emergency roadside help.
                 </p>
                 <Link
                   href="/emergency"
                   className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-red-600 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
                 >
-                  <span>Request Emergency Aid</span>
+                  <span>Request Emergency Help</span>
                 </Link>
               </div>
 

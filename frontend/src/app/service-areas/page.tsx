@@ -64,7 +64,7 @@ export default function ServiceAreasPage() {
                         {city.name}, {city.state}
                       </h2>
                       <p className="mt-0.5 text-xs text-text-secondary">
-                        Dedicated Mobile Dispatch
+                        Dedicated Mobile Service
                       </p>
                     </div>
 
@@ -123,7 +123,7 @@ export default function ServiceAreasPage() {
                   Need Mobile Tire Assistance Right Now?
                 </h3>
                 <p className="mt-2 text-sm text-slate-300 max-w-xl">
-                  We dispatch mobile tire vans with jacks, replacement tires, and computerized balancing tools directly to your vehicle.
+                  Our mobile tire vans bring jacks, replacement tires, and computerized balancing tools directly to your vehicle.
                 </p>
               </div>
 
@@ -133,7 +133,7 @@ export default function ServiceAreasPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3.5 text-sm font-bold text-white shadow-md hover:bg-red-700"
                 >
                   <Siren size={16} />
-                  Request Emergency Aid
+                  Request Emergency Help
                 </Link>
                 <a
                   href={`tel:${BUSINESS_PHONE_RAW}`}

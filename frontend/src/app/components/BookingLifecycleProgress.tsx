@@ -57,20 +57,20 @@ export default function BookingLifecycleProgress({
 
   if (booking.status === "pending") {
     activeStepIndex = 0;
-    statusSummaryHeadline = "Booking Request Received";
-    statusSummarySubtitle = "Our dispatch team is reviewing your schedule.";
+    statusSummaryHeadline = "Waiting for Confirmation";
+    statusSummarySubtitle = "Our service team is reviewing your appointment details.";
   } else if (booking.status === "confirmed") {
     activeStepIndex = 1;
     if (hasArrived) {
       statusSummaryHeadline = "Technician On-Site";
       statusSummarySubtitle = "Our technician has arrived at your location.";
     } else {
-      statusSummaryHeadline = "Appointment Confirmed";
-      statusSummarySubtitle = "Your appointment is confirmed. Our mobile service unit is scheduled for your address.";
+      statusSummaryHeadline = "Booking Confirmed";
+      statusSummarySubtitle = "Your booking is confirmed. Our mobile service unit is scheduled for your address.";
     }
   } else if (booking.status === "in_progress") {
     activeStepIndex = 2;
-    statusSummaryHeadline = "Service In Progress";
+    statusSummaryHeadline = "Service in Progress";
     statusSummarySubtitle = "Tire mounting, balancing, or calibration service is underway at your vehicle.";
   } else if (booking.status === "completed") {
     activeStepIndex = 3;
@@ -90,15 +90,15 @@ export default function BookingLifecycleProgress({
   const steps: StepItem[] = [
     {
       id: 1,
-      label: "Booking Request Received",
-      shortLabel: "Request Received",
+      label: "Waiting for Confirmation",
+      shortLabel: "Waiting",
       icon: Clock3,
       isDone: activeStepIndex > 0,
       isActive: activeStepIndex === 0,
     },
     {
       id: 2,
-      label: booking.status === "confirmed" && hasArrived ? "Technician On-Site" : "Appointment Confirmed",
+      label: booking.status === "confirmed" && hasArrived ? "Technician On-Site" : "Booking Confirmed",
       shortLabel: booking.status === "confirmed" && hasArrived ? "On-Site" : "Confirmed",
       icon: CheckCircle2,
       isDone: isConfirmedDone && activeStepIndex > 1,
@@ -106,7 +106,7 @@ export default function BookingLifecycleProgress({
     },
     {
       id: 3,
-      label: "Service In Progress",
+      label: "Service in Progress",
       shortLabel: "In Progress",
       icon: Wrench,
       isDone: isInProgressDone && activeStepIndex > 2,

@@ -44,7 +44,7 @@ export default function AccountProfileCard({
           <div className="mb-6 flex items-center gap-3 rounded-2xl border border-red-500/50 bg-red-950/60 p-4 text-xs font-semibold text-red-200 backdrop-blur-md">
             <AlertCircle size={18} className="text-red-400 shrink-0" />
             <span>
-              <strong>Access Restricted:</strong> Administrator credentials are required to access the dispatch console. You have been safely redirected to your customer portal.
+              <strong>Access Restricted:</strong> Administrator credentials are required to access the administrative console. You have been safely redirected to your customer portal.
             </span>
           </div>
         )}

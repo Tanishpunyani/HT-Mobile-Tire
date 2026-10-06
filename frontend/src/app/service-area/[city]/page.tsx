@@ -115,7 +115,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
     {
       name: "Emergency Roadside Tire Service",
       price: "On-Site Assessment",
-      description: `Rapid dispatch for roadside punctures, damaged rims, and spare tire installations.`,
+      description: `Fast roadside help for punctures, damaged rims, and spare tire installations.`,
       slug: "emergency",
       isEmergency: true,
     },
@@ -238,7 +238,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                 <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-wider text-primary">
-                      Local Dispatch Unit
+                      Local Service Unit
                     </p>
                     <h3 className="text-lg font-bold text-white">
                       {city.name} Mobile Van
@@ -254,7 +254,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Clock3 size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>Dispatch: <strong>{city.averageResponseTime}</strong></span>
+                    <span>Arrival: <strong>{city.averageResponseTime}</strong></span>
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Disc size={16} className="mt-0.5 shrink-0 text-primary" />

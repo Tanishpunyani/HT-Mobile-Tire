@@ -99,7 +99,7 @@ export default function BookingWaitScreen({
         console.error("Failed to check availability:", err);
         if (!isAuto) {
           setFeedbackMsg(
-            "Unable to refresh availability right now. Please try again or call dispatch."
+            "Unable to refresh availability right now. Please try again or call us."
           );
         }
       } finally {
@@ -152,7 +152,7 @@ export default function BookingWaitScreen({
                 </div>
 
                 <span className="rounded-full bg-slate-800/90 px-3 py-1 text-xs font-semibold text-slate-300 border border-slate-700 shadow-inner">
-                  🚐 All Mobile Vans Currently Dispatched
+                  🚐 All Mobile Vans Currently on Active Calls
                 </span>
               </div>
             </div>
@@ -166,7 +166,7 @@ export default function BookingWaitScreen({
 
               {/* Title & Headline */}
               <h1 className="mt-6 text-2xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-                Sorry — Our Mobile Vans Are Currently Dispatched
+                Sorry — Our Technicians Are Currently on Active Calls
               </h1>
 
               <p className="mx-auto mt-3 max-w-xl text-sm sm:text-base text-text-secondary leading-relaxed">
@@ -241,7 +241,7 @@ export default function BookingWaitScreen({
                     className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
                   >
                     <Phone size={14} />
-                    <span>Call Dispatch: {BUSINESS_PHONE_DISPLAY}</span>
+                    <span>Call Us: {BUSINESS_PHONE_DISPLAY}</span>
                   </a>
 
                   <Link

@@ -76,7 +76,7 @@ function BookingConfirmedInner() {
             </h1>
 
             <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-text-secondary sm:text-base">
-              Our dispatch team has received your service request and will assign an available mobile technician van. You will receive an email notification and service updates with your service details.
+              Our service team has received your service request and will assign an available mobile technician. You will receive an email notification and service updates with your service details.
             </p>
 
             {/* Summary Details Card */}
@@ -132,9 +132,9 @@ function BookingConfirmedInner() {
                 <div className="flex items-start gap-2.5">
                   <Sparkles size={18} className="mt-0.5 shrink-0 text-primary" />
                   <div>
-                    <p className="text-xs font-semibold text-text-secondary">Service Dispatch</p>
+                    <p className="text-xs font-semibold text-text-secondary">Service Type</p>
                     <p className="font-bold text-foreground">
-                      On-Demand 24/7 Dispatch
+                      24/7 Mobile Service
                     </p>
                   </div>
                 </div>
@@ -145,7 +145,7 @@ function BookingConfirmedInner() {
                 <div className="flex items-start gap-2.5 rounded-xl bg-white p-3.5 text-xs text-text-secondary border border-border">
                   <ShieldCheck size={18} className="shrink-0 text-primary mt-0.5" />
                   <span>
-                    <strong>What Happens Next:</strong> Our dispatch team will confirm technician assignment. You do not need to create an account to receive service — all dispatch updates and arrival notifications will be sent directly to your phone.
+                    <strong>What Happens Next:</strong> Our service team will confirm your technician assignment. You do not need to create an account to receive service — all appointment and arrival updates will be sent directly to your phone.
                   </span>
                 </div>
 
@@ -205,7 +205,7 @@ function BookingConfirmedInner() {
 
             {/* Help Note */}
             <p className="mt-6 text-xs text-slate-400">
-              Need urgent updates or changes? Call our dispatch team at{" "}
+              Need urgent updates or changes? Call us at{" "}
               <a href={`tel:${BUSINESS_PHONE_RAW}`} className="font-bold text-primary hover:underline">
                 {BUSINESS_PHONE_DISPLAY}
               </a>

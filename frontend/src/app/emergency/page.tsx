@@ -123,7 +123,7 @@ export default function EmergencyPage() {
             </h1>
 
             <p className="mt-5 text-base leading-7 text-slate-300 sm:text-lg">
-              Auto-detect your roadside GPS location or enter your address. Our mobile technician van will be prioritized for immediate dispatch.
+              Auto-detect your roadside GPS location or enter your address. An available mobile technician will respond immediately.
             </p>
 
             <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-white border border-white/20 backdrop-blur-sm">
@@ -145,7 +145,7 @@ export default function EmergencyPage() {
                 </div>
 
                 <h2 className="mt-6 text-2xl font-extrabold text-foreground sm:text-3xl">
-                  Emergency Dispatch Alert Sent!
+                  Emergency Request Received!
                 </h2>
 
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-text-secondary">
@@ -154,7 +154,7 @@ export default function EmergencyPage() {
 
                 <div className="mx-auto mt-6 max-w-sm rounded-xl bg-slate-50 p-4 text-xs text-text-secondary border border-border">
                   <p><strong>Hotline:</strong> {BUSINESS_PHONE_DISPLAY}</p>
-                  <p className="mt-1 text-slate-400">Technician Van Dispatch Window: 30–45 min</p>
+                  <p className="mt-1 text-slate-400">Estimated Arrival Time: 30–45 mins</p>
                 </div>
 
                 <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
@@ -188,11 +188,11 @@ export default function EmergencyPage() {
 
                     <div>
                       <h2 className="font-extrabold text-foreground text-lg">
-                        Priority Roadside Dispatch
+                        Priority Roadside Assistance
                       </h2>
 
                       <p className="mt-1 text-xs leading-5 text-text-secondary">
-                        Please provide accurate GPS or street location so our technician van can navigate directly to your vehicle without delay.
+                        Please provide your current location so our technician can reach your vehicle without delay.
                       </p>
                     </div>
                   </div>
@@ -213,7 +213,7 @@ export default function EmergencyPage() {
                     >
                       <span className="flex items-center gap-2">
                         <MapPin size={17} className="text-primary" />
-                        Current Breakdown Location
+                        Current Location
                       </span>
                     </label>
 
@@ -278,7 +278,7 @@ export default function EmergencyPage() {
                       htmlFor="details"
                       className="mb-2 block text-sm font-semibold text-foreground"
                     >
-                      Problem Details (Optional)
+                      Additional Details (Optional)
                     </label>
 
                     <textarea
@@ -297,7 +297,7 @@ export default function EmergencyPage() {
                       className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground"
                     >
                       <Car size={17} className="text-primary" />
-                      Vehicle Make / Model
+                      Vehicle Details
                     </label>
 
                     <input
@@ -318,7 +318,7 @@ export default function EmergencyPage() {
                       </h3>
 
                       <p className="mt-1 text-xs text-text-secondary">
-                        The dispatched technician will call you on this number with updated arrival times.
+                        Your technician will call this number with updated arrival times.
                       </p>
                     </div>
 
@@ -348,7 +348,7 @@ export default function EmergencyPage() {
                           className="mb-1.5 flex items-center gap-2 text-xs font-bold text-foreground"
                         >
                           <Phone size={15} className="text-primary" />
-                          Phone Number (for technician call)
+                          Phone Number *
                         </label>
 
                         <input
@@ -366,7 +366,7 @@ export default function EmergencyPage() {
                           htmlFor="email"
                           className="mb-1.5 block text-xs font-bold text-foreground"
                         >
-                          Email Address (Optional — for receipt & dispatch tracking)
+                          Email Address (Optional)
                         </label>
 
                         <input
@@ -387,11 +387,11 @@ export default function EmergencyPage() {
                     className="inline-flex w-full items-center justify-center gap-2 rounded-[12px] bg-primary px-6 py-4 text-base font-bold text-white shadow-lg shadow-primary/30 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover disabled:opacity-50"
                   >
                     <Send size={18} />
-                    {submitting ? "Dispatching Nearest Van..." : "Submit Emergency Request & Dispatch Van →"}
+                    {submitting ? "Submitting Request..." : "Request Emergency Roadside Help →"}
                   </button>
 
                   <p className="text-center text-xs leading-5 text-text-secondary">
-                    🚨 By submitting, your request is marked as urgent in our central dispatch system.
+                    🚨 By submitting, your request is marked as urgent for immediate technician response.
                   </p>
                 </div>
               </form>

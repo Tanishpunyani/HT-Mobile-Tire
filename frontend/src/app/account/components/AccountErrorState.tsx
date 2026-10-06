@@ -154,7 +154,7 @@ export default function AccountErrorState({
 
               <div>
                 <label htmlFor="onboardingPhone" className="block text-xs font-bold text-foreground mb-1.5">
-                  Mobile Phone (for technician dispatch)
+                  Mobile Phone (for service updates)
                 </label>
                 <input
                   id="onboardingPhone"
@@ -176,7 +176,7 @@ export default function AccountErrorState({
                   <span>Saving Profile...</span>
                 ) : (
                   <>
-                    <span>Complete Profile & Enter</span>
+                    <span>Save Profile & Continue</span>
                     <ArrowRight size={15} />
                   </>
                 )}

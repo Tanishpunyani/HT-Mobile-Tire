@@ -303,7 +303,7 @@ export default function BookingFormClient({
           <div className="mx-auto max-w-3xl text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-blue-300 border border-primary/30">
               <Sparkles size={13} />
-              24/7 On-Demand Mobile Dispatch
+              24/7 On-Demand Mobile Service
             </span>
 
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
@@ -311,7 +311,7 @@ export default function BookingFormClient({
             </h1>
 
             <p className="mt-4 text-base text-slate-300 sm:text-lg">
-              No upfront payment required. Dispatched directly to your home, workplace, or roadside location anytime 24/7.
+              No upfront payment required. We come directly to your home, workplace, or roadside location anytime 24/7.
             </p>
           </div>
         </Container>
@@ -340,7 +340,7 @@ export default function BookingFormClient({
                 <div>
                   <h3 className="text-base font-bold text-foreground sm:text-lg border-b border-border pb-3 flex items-center gap-2">
                     <User className="text-primary" size={18} />
-                    1. Contact Information
+                    1. Your Contact Information
                   </h3>
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -364,7 +364,7 @@ export default function BookingFormClient({
 
                     <div>
                       <label htmlFor="phone" className="mb-1 block text-xs font-bold text-foreground">
-                        Phone Number (for Service Updates) *
+                        Phone Number *
                       </label>
                       <div className="relative">
                         <Phone className="absolute left-3 top-3 text-slate-400" size={16} />
@@ -382,7 +382,7 @@ export default function BookingFormClient({
 
                     <div className="sm:col-span-2">
                       <label htmlFor="email" className="mb-1 block text-xs font-bold text-foreground">
-                        Email Address (for Receipt & Quote)
+                        Email Address
                       </label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 text-slate-400" size={16} />
@@ -440,7 +440,7 @@ export default function BookingFormClient({
                 <div>
                   <h3 className="text-base font-bold text-foreground sm:text-lg border-b border-border pb-3 flex items-center gap-2">
                     <Car className="text-primary" size={18} />
-                    4. Vehicle Information
+                    4. Your Vehicle
                   </h3>
 
                   <div className="mt-4">
@@ -465,7 +465,7 @@ export default function BookingFormClient({
                 <div>
                   <h3 className="text-base font-bold text-foreground sm:text-lg border-b border-border pb-3 flex items-center gap-2">
                     <MapPin className="text-primary" size={18} />
-                    5. Service Location Address
+                    5. Service Location
                   </h3>
 
                   <div className="mt-4 space-y-3">
@@ -481,7 +481,7 @@ export default function BookingFormClient({
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label htmlFor="location-address" className="block text-xs font-bold text-foreground">
-                          Street Address / Workplace / Parking Spot *
+                          Street Address or Location *
                         </label>
                         <span className="text-[11px] text-slate-400 font-medium">
                           Or enter manually below
@@ -506,13 +506,13 @@ export default function BookingFormClient({
                 <div>
                   <h3 className="text-base font-bold text-foreground sm:text-lg border-b border-border pb-3 flex items-center gap-2">
                     <Calendar className="text-primary" size={18} />
-                    6. Preferred Appointment Schedule
+                    6. Date & Time
                   </h3>
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div>
                       <label htmlFor="bookingDate" className="mb-1 block text-xs font-bold text-foreground">
-                        Preferred Date *
+                        Service Date *
                       </label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-3 text-slate-400" size={16} />
@@ -537,7 +537,7 @@ export default function BookingFormClient({
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label htmlFor="bookingTime" className="block text-xs font-bold text-foreground">
-                          Preferred Time Window *
+                          Service Time *
                         </label>
                         {slotsLoading && (
                           <span className="text-[11px] text-slate-400 font-medium animate-pulse">
@@ -597,11 +597,11 @@ export default function BookingFormClient({
                 <div>
                   <h3 className="text-base font-bold text-foreground sm:text-lg border-b border-border pb-3 flex items-center gap-2">
                     <Sparkles className="text-primary" size={18} />
-                    7. Special Instructions & Notes (Optional)
+                    7. Additional Details (Optional)
                   </h3>
                   <div className="mt-4">
                     <label htmlFor="message" className="mb-1 block text-xs font-bold text-foreground">
-                      Vehicle Location Details, Lock Nut Notes, or Gate Code
+                      Special Instructions or Notes
                     </label>
                     <textarea
                       id="message"
@@ -633,7 +633,7 @@ export default function BookingFormClient({
                     className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-blue-700 disabled:opacity-50"
                   >
                     <Send size={18} />
-                    {loading ? "Submitting Request..." : "Confirm Booking Request →"}
+                    {loading ? "Submitting Request..." : "Confirm Booking →"}
                   </button>
 
                   {/* Trust Footer */}
@@ -643,7 +643,7 @@ export default function BookingFormClient({
                       Touchless Rim Guarantee
                     </span>
                     <span>• Instant Service & Email Confirmation</span>
-                    <span>• 24/7 Rapid On-Demand Dispatch</span>
+                    <span>• 24/7 Mobile Service</span>
                   </div>
               </div>
             </form>

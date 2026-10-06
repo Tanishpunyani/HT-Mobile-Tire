@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s | HT Mobile Tire",
   },
   description:
-    "Professional mobile tire service that comes to your driveway, workplace, or roadside. New & used tires, rim mounting, wheel balancing, flat tire repair, and emergency dispatch.",
+    "Professional mobile tire service that comes to your driveway, workplace, or roadside. New & used tires, rim mounting, wheel balancing, flat tire repair, and 24/7 emergency roadside help.",
   keywords: [
     "mobile tire service",
     "mobile tire repair",

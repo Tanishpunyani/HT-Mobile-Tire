@@ -28,7 +28,7 @@ export default function CoverageChecker() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-3.5 py-1.5 text-xs font-bold text-primary">
               <Sparkles size={14} />
-              Instant Van Dispatch Estimator
+              Instant Service Availability Estimator
             </div>
 
             <h2 className="mt-4 text-2xl font-extrabold tracking-tight sm:text-3xl lg:text-4xl">
@@ -62,7 +62,7 @@ export default function CoverageChecker() {
                 disabled={status === "checking"}
                 className="inline-flex items-center justify-center gap-2 rounded-[12px] bg-primary px-6 py-3.5 text-sm font-bold text-white shadow-md transition hover:bg-primary-hover disabled:opacity-50"
               >
-                {status === "checking" ? "Checking Van Status..." : "Check Availability"}
+                {status === "checking" ? "Checking Availability..." : "Check Availability"}
               </button>
             </div>
           </form>
@@ -77,7 +77,7 @@ export default function CoverageChecker() {
                   </p>
                   <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-300">
                     <Clock3 size={13} className="text-green-400" />
-                    Technician Van Dispatch: <strong className="text-white">Estimated 30–45 min arrival</strong>
+                    Technician Arrival: <strong className="text-white">Estimated 30–45 min arrival</strong>
                   </p>
                   <div className="mt-3 flex gap-3">
                     <Link
@@ -90,7 +90,7 @@ export default function CoverageChecker() {
                       href="/emergency"
                       className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-600/30 px-3.5 py-1.5 text-xs font-bold text-red-200 transition hover:bg-red-600/50"
                     >
-                      Urgent Dispatch Now
+                      Emergency Roadside Help
                     </Link>
                   </div>
                 </div>

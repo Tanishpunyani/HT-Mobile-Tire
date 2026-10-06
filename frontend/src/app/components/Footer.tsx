@@ -28,7 +28,7 @@ export default function Footer() {
             </Link>
 
             <p className="mt-4 text-xs leading-6 text-slate-300 sm:text-sm">
-              Professional mobile tire installation, puncture repair, and roadside assistance dispatched directly to your home, office, or roadside location.
+              Professional mobile tire installation, puncture repair, and roadside assistance brought directly to your home, office, or roadside location.
             </p>
 
             <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-slate-300">
@@ -102,7 +102,7 @@ export default function Footer() {
           {/* Contact & Hours */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest text-primary">
-              Contact & Dispatch
+              Contact & Support
             </h3>
 
             <div className="mt-4 flex flex-col gap-3.5 text-xs sm:text-sm">
@@ -124,7 +124,7 @@ export default function Footer() {
 
               <div className="flex items-start gap-2.5 text-slate-300">
                 <MapPin size={16} className="mt-0.5 text-primary shrink-0" />
-                <span>Mobile Vans Dispatched Directly To Your Address</span>
+                <span>Mobile Vans Come Directly To Your Location</span>
               </div>
 
               <div className="flex items-start gap-2.5 text-slate-300">

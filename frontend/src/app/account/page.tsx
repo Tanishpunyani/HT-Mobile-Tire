@@ -392,7 +392,7 @@ function AccountPageInner() {
         alert(result.error || "Unable to cancel booking.");
       }
     } catch {
-      alert("Failed to cancel booking. Please contact dispatch.");
+      alert("Failed to cancel booking. Please call us for assistance.");
     } finally {
       setIsCancellingBooking(false);
     }

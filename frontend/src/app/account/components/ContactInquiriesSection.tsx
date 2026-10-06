@@ -15,9 +15,9 @@ export default function ContactInquiriesSection({
     <div className="rounded-[20px] border border-border bg-white p-6 shadow-sm sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-foreground">Inquiries & Dispatch Communications</h2>
+          <h2 className="text-xl font-bold text-foreground">Inquiries & Messages</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            Review your service inquiries and direct status updates from our 24/7 central dispatch team.
+            Review your service inquiries and direct status updates from our team.
           </p>
         </div>
         <Link
@@ -119,10 +119,10 @@ export default function ContactInquiriesSection({
                   </div>
                 </div>
 
-                {/* Dispatcher Communications / Admin Responses */}
+                {/* Service Responses */}
                 <div className="mt-5">
                   <p className="text-xs font-bold uppercase tracking-wider text-text-secondary">
-                    Dispatch Communications:
+                    Responses & Messages:
                   </p>
 
                   {inquiry.dispatcherResponses && inquiry.dispatcherResponses.length > 0 ? (
@@ -138,7 +138,7 @@ export default function ContactInquiriesSection({
                                 <CheckCircle2 size={13} />
                               </span>
                               <span className="text-xs font-bold text-emerald-950">
-                                HT Mobile Tire Central Dispatch Update
+                                HT Mobile Tire Service Update
                               </span>
                             </div>
                             <span className="text-[11px] text-emerald-700">
@@ -165,7 +165,7 @@ export default function ContactInquiriesSection({
                   ) : (
                     <div className="mt-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-3.5 text-xs text-slate-600">
                       <p>
-                        ⏳ Your inquiry has been received by our 24/7 central dispatch team. When a dispatcher sends a communication or technician update, it will appear here.
+                        ⏳ Your inquiry has been received by our team. When our team sends a reply or technician update, it will appear here.
                       </p>
                     </div>
                   )}

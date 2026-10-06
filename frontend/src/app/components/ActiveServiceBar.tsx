@@ -182,17 +182,17 @@ export default function ActiveServiceBar() {
   const isServiceInProgress = activeBooking.status === "in_progress";
 
   let iconNode = <CheckCircle2 size={16} className="text-blue-400 shrink-0" />;
-  let headline = "Appointment Confirmed";
+  let headline = "Booking Confirmed";
   let subtext = "Your mobile tire service is scheduled";
-  let badgeText = "Confirmed";
+  let badgeText = "Booking Confirmed";
   let badgeColor = "bg-blue-900/60 text-blue-300 border-blue-700/50";
   const ctaText = "View Booking";
 
   if (isServiceInProgress) {
     iconNode = <Wrench size={16} className="text-purple-400 shrink-0 animate-pulse" />;
-    headline = "Service In Progress";
+    headline = "Service in Progress";
     subtext = "Our technician is currently working on your vehicle";
-    badgeText = "In Progress";
+    badgeText = "Service in Progress";
     badgeColor = "bg-purple-900/60 text-purple-300 border-purple-700/50";
   }
 

@@ -49,7 +49,7 @@ export default function StaticMapPreview({
           ) : (
             <MapPin size={15} className="text-primary" />
           )}
-          <span>{isEmergency ? "Emergency Dispatch Map" : "Service Location Map"}</span>
+          <span>{isEmergency ? "Emergency Service Map" : "Service Location Map"}</span>
         </div>
 
         <a

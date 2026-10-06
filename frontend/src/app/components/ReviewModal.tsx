@@ -108,7 +108,7 @@ export default function ReviewModal({
             </h3>
 
             <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-text-secondary">
-              Your 5-star verified review has been submitted and is pending moderation. Once approved, it will be highlighted on our public wall of love!
+              Your review has been submitted and will appear on our website once approved. Thank you!
             </p>
 
             <button
@@ -222,7 +222,7 @@ export default function ReviewModal({
                       Submitting Review...
                     </span>
                   ) : (
-                    "Submit Review for Moderation →"
+                    "Submit Review →"
                   )}
                 </button>
 

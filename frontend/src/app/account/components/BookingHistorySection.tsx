@@ -14,6 +14,14 @@ import {
 import { BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 import { Booking } from "../types";
 
+const statusLabelMap: Record<string, string> = {
+  pending: "Waiting for Confirmation",
+  confirmed: "Booking Confirmed",
+  in_progress: "Service in Progress",
+  completed: "Service Completed",
+  cancelled: "Cancelled",
+};
+
 interface BookingHistorySectionProps {
   bookings: Booking[];
   bookingsLoading: boolean;
@@ -94,7 +102,7 @@ export default function BookingHistorySection({
 
                           <div className="flex items-center gap-2">
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold capitalize ${
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${
                                 booking.status === "completed"
                                   ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                                   : booking.status === "confirmed"
@@ -106,7 +114,7 @@ export default function BookingHistorySection({
                                         : "bg-amber-100 text-amber-800 border border-amber-200"
                               }`}
                             >
-                              {booking.status.replace("_", " ")}
+                              {statusLabelMap[booking.status] || booking.status.replace("_", " ")}
                             </span>
 
                             {booking.status === "confirmed" && booking.etaMinutes && (
@@ -189,7 +197,7 @@ export default function BookingHistorySection({
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-[10px] bg-red-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-red-700"
           >
             <Siren size={16} />
-            Request Emergency Aid
+            Request Emergency Help
           </Link>
         </div>
 

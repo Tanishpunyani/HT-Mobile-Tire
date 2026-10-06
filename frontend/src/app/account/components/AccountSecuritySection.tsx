@@ -32,7 +32,7 @@ export default function AccountSecuritySection({
         <div>
           <h2 className="text-xl font-bold text-foreground">Security & Password</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            Manage your account authentication credentials and access keys.
+            Manage your account password and login security.
           </p>
         </div>
       </div>

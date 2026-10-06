@@ -20,7 +20,7 @@ const FAQS = [
   },
   {
     q: "How fast do you arrive for an emergency flat tire blowout?",
-    a: "For emergency roadside dispatch, our average arrival time is 30 to 45 minutes depending on your location and traffic conditions. You can submit an emergency request directly on our Emergency page or call our 24/7 dispatch hotline.",
+    a: "For emergency roadside help, our average arrival time is 30 to 45 minutes depending on your location and traffic conditions. You can submit an emergency request directly on our Emergency page or call us 24/7.",
   },
   {
     q: "Do you supply new tires, or can I provide my own?",

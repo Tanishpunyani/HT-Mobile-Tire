@@ -30,7 +30,7 @@ export default function TermsPage() {
 
             <h3 className="text-base font-bold text-foreground">2. Appointments, Pricing & Cancellation</h3>
             <p>
-              Estimated quotes are provided upfront. You may cancel or reschedule a scheduled booking without fee up to 2 hours prior to the dispatch window. Emergency roadside dispatch requests are dispatched immediately upon submission.
+              Estimated quotes are provided upfront. You may cancel or reschedule a scheduled booking without fee up to 2 hours prior to the scheduled service window. Emergency roadside service requests are handled immediately upon submission.
             </p>
 
             <h3 className="text-base font-bold text-foreground">3. Touchless Warranty & Workmanship Guarantee</h3>

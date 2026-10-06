@@ -387,7 +387,7 @@ export function runEmailServiceUnitTests() {
         currentLocation: "I-35 Exit 428B, Dallas TX",
       });
 
-      assert(subject.includes("[EMERGENCY DISPATCH]"), "Subject must have emergency flag");
+      assert(subject.includes("[EMERGENCY ASSISTANCE]"), "Subject must have emergency flag");
       assert(html.includes("30&ndash;45 Minutes"), "HTML must render emergency arrival window");
       assert(html.includes("Blowout on Highway Shoulder"), "HTML must render problem");
       assert(html.includes(BUSINESS_PHONE_DISPLAY), "HTML must render hotline");

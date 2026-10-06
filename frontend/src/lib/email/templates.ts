@@ -102,7 +102,7 @@ export function renderBrandedEmailLayout({
                 HT Mobile Tire &bull; Fast Roadside &amp; On-Site Tire Care
               </p>
               <p style="margin: 0 0 4px 0;">
-                Need immediate assistance or dispatch support? Call <strong><a href="tel:${BUSINESS_PHONE_DISPLAY.replace(/[^0-9+]/g, "")}" style="color: #0f172a; text-decoration: none;">${BUSINESS_PHONE_DISPLAY}</a></strong>
+                Need immediate assistance or customer support? Call <strong><a href="tel:${BUSINESS_PHONE_DISPLAY.replace(/[^0-9+]/g, "")}" style="color: #0f172a; text-decoration: none;">${BUSINESS_PHONE_DISPLAY}</a></strong>
               </p>
               <p style="margin: 0; color: #94a3b8; font-size: 11px;">
                 &copy; ${new Date().getFullYear()} HT Mobile Tire. All rights reserved.
@@ -136,7 +136,7 @@ function formatDisplayDate(date: Date | string | null | undefined): string {
 }
 
 function formatDisplayTime(time: Date | string | null | undefined): string {
-  if (!time) return "Standard Dispatch";
+  if (!time) return "Standard Appointment";
   if (typeof time === "string" && !time.includes("T")) return time;
   try {
     return new Date(time).toLocaleTimeString("en-US", {
@@ -203,14 +203,14 @@ export function renderBookingReceivedEmail(data: CustomerBookingTemplateData): {
   const timeStr = formatDisplayTime(data.bookingTime);
 
   const subject = `Booking Received: #${shortId} - HT Mobile Tire`;
-  const text = `HT Mobile Tire — Booking Received\n\nHi ${name},\n\nWe have received your mobile tire service request for booking #${shortId} (${data.serviceName}).\n\nVehicle: ${data.vehicle}\nLocation: ${data.location}\nScheduled: ${dateStr} at ${timeStr}\n\nOur dispatch team is allocating an equipped mobile technician van to your location.\n\nManage Booking: ${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=bookings"}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
+  const text = `HT Mobile Tire — Booking Received\n\nHi ${name},\n\nWe have received your mobile tire service request for booking #${shortId} (${data.serviceName}).\n\nVehicle: ${data.vehicle}\nLocation: ${data.location}\nScheduled: ${dateStr} at ${timeStr}\n\nOur service team is assigning an equipped mobile technician to your location.\n\nManage Booking: ${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=bookings"}\nSupport: ${BUSINESS_PHONE_DISPLAY}`;
 
   const bodyContentHtml = `
     <p style="font-size: 16px; margin-top: 0; color: #0f172a;">
       Hello <strong>${name}</strong>,
     </p>
     <p style="color: #475569; font-size: 14px; line-height: 1.6;">
-      Thank you for choosing <strong>HT Mobile Tire</strong>! We have received your service request. Our central dispatch team is reviewing your schedule and allocating an equipped mobile service van.
+      Thank you for choosing <strong>HT Mobile Tire</strong>! We have received your service request. Our service team is reviewing your schedule and assigning an equipped mobile service van.
     </p>
 
     ${renderDetailsTable([
@@ -233,11 +233,11 @@ export function renderBookingReceivedEmail(data: CustomerBookingTemplateData): {
     badgeBgColor: "#0284c7",
     headerAccentColor: "#0284c7",
     title: "Booking Request Received",
-    subtitle: "Central Dispatch Allocation in Progress",
+    subtitle: "Service Request in Progress",
     bodyContentHtml,
     ctaText: "View Booking Details in Account",
     ctaUrl: data.accountUrl || undefined,
-    footerNotice: `Questions about this request? Call central dispatch at ${BUSINESS_PHONE_DISPLAY}.`,
+    footerNotice: `Questions about this request? Call us at ${BUSINESS_PHONE_DISPLAY}.`,
   });
 
   return { subject, html, text };
@@ -286,7 +286,7 @@ export function renderBookingConfirmedEmail(data: CustomerBookingTemplateData): 
     bodyContentHtml,
     ctaText: "Manage Booking & View Schedule",
     ctaUrl: data.accountUrl || undefined,
-    footerNotice: `Need to reschedule or update your address? Call dispatch at ${BUSINESS_PHONE_DISPLAY}.`,
+    footerNotice: `Need to reschedule or update your address? Call us at ${BUSINESS_PHONE_DISPLAY}.`,
   });
 
   return { subject, html, text };
@@ -338,7 +338,7 @@ export function renderTechnicianAssignedEmail(data: CustomerBookingTemplateData)
     badgeBgColor: "#2563eb",
     headerAccentColor: "#2563eb",
     title: "Technician Assigned",
-    subtitle: "Mobile Van Preparing for Dispatch",
+    subtitle: "Technician Preparing for Your Service",
     bodyContentHtml,
     ctaText: "View Booking in Account",
     ctaUrl: data.accountUrl || undefined,
@@ -398,7 +398,7 @@ export function renderTechnicianEnRouteEmail(data: CustomerBookingTemplateData):
     bodyContentHtml,
     ctaText: trackingUrl ? "Track Technician Live" : "View Booking in Account",
     ctaUrl: trackingUrl || undefined,
-    footerNotice: `Need to speak directly with dispatch? Call ${BUSINESS_PHONE_DISPLAY}.`,
+    footerNotice: `Need to speak with us? Call ${BUSINESS_PHONE_DISPLAY}.`,
   });
 
   return { subject, html, text };
@@ -580,7 +580,7 @@ export function renderBookingCancelledEmail(data: CustomerBookingTemplateData): 
     ])}
 
     <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: #991b1b; line-height: 1.5;">
-      If this cancellation was in error or you would like to reschedule for a future date, you may submit a new booking online or contact our central dispatch.
+      If this cancellation was in error or you would like to reschedule for a future date, you may submit a new booking online or contact our customer support.
     </div>
   `;
 
@@ -593,7 +593,7 @@ export function renderBookingCancelledEmail(data: CustomerBookingTemplateData): 
     bodyContentHtml,
     ctaText: "Book a New Appointment",
     ctaUrl: "https://ht-mobile-tire.vercel.app/booking",
-    footerNotice: `Questions about this cancellation? Call dispatch at ${BUSINESS_PHONE_DISPLAY}.`,
+    footerNotice: `Questions about this cancellation? Call us at ${BUSINESS_PHONE_DISPLAY}.`,
   });
 
   return { subject, html, text };
@@ -774,7 +774,7 @@ export function renderQuoteReadyEmail(data: QuoteEmailData): { subject: string; 
     bodyContentHtml,
     ctaText: "View Details in Customer Portal",
     ctaUrl: data.accountUrl || undefined,
-    footerNotice: `Questions about this invoice? Call central dispatch at ${BUSINESS_PHONE_DISPLAY}.`,
+    footerNotice: `Questions about this invoice? Call us at ${BUSINESS_PHONE_DISPLAY}.`,
   });
 
   return { subject, html, text };
@@ -797,14 +797,14 @@ export function renderEmergencyRequestCustomerEmail(data: EmergencyEmailData): {
   const shortId = data.id.slice(-6).toUpperCase();
   const name = data.customerName || "Customer";
 
-  const subject = `[EMERGENCY DISPATCH] Help is On The Way - HT Mobile Tire`;
+  const subject = `[EMERGENCY ASSISTANCE] Help is On The Way - HT Mobile Tire`;
   const text = `Hi ${name},\n\nWe have received your Roadside Emergency Request #${shortId}!\n\nIssue: ${data.problem}\nVehicle: ${data.vehicle}\nLocation: ${data.currentLocation}\nEstimated Arrival: 30-45 minutes\n\nPlease stay in a safe spot away from traffic.\nDirect Hotline: ${BUSINESS_PHONE_DISPLAY}\nTrack: ${data.accountUrl || "https://ht-mobile-tire.vercel.app/account?tab=emergency"}`;
 
   const bodyContentHtml = `
     <!-- ETA Callout -->
     <div style="background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 18px; margin-bottom: 20px; text-align: center;">
       <h2 style="color: #e11d48; margin: 0 0 4px 0; font-size: 22px; font-weight: 800;">Estimated Arrival: 30&ndash;45 Minutes</h2>
-      <p style="color: #991b1b; margin: 0; font-size: 13px; font-weight: 600;">Your roadside emergency is prioritized for instant mobile dispatch.</p>
+      <p style="color: #991b1b; margin: 0; font-size: 13px; font-weight: 600;">Your roadside emergency is prioritized for immediate mobile service.</p>
     </div>
 
     <p style="font-size: 15px; line-height: 1.6; color: #334155; margin-top: 0;">
@@ -821,7 +821,7 @@ export function renderEmergencyRequestCustomerEmail(data: EmergencyEmailData): {
 
     <!-- Hotline Card -->
     <div style="background-color: #0f172a; color: #ffffff; border-radius: 12px; padding: 16px; text-align: center; margin-top: 20px;">
-      <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Direct Technician &amp; Dispatch Hotline (24/7)</p>
+      <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Direct Technician &amp; Support Hotline (24/7)</p>
       <a href="tel:${BUSINESS_PHONE_DISPLAY.replace(/[^0-9+]/g, "")}" style="color: #fb7185; font-weight: 800; text-decoration: none; font-size: 20px; display: inline-block; margin-top: 4px;">
         &#128222; ${BUSINESS_PHONE_DISPLAY}
       </a>
@@ -833,7 +833,7 @@ export function renderEmergencyRequestCustomerEmail(data: EmergencyEmailData): {
     badgeBgColor: "#dc2626",
     headerAccentColor: "#dc2626",
     title: "Emergency Roadside Assistance",
-    subtitle: "Mobile Van Dispatched to Your Location",
+    subtitle: "Technician on the Way to Your Location",
     bodyContentHtml,
     ctaText: "Track Status in Customer Account",
     ctaUrl: data.accountUrl || undefined,

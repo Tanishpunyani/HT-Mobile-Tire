@@ -66,7 +66,7 @@ export default function ServicesPage() {
             </h1>
 
             <p className="mt-6 text-base leading-8 text-slate-300 sm:text-lg">
-              From new tire replacement and seasonal wheel swaps to emergency flat repairs, our fully equipped mobile clinic vans handle everything at your home, office, or roadside.
+              From new tire replacement and seasonal wheel swaps to emergency flat repairs, our fully equipped mobile service vans handle everything at your home, office, or roadside.
             </p>
           </div>
         </Container>

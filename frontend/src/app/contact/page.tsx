@@ -119,7 +119,7 @@ function ContactFormInner() {
 
                   <div>
                     <p className="text-sm font-bold text-foreground">
-                      Call Direct Dispatch
+                      Call Us
                     </p>
                     <p className="mt-1 text-sm text-text-secondary">
                       {BUSINESS_PHONE_DISPLAY}
@@ -173,7 +173,7 @@ function ContactFormInner() {
                       Service Locations
                     </p>
                     <p className="mt-1 text-sm leading-6 text-text-secondary">
-                      We dispatch mobile vans to driveways, workplaces, and roadside areas.
+                      Our mobile service vans come to driveways, workplaces, and roadside areas.
                     </p>
                   </div>
                 </div>
@@ -194,10 +194,10 @@ function ContactFormInner() {
 
                   <div className="mx-auto mt-4 max-w-lg space-y-3 text-sm leading-relaxed text-text-secondary">
                     <p className="font-medium text-foreground">
-                      Your service inquiry has been received by our 24/7 central dispatch team.
+                      Your service inquiry has been received by our team.
                     </p>
                     <p>
-                      For immediate assistance or priority dispatch, you can call our direct hotline at{" "}
+                      For immediate assistance, you can call us at{" "}
                       <a
                         href={`tel:${BUSINESS_PHONE_RAW}`}
                         className="font-bold text-primary underline underline-offset-4 hover:text-primary-dark"
@@ -207,7 +207,7 @@ function ContactFormInner() {
                       .
                     </p>
                     <p className="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5 text-xs leading-normal text-slate-700">
-                      If an equipped mobile technician van becomes available in your area, our dispatchers will allocate a technician to your service request. Our team will contact you shortly.
+                      A member of our service team will review your request and contact you shortly.
                     </p>
                   </div>
 
@@ -217,7 +217,7 @@ function ContactFormInner() {
                       className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary-dark"
                     >
                       <Phone size={16} />
-                      Call Direct Dispatch
+                      Call Us
                     </a>
                     <Link
                       href="/account?tab=inquiries"
@@ -404,7 +404,7 @@ function ContactFormInner() {
                     className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-primary px-8 py-4 text-base font-bold text-white shadow-md shadow-primary/25 transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-lg"
                   >
                     <Send size={18} />
-                    Send Request
+                    Send Message
                   </button>
                 </form>
               )}

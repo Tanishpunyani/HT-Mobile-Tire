@@ -18,7 +18,7 @@ export default function EmergencyRequestsSection({
         <div>
           <h2 className="text-xl font-bold text-foreground">Emergency Assistance History</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            Review your urgent roadside dispatch requests.
+            Review your urgent roadside assistance requests.
           </p>
         </div>
         <Link
@@ -45,15 +45,15 @@ export default function EmergencyRequestsSection({
           {emergencyRequests.map((req) => {
             const statusPresentation =
               req.status === "pending"
-                ? "Pending Dispatch"
+                ? "Waiting for Confirmation"
                 : req.status === "contacted"
                   ? "Contacted"
                   : req.status === "assigned"
                     ? "Technician Assigned"
                     : req.status === "in_progress"
-                      ? "Service In Progress"
+                      ? "Service in Progress"
                       : req.status === "completed"
-                        ? "Completed"
+                        ? "Service Completed"
                         : req.status === "cancelled"
                           ? "Cancelled"
                           : req.status.replace(/_/g, " ");
@@ -109,7 +109,7 @@ export default function EmergencyRequestsSection({
                 {/* Location and Situation */}
                 <div className="mt-3.5 space-y-1.5 text-sm">
                   <p className="text-text-secondary">
-                    <span className="font-semibold text-foreground">📍 Breakdown Location:</span>{" "}
+                    <span className="font-semibold text-foreground">📍 Location:</span>{" "}
                     {req.formattedAddress || req.currentLocation}
                   </p>
 
@@ -120,10 +120,10 @@ export default function EmergencyRequestsSection({
                   )}
                 </div>
 
-                {/* Roadside Dispatch Communications */}
+                {/* Service Updates */}
                 <div className="mt-4 border-t border-red-100/80 pt-3">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Roadside Dispatch Communications:
+                    Service Updates:
                   </p>
 
                   {req.dispatcherUpdates && req.dispatcherUpdates.length > 0 ? (
@@ -139,7 +139,7 @@ export default function EmergencyRequestsSection({
                                 <Siren size={11} />
                               </span>
                               <span className="text-xs font-bold text-red-950">
-                                Central Roadside Dispatch
+                                HT Mobile Tire Service Team
                               </span>
                             </div>
                             <span className="text-[11px] text-slate-500">
@@ -159,7 +159,7 @@ export default function EmergencyRequestsSection({
                   ) : (
                     <div className="mt-2 rounded-xl border border-dashed border-red-200/80 bg-white/60 p-3 text-xs text-slate-600">
                       <p>
-                        🚨 Central dispatch has prioritized your roadside request. When a mobile unit is allocated or status changes, live communications will appear here.
+                        🚨 Our service team has prioritized your roadside request. When a technician is assigned or updates occur, messages will appear here.
                       </p>
                     </div>
                   )}

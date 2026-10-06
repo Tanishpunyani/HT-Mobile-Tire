@@ -24,7 +24,7 @@ export default function TopBar() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
-            <span className="font-semibold text-white">24/7 Mobile Tire Van Dispatch:</span>
+            <span className="font-semibold text-white">24/7 HT Mobile Tire Services:</span>
             <span className="hidden sm:inline text-slate-400">Average response 30–45 mins</span>
           </div>
 

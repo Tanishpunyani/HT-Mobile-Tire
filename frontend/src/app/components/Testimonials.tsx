@@ -78,7 +78,7 @@ export default function Testimonials() {
           </div>
 
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-text-secondary sm:text-base">
-            Real experiences from drivers, commuters, and fleet owners who saved time with our on-demand mobile tire service vans.
+            Real experiences from drivers, commuters, and fleet owners who saved time with our on-demand mobile tire service.
           </p>
         </div>
 

@@ -31,7 +31,7 @@ export default function PrivacyPage() {
 
             <h3 className="text-base font-bold text-foreground">2. How We Use Your Information</h3>
             <ul className="list-disc pl-5 space-y-1.5">
-              <li>Dispatching certified technicians to your specified service address.</li>
+              <li>Sending certified technicians to your specified service address.</li>
               <li>Sending booking confirmations, arrival status notifications, and receipts.</li>
               <li>Responding to emergency roadside assistance requests.</li>
               <li>Ensuring payment processing and account profile management.</li>

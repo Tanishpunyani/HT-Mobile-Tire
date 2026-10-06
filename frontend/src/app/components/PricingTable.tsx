@@ -11,7 +11,7 @@ const TIERS = [
     unit: "on-site assessment",
     description: "Fast on-site patch & puncture repair to get you safely moving again.",
     features: [
-      "Mobile van dispatch to your location",
+      "Mobile service directly to your location",
       "Radial safety patch & plug vulcanization",
       "Digital PSI balance & inflation check",
       "Full rim seal & bead inspection",
@@ -49,7 +49,7 @@ const TIERS = [
       "Scheduled after-hours or weekend visits",
       "Fleet tread depth & PSI audit reports",
       "Bulk tire supply (New & Certified Used)",
-      "Priority same-day emergency dispatch",
+      "Priority same-day emergency service",
       "Centralized corporate invoicing",
       "Dedicated account manager",
     ],

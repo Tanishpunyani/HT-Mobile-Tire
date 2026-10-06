@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       return Response.json(
         {
           success: false,
-          error: `Too many emergency requests. Please call central dispatch immediately at ${BUSINESS_PHONE_DISPLAY}.`,
+          error: `Too many emergency requests. Please call our team immediately at ${BUSINESS_PHONE_DISPLAY}.`,
         },
         { status: 429 }
       );

@@ -359,7 +359,7 @@ export async function generateQuotePdf(data: QuotePdfData): Promise<Uint8Array> 
     color: colorSlate,
   });
 
-  page.drawText(`Questions? Central Dispatch Hotline: ${BUSINESS_PHONE_DISPLAY}`, {
+  page.drawText(`Questions? Customer Support: ${BUSINESS_PHONE_DISPLAY}`, {
     x: 40,
     y: currentY - 15,
     size: 8.5,
