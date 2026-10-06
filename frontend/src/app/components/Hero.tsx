@@ -96,7 +96,7 @@ export default function Hero() {
             <div className="relative h-[350px] w-full overflow-hidden rounded-[20px] border border-white/10 bg-secondary-light shadow-lg sm:h-[450px]">
               <Image
 
-                src="/images/hero-mobile-tire-clinic.webp"
+                src="/images/HT Mobile Tire Service.png"
                 alt="HT Mobile Tire technician providing professional tire service"
                 fill
                 priority
