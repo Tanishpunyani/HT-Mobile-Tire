@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import { requireAdminSession } from "@/lib/admin-auth";
-import Link from "next/link";
 import Container from "@/app/components/Container";
 import { prisma } from "@/lib/prisma";
 import { serializeDecimal } from "@/lib/utils/serialize-prisma";
@@ -176,7 +175,7 @@ export default async function AdminDashboardPage() {
   <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
     {/* Bookings */}
-    <Link
+    <a
       href="/admin/bookings"
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
@@ -200,10 +199,10 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         Manage Bookings →
       </div>
-    </Link>
+    </a>
 
     {/* Contact Messages */}
-    <Link
+    <a
       href="/admin/contact-messages"
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
@@ -227,10 +226,10 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         Manage Messages →
       </div>
-    </Link>
+    </a>
 
     {/* Emergency Requests */}
-    <Link
+    <a
       href="/admin/emergency-requests"
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
@@ -254,10 +253,10 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         Manage Emergencies →
       </div>
-    </Link>
+    </a>
 
     {/* Reviews & Moderation */}
-    <Link
+    <a
       href="/admin/reviews"
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
@@ -281,10 +280,10 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         Moderate Reviews →
       </div>
-    </Link>
+    </a>
 
     {/* Notification Delivery Logs */}
-    <Link
+    <a
       href="/admin/notifications"
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
@@ -308,7 +307,7 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         View Delivery Logs →
       </div>
-    </Link>
+    </a>
   </div>
 </section>
 

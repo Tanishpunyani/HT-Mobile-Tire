@@ -85,10 +85,11 @@ export default function AdminNavbar() {
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#080d1a] shadow-lg">
       <Container>
         <div className="flex h-16 items-center justify-between gap-4">
-          {/* Brand Logo & Test Client Site Shortcut */}
+            {/* Brand Logo & Test Client Site Shortcut */}
           <div className="flex items-center gap-3 sm:gap-6">
             <Link
               href="/admin/dashboard"
+              prefetch={false}
               className="flex items-center gap-2.5 group"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white font-extrabold shadow-md shadow-primary/30">
@@ -122,11 +123,30 @@ export default function AdminNavbar() {
             {adminNavLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
+              const isManagementRoute = link.href !== "/admin/dashboard";
+
+              if (isManagementRoute) {
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                      isActive
+                        ? "bg-primary text-white shadow-sm shadow-primary/25"
+                        : "text-slate-300 hover:bg-slate-800/80 hover:text-white"
+                    }`}
+                  >
+                    <Icon size={15} />
+                    <span>{link.name}</span>
+                  </a>
+                );
+              }
 
               return (
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={false}
                   className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
                     isActive
                       ? "bg-primary text-white shadow-sm shadow-primary/25"
@@ -174,11 +194,31 @@ export default function AdminNavbar() {
               {adminNavLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = pathname === link.href;
+                const isManagementRoute = link.href !== "/admin/dashboard";
+
+                if (isManagementRoute) {
+                  return (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition-all ${
+                        isActive
+                          ? "bg-primary text-white"
+                          : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                      }`}
+                    >
+                      <Icon size={15} />
+                      <span>{link.name}</span>
+                    </a>
+                  );
+                }
 
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
+                    prefetch={false}
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition-all ${
                       isActive
