@@ -323,10 +323,35 @@ export default function BookingsManagementClient({
   }
 
   function formatTime(time: string) {
-    return new Date(time).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!time || typeof time !== "string") return "";
+
+    // 1. Handle bare SQL TIME values (e.g., "14:00:00", "14:30") without calling new Date()
+    if (!time.includes("T")) {
+      const match = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?/);
+      if (match) {
+        const hours24 = parseInt(match[1], 10);
+        const minutes = match[2];
+        if (hours24 >= 0 && hours24 < 24) {
+          const ampm = hours24 >= 12 ? "PM" : "AM";
+          const hours12 = hours24 % 12 || 12;
+          const paddedHours = String(hours12).padStart(2, "0");
+          return `${paddedHours}:${minutes} ${ampm}`;
+        }
+      }
+      return time;
+    }
+
+    // 2. Handle ISO / full date-time strings if supplied
+    try {
+      const d = new Date(time);
+      if (isNaN(d.getTime())) return time;
+      return d.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return time;
+    }
   }
 
   function renderStatusBadge(status: string, arrivedAt?: string | null) {
