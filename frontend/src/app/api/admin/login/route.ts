@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       name: ADMIN_SESSION_COOKIE_NAME,
       value: sessionToken,
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "lax",
       secure: isProduction,
       maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
       path: "/",

@@ -1,4 +1,4 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import {
   validateAdminCookieEdge,
@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
     const cookieCheck = await validateAdminCookieEdge(adminSessionCookie);
 
     if (!cookieCheck.valid) {
-      return Response.redirect(new URL("/admin/login", request.url));
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
 

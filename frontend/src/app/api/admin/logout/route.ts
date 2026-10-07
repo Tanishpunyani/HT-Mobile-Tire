@@ -26,7 +26,7 @@ export async function POST() {
       name: ADMIN_SESSION_COOKIE_NAME,
       value: "",
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "lax",
       secure: isProduction,
       maxAge: 0,
       path: "/",
