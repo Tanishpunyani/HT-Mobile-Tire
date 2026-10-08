@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { triggerNotificationRetryAction } from "@/app/actions/notifications";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
+import { formatAdminDateTime, formatAdminTime } from "@/lib/utils/date-format";
 
 export type NotificationLog = {
   id: string;
@@ -323,12 +324,7 @@ export default function NotificationsManagementClient({
                     <tr key={log.id} className="hover:bg-slate-50/70 transition">
                       {/* Date / Time */}
                       <td className="px-5 py-4 font-mono text-slate-600 whitespace-nowrap">
-                        {new Date(log.createdAt).toLocaleString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {formatAdminDateTime(log.createdAt)}
                       </td>
 
                       {/* Channel */}
@@ -379,7 +375,7 @@ export default function NotificationsManagementClient({
                               </span>
                               {log.deliveredAt && (
                                 <p className="text-[10px] text-slate-400 font-mono">
-                                  {new Date(log.deliveredAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                  {formatAdminTime(log.deliveredAt)}
                                 </p>
                               )}
                             </div>
@@ -467,7 +463,7 @@ export default function NotificationsManagementClient({
                   </span>
                   {selectedLog.deliveredAt && (
                     <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-600">
-                      Delivered: {new Date(selectedLog.deliveredAt).toLocaleTimeString()}
+                      Delivered: {formatAdminTime(selectedLog.deliveredAt)}
                     </span>
                   )}
                   {selectedLog.messageId && (

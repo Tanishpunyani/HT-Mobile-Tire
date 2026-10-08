@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import StaticMapPreview from "@/app/components/StaticMapPreview";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
+import { formatAdminDateTime } from "@/lib/utils/date-format";
 
 export type EmergencyRequest = {
   id: string;
@@ -85,12 +86,7 @@ export default function EmergencyRequestsManagementClient({
   }, [initialRequests, loadRequests]);
 
   function formatDateTime(date: string) {
-    return new Date(date).toLocaleString([], {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatAdminDateTime(date);
   }
 
   return (

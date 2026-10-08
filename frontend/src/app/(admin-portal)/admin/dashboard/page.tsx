@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { requireAdminSession } from "@/lib/admin-auth";
+import Link from "next/link";
 import Container from "@/app/components/Container";
 import { prisma } from "@/lib/prisma";
 import { serializeDecimal } from "@/lib/utils/serialize-prisma";
@@ -175,8 +176,9 @@ export default async function AdminDashboardPage() {
   <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 
     {/* Bookings */}
-    <a
+    <Link
       href="/admin/bookings"
+      prefetch={false}
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
       <div className="flex items-start justify-between">
@@ -199,11 +201,12 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         Manage Bookings →
       </div>
-    </a>
+    </Link>
 
     {/* Contact Messages */}
-    <a
+    <Link
       href="/admin/contact-messages"
+      prefetch={false}
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
       <div className="flex items-start justify-between">
@@ -226,11 +229,12 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         Manage Messages →
       </div>
-    </a>
+    </Link>
 
     {/* Emergency Requests */}
-    <a
+    <Link
       href="/admin/emergency-requests"
+      prefetch={false}
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
       <div className="flex items-start justify-between">
@@ -253,11 +257,12 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         Manage Emergencies →
       </div>
-    </a>
+    </Link>
 
     {/* Reviews & Moderation */}
-    <a
+    <Link
       href="/admin/reviews"
+      prefetch={false}
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
       <div className="flex items-start justify-between">
@@ -280,11 +285,12 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         Moderate Reviews →
       </div>
-    </a>
+    </Link>
 
     {/* Notification Delivery Logs */}
-    <a
+    <Link
       href="/admin/notifications"
+      prefetch={false}
       className="group rounded-[16px] border border-border bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
     >
       <div className="flex items-start justify-between">
@@ -307,7 +313,7 @@ export default async function AdminDashboardPage() {
       <div className="mt-5 text-sm font-bold text-primary">
         View Delivery Logs →
       </div>
-    </a>
+    </Link>
   </div>
 </section>
 

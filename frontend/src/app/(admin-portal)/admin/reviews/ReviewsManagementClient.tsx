@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { formatAdminDate } from "@/lib/utils/date-format";
 import {
   Star,
   CheckCircle2,
@@ -304,11 +305,7 @@ export default function ReviewsManagementClient({
                         </span>
 
                         <span className="text-xs text-text-secondary">
-                          {new Date(review.createdAt).toLocaleDateString(undefined, {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {formatAdminDate(review.createdAt)}
                         </span>
                       </div>
 

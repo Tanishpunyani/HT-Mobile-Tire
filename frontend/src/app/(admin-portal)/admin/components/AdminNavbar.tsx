@@ -123,24 +123,6 @@ export default function AdminNavbar() {
             {adminNavLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
-              const isManagementRoute = link.href !== "/admin/dashboard";
-
-              if (isManagementRoute) {
-                return (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
-                      isActive
-                        ? "bg-primary text-white shadow-sm shadow-primary/25"
-                        : "text-slate-300 hover:bg-slate-800/80 hover:text-white"
-                    }`}
-                  >
-                    <Icon size={15} />
-                    <span>{link.name}</span>
-                  </a>
-                );
-              }
 
               return (
                 <Link
@@ -194,25 +176,6 @@ export default function AdminNavbar() {
               {adminNavLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = pathname === link.href;
-                const isManagementRoute = link.href !== "/admin/dashboard";
-
-                if (isManagementRoute) {
-                  return (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition-all ${
-                        isActive
-                          ? "bg-primary text-white"
-                          : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                      }`}
-                    >
-                      <Icon size={15} />
-                      <span>{link.name}</span>
-                    </a>
-                  );
-                }
 
                 return (
                   <Link

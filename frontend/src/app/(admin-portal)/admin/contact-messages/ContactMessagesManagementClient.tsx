@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
+import { formatAdminDateTime, formatAdminStatus } from "@/lib/utils/date-format";
 
 export type ContactMessage = {
   id: string;
@@ -176,16 +177,11 @@ export default function ContactMessagesManagementClient({
   }
 
   function formatDate(date: string) {
-    return new Date(date).toLocaleString([], {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatAdminDateTime(date);
   }
 
   function formatStatus(status: string) {
-    return status.replace(/_/g, " ");
+    return formatAdminStatus(status);
   }
 
   function getStatusStyle(status: string) {

@@ -22,6 +22,7 @@ import {
   Download,
 } from "lucide-react";
 import AdminBookingDetailActions from "./AdminBookingDetailActions";
+import { formatAdminTime } from "@/lib/utils/date-format";
 
 interface PageProps {
   params: Promise<{ bookingId: string }>;
@@ -41,15 +42,7 @@ function formatDate(dateVal: Date | string | null | undefined): string {
 
 function formatTime(timeVal: Date | string | null | undefined): string {
   if (!timeVal) return "N/A";
-  if (typeof timeVal === "string" && !timeVal.includes("T")) {
-    return timeVal;
-  }
-  const d = timeVal instanceof Date ? timeVal : new Date(timeVal);
-  if (isNaN(d.getTime())) return String(timeVal);
-  return d.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return formatAdminTime(timeVal, "N/A");
 }
 
 export default async function AdminBookingDetailPage({ params }: PageProps) {

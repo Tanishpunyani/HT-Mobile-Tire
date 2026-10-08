@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { formatAdminDate, formatAdminStatus } from "@/lib/utils/date-format";
 
 export type ServiceHistory = {
   service: string;
@@ -58,11 +59,11 @@ export default function CustomersManagementClient({
   }, [initialCustomers, loadCustomers]);
 
   function formatDate(date: string) {
-    return new Date(date).toLocaleDateString();
+    return formatAdminDate(date);
   }
 
   function formatStatus(status: string) {
-    return status.replace("_", " ");
+    return formatAdminStatus(status);
   }
 
   return (
