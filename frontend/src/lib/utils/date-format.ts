@@ -1,19 +1,41 @@
 /**
  * Central Safari-Safe Date & Time Formatting Utilities for Admin Console
  *
- * Prevents WebKit / iOS Safari RangeError exceptions caused by:
- * 1. Passing empty locale array `[]` to toLocaleDateString/toLocaleTimeString/toLocaleString
- * 2. Calling Intl formatters on Invalid Date instances
- * 3. Misparsing bare PostgreSQL SQL TIME values ("14:00:00")
- * 4. Misparsing Prisma serialized SQL TIME values ("1970-01-01T14:00:00.000Z")
- * 5. Undefined/null status string operations
+ * Prevents WebKit / iOS Safari RangeError exceptions and hydration mismatches:
+ * 1. Preserves calendar-date semantics for PostgreSQL DATE values ("2026-10-06", "2026-10-06T00:00:00.000Z")
+ * 2. Preserves wall-clock time for bare SQL TIME ("14:00:00") and Prisma serialized SQL TIME ("1970-01-01T14:00:00.000Z")
+ * 3. Enforces deterministic UTC formatting for timestamps across SSR and client hydration
+ * 4. Passes explicit "en-US" locale (no empty arrays `[]`) to prevent Safari RangeError
+ * 5. Handles null, undefined, and malformed inputs with 100% zero-throw guarantee
  */
 
 const DEFAULT_LOCALE = "en-US";
+const DEFAULT_TIMEZONE = "UTC";
+
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+] as const;
+
+const WEEKDAY_NAMES = [
+  "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+] as const;
+
+/**
+ * Regex matching pure calendar dates:
+ * - Bare SQL DATE: "2026-10-06"
+ * - Prisma serialized PostgreSQL @db.Date: "2026-10-06T00:00:00.000Z", "2026-10-06T00:00:00Z", "2026-10-06T00:00:00"
+ */
+const CALENDAR_DATE_REGEX = /^(\d{4})-(\d{2})-(\d{2})(?:T00:00:00(?:\.000)?(?:Z|[+-]00:00)?)?$/i;
+
+export interface FormatAdminDateOptions {
+  includeWeekday?: boolean;
+}
 
 /**
  * Safely parses any input into a valid Date object.
  * Returns null if the value is null, undefined, empty, or unparseable.
+ * Pure calendar dates are parsed as UTC midnight to prevent negative timezone off-by-one shifts.
  */
 export function safeParseDate(val: unknown): Date | null {
   if (val === null || val === undefined || val === "") {
@@ -25,17 +47,24 @@ export function safeParseDate(val: unknown): Date | null {
   }
 
   if (typeof val === "string") {
-    // Check for YYYY-MM-DD bare date format to avoid UTC timezone off-by-one shifts
-    const bareDateMatch = val.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (bareDateMatch) {
-      const year = parseInt(bareDateMatch[1], 10);
-      const month = parseInt(bareDateMatch[2], 10) - 1;
-      const day = parseInt(bareDateMatch[3], 10);
+    const trimmed = val.trim();
+
+    // Check for pure calendar date (YYYY-MM-DD or Prisma UTC midnight)
+    const calendarMatch = trimmed.match(CALENDAR_DATE_REGEX);
+    if (calendarMatch) {
+      const year = parseInt(calendarMatch[1], 10);
+      const month = parseInt(calendarMatch[2], 10) - 1;
+      const day = parseInt(calendarMatch[3], 10);
       if (month < 0 || month > 11 || day < 1 || day > 31) {
         return null;
       }
-      const d = new Date(year, month, day);
-      if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day) {
+      // Construct UTC date to preserve calendar date semantics across all timezones
+      const d = new Date(Date.UTC(year, month, day));
+      if (
+        d.getUTCFullYear() !== year ||
+        d.getUTCMonth() !== month ||
+        d.getUTCDate() !== day
+      ) {
         return null;
       }
       return isNaN(d.getTime()) ? null : d;
@@ -112,6 +141,7 @@ export function formatAdminTime(
     return d.toLocaleTimeString(DEFAULT_LOCALE, {
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: DEFAULT_TIMEZONE,
     });
   } catch {
     return fallback;
@@ -123,28 +153,56 @@ export function formatAdminTime(
  *
  * Supports:
  * - Bare SQL DATE: "2026-10-05"
+ * - Prisma serialized calendar DATE: "2026-10-06T00:00:00.000Z"
  * - Full ISO timestamps: "2026-10-05T18:04:18.503Z"
  * - Date instances, null, undefined, malformed strings
  */
 export function formatAdminDate(
   dateVal: unknown,
-  fallback = "N/A"
+  fallback = "N/A",
+  options?: FormatAdminDateOptions
 ): string {
   if (dateVal === null || dateVal === undefined || dateVal === "") {
     return fallback;
   }
 
+  // 1. Direct calendar date parsing (preserves calendar date regardless of client timezone)
+  if (typeof dateVal === "string") {
+    const trimmed = dateVal.trim();
+    const calendarMatch = trimmed.match(CALENDAR_DATE_REGEX);
+    if (calendarMatch) {
+      const year = parseInt(calendarMatch[1], 10);
+      const monthIdx = parseInt(calendarMatch[2], 10) - 1;
+      const day = parseInt(calendarMatch[3], 10);
+      if (monthIdx >= 0 && monthIdx <= 11 && day >= 1 && day <= 31) {
+        const monthName = MONTH_NAMES[monthIdx];
+        if (options?.includeWeekday) {
+          const weekdayIdx = new Date(Date.UTC(year, monthIdx, day)).getUTCDay();
+          const weekday = WEEKDAY_NAMES[weekdayIdx];
+          return `${weekday}, ${monthName} ${day}, ${year}`;
+        }
+        return `${monthName} ${day}, ${year}`;
+      }
+    }
+  }
+
+  // 2. Date instances or non-midnight ISO timestamps
   const d = safeParseDate(dateVal);
   if (!d) {
     return typeof dateVal === "string" ? dateVal : fallback;
   }
 
   try {
-    return d.toLocaleDateString(DEFAULT_LOCALE, {
+    const intlOptions: Intl.DateTimeFormatOptions = {
       month: "short",
       day: "numeric",
       year: "numeric",
-    });
+      timeZone: DEFAULT_TIMEZONE,
+    };
+    if (options?.includeWeekday) {
+      intlOptions.weekday = "short";
+    }
+    return d.toLocaleDateString(DEFAULT_LOCALE, intlOptions);
   } catch {
     return fallback;
   }
@@ -176,6 +234,7 @@ export function formatAdminDateTime(
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: DEFAULT_TIMEZONE,
     });
   } catch {
     return fallback;

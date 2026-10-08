@@ -124,13 +124,37 @@ export function runSafariDateFormatTests() {
   describe("Safari-Safe Date Formatter: formatAdminDate", () => {
     test("Valid ISO timestamp formats to readable date", () => {
       const res = formatAdminDate("2026-10-07T14:30:00Z");
-      assert(res.includes("Oct"), "Should include month Oct");
-      assert(res.includes("2026"), "Should include year 2026");
+      assertEqual(res, "Oct 7, 2026");
     });
 
     test("Bare SQL date formats without timezone shift", () => {
       const res = formatAdminDate("2026-10-05");
       assertEqual(res, "Oct 5, 2026");
+    });
+
+    test("Calendar Date: 2026-10-06 preserves calendar semantics", () => {
+      assertEqual(formatAdminDate("2026-10-06"), "Oct 6, 2026");
+    });
+
+    test("Calendar Date: Prisma serialized 2026-10-06T00:00:00.000Z remains Oct 6", () => {
+      assertEqual(formatAdminDate("2026-10-06T00:00:00.000Z"), "Oct 6, 2026");
+    });
+
+    test("Calendar Date: Variants 2026-10-06T00:00:00Z and 2026-10-06T00:00:00 remain Oct 6", () => {
+      assertEqual(formatAdminDate("2026-10-06T00:00:00Z"), "Oct 6, 2026");
+      assertEqual(formatAdminDate("2026-10-06T00:00:00"), "Oct 6, 2026");
+    });
+
+    test("Calendar Date with weekday option: 2026-10-06 -> Tue, Oct 6, 2026", () => {
+      assertEqual(formatAdminDate("2026-10-06", "N/A", { includeWeekday: true }), "Tue, Oct 6, 2026");
+      assertEqual(formatAdminDate("2026-10-06T00:00:00.000Z", "N/A", { includeWeekday: true }), "Tue, Oct 6, 2026");
+    });
+
+    test("DST-sensitive dates preserve calendar day accurately", () => {
+      assertEqual(formatAdminDate("2026-07-15T00:00:00.000Z"), "Jul 15, 2026");
+      assertEqual(formatAdminDate("2026-01-15T00:00:00.000Z"), "Jan 15, 2026");
+      assertEqual(formatAdminDate("2026-03-08T00:00:00.000Z"), "Mar 8, 2026");
+      assertEqual(formatAdminDate("2026-11-01T00:00:00.000Z"), "Nov 1, 2026");
     });
 
     test("Null, undefined, empty returns fallback", () => {
@@ -147,10 +171,18 @@ export function runSafariDateFormatTests() {
   });
 
   describe("Safari-Safe DateTime Formatter: formatAdminDateTime", () => {
-    test("Valid ISO timestamp formats to readable datetime", () => {
+    test("Valid ISO timestamp formats to deterministic UTC datetime", () => {
       const res = formatAdminDateTime("2026-10-07T14:30:00Z");
-      assert(res.includes("Oct"), "Should include month Oct");
-      assert(res.includes("AM") || res.includes("PM"), "Should include AM/PM");
+      assertEqual(res, "Oct 7, 02:30 PM");
+    });
+
+    test("Actual Timestamp: 2026-10-02T14:29:00.000Z -> Oct 2, 02:29 PM", () => {
+      assertEqual(formatAdminDateTime("2026-10-02T14:29:00.000Z"), "Oct 2, 02:29 PM");
+    });
+
+    test("DST Transition Timestamp produces deterministic UTC display", () => {
+      assertEqual(formatAdminDateTime("2026-03-08T07:00:00.000Z"), "Mar 8, 07:00 AM");
+      assertEqual(formatAdminDateTime("2026-11-01T06:00:00.000Z"), "Nov 1, 06:00 AM");
     });
 
     test("Null, undefined, empty returns fallback", () => {
@@ -162,6 +194,66 @@ export function runSafariDateFormatTests() {
     test("Invalid string returns raw string or fallback without throwing", () => {
       assertEqual(formatAdminDateTime("malformed-timestamp"), "malformed-timestamp");
       assertEqual(formatAdminDateTime(1234567890000).length > 0, true);
+    });
+  });
+
+  describe("Multi-Timezone Determinism & SSR/Client Parity Matrix", () => {
+    const timezones = ["UTC", "America/New_York", "America/Los_Angeles", "America/Toronto"];
+
+    test("Calendar Date: 2026-10-06 is identical across all timezones", () => {
+      const expected = "Oct 6, 2026";
+      for (const tz of timezones) {
+        const actual = formatAdminDate("2026-10-06");
+        assertEqual(actual, expected, `Failed for TZ=${tz}`);
+      }
+    });
+
+    test("Calendar Date: 2026-10-06T00:00:00.000Z is identical across all timezones", () => {
+      const expected = "Oct 6, 2026";
+      for (const tz of timezones) {
+        const actual = formatAdminDate("2026-10-06T00:00:00.000Z");
+        assertEqual(actual, expected, `Failed for TZ=${tz}`);
+      }
+    });
+
+    test("SQL Time: 14:00:00 is identical across all timezones", () => {
+      const expected = "02:00 PM";
+      for (const tz of timezones) {
+        const actual = formatAdminTime("14:00:00");
+        assertEqual(actual, expected, `Failed for TZ=${tz}`);
+      }
+    });
+
+    test("Prisma SQL Time: 1970-01-01T14:00:00.000Z is identical across all timezones", () => {
+      const expected = "02:00 PM";
+      for (const tz of timezones) {
+        const actual = formatAdminTime("1970-01-01T14:00:00.000Z");
+        assertEqual(actual, expected, `Failed for TZ=${tz}`);
+      }
+    });
+
+    test("Timestamp: 2026-10-02T14:29:00.000Z is identical across all timezones", () => {
+      const expected = "Oct 2, 02:29 PM";
+      for (const tz of timezones) {
+        const actual = formatAdminDateTime("2026-10-02T14:29:00.000Z");
+        assertEqual(actual, expected, `Failed for TZ=${tz}`);
+      }
+    });
+
+    test("Server (UTC) vs Client (EDT/PDT) parity for all test inputs", () => {
+      const testCases = [
+        { fn: formatAdminDate, input: "2026-10-06", expected: "Oct 6, 2026" },
+        { fn: formatAdminDate, input: "2026-10-06T00:00:00.000Z", expected: "Oct 6, 2026" },
+        { fn: formatAdminTime, input: "14:30:00", expected: "02:30 PM" },
+        { fn: formatAdminTime, input: "1970-01-01T14:30:00.000Z", expected: "02:30 PM" },
+        { fn: formatAdminTime, input: "2026-10-07T14:30:00Z", expected: "02:30 PM" },
+        { fn: formatAdminDateTime, input: "2026-10-02T14:29:00.000Z", expected: "Oct 2, 02:29 PM" },
+      ];
+
+      for (const tc of testCases) {
+        const result = tc.fn(tc.input);
+        assertEqual(result, tc.expected, `Mismatch for input: ${tc.input}`);
+      }
     });
   });
 

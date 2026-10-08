@@ -22,26 +22,17 @@ import {
   Download,
 } from "lucide-react";
 import AdminBookingDetailActions from "./AdminBookingDetailActions";
-import { formatAdminTime } from "@/lib/utils/date-format";
+import { formatAdminDate, formatAdminTime } from "@/lib/utils/date-format";
 
 interface PageProps {
   params: Promise<{ bookingId: string }>;
 }
 
 function formatDate(dateVal: Date | string | null | undefined): string {
-  if (!dateVal) return "N/A";
-  const d = dateVal instanceof Date ? dateVal : new Date(dateVal);
-  if (isNaN(d.getTime())) return String(dateVal);
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatAdminDate(dateVal, "N/A", { includeWeekday: true });
 }
 
 function formatTime(timeVal: Date | string | null | undefined): string {
-  if (!timeVal) return "N/A";
   return formatAdminTime(timeVal, "N/A");
 }
 
