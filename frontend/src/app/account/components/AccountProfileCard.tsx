@@ -3,6 +3,7 @@
 import { Edit3, AlertCircle } from "lucide-react";
 import Container from "@/app/components/Container";
 import SignOutButton from "@/app/components/SignOutButton";
+import { formatMonthYear } from "@/lib/utils/date-format";
 import { Customer, Booking, EmergencyRequest, ContactInquiry } from "../types";
 
 interface AccountProfileCardProps {
@@ -61,11 +62,7 @@ export default function AccountProfileCard({
                 </span>
                 {customer.createdAt && (
                   <span className="text-xs text-slate-400">
-                    • Member since{" "}
-                    {new Date(customer.createdAt).toLocaleDateString(undefined, {
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    • Member since {formatMonthYear(customer.createdAt)}
                   </span>
                 )}
               </div>

@@ -23,9 +23,13 @@ function LoginForm() {
       if (result && !result.success) {
         setError(result.error || "Invalid email or password. Please try again.");
         setLoading(false);
+      } else if (result?.success && result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+        return;
       }
     } catch (err: any) {
       if (err?.digest?.startsWith?.("NEXT_REDIRECT") || err?.message === "NEXT_REDIRECT") {
+        window.location.href = redirectTarget;
         return;
       }
       const rawMsg = err?.message || "";

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { createClient } from "@/lib/supabase/client";
+import { formatTime } from "@/lib/utils/date-format";
 
 interface ActiveBookingSummary {
   id: string;
@@ -60,7 +61,10 @@ export default function HomepageActiveServiceTracker() {
           setCustomerId(data.bookings[0].customerId);
         } else if (!customerId) {
           try {
-            const profRes = await fetch("/api/customer/profile", { cache: "no-store" });
+            const profRes = await fetch("/api/customer/profile", {
+              cache: "no-store",
+              credentials: "same-origin",
+            });
             if (profRes.ok) {
               const profData = await profRes.json();
               if (profData.success && profData.customer?.id && isMountedRef.current) {
@@ -225,10 +229,7 @@ export default function HomepageActiveServiceTracker() {
       badgeStyle = "bg-emerald-900/60 text-emerald-300 border-emerald-700/50";
       iconNode = <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />;
     } else if (hasDynamicEta && activeBooking.estimatedArrivalAt) {
-      const formattedEta = new Date(activeBooking.estimatedArrivalAt).toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      });
+      const formattedEta = formatTime(activeBooking.estimatedArrivalAt);
       statusHeadline = `Expected ~${formattedEta} (${activeBooking.etaMinutes}m)`;
       statusSubtext = "Your technician is on the way to your location.";
       badgeLabel = "En Route";

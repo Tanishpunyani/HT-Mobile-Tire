@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Siren, ShieldCheck } from "lucide-react";
+import { formatDateTime } from "@/lib/utils/date-format";
 import { EmergencyRequest } from "../types";
 import EmergencyCommunicationBody from "./EmergencyCommunicationBody";
 
@@ -96,13 +97,7 @@ export default function EmergencyRequestsSection({
                   </div>
 
                   <span className="text-xs text-slate-500 whitespace-nowrap">
-                    {new Date(req.createdAt).toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
+                    {formatDateTime(req.createdAt)}
                   </span>
                 </div>
 
@@ -143,13 +138,7 @@ export default function EmergencyRequestsSection({
                               </span>
                             </div>
                             <span className="text-[11px] text-slate-500">
-                              {new Date(update.createdAt).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}
+                              {formatDateTime(update.createdAt)}
                             </span>
                           </div>
                           <EmergencyCommunicationBody body={update.body} subject={update.subject} />

@@ -254,3 +254,25 @@ export function formatAdminStatus(
   }
   return statusVal.replace(/_/g, " ");
 }
+
+// Universal Safari-Safe Aliases for Customer, Technician, and Public Components
+export const formatTime = formatAdminTime;
+export const formatDate = formatAdminDate;
+export const formatDateTime = formatAdminDateTime;
+export const formatStatus = formatAdminStatus;
+
+export function formatMonthYear(dateVal: unknown, fallback = "N/A"): string {
+  const d = safeParseDate(dateVal);
+  if (!d) return fallback;
+  try {
+    return d.toLocaleDateString(DEFAULT_LOCALE, {
+      month: "short",
+      year: "numeric",
+      timeZone: DEFAULT_TIMEZONE,
+    });
+  } catch {
+    return fallback;
+  }
+}
+
+

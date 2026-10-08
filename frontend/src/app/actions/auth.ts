@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
 export type AuthActionResult = {
   success: boolean;
   error?: string;
+  redirectUrl?: string;
 };
 
 export async function signup(formData: FormData): Promise<AuthActionResult | void> {
@@ -109,10 +110,16 @@ export async function signup(formData: FormData): Promise<AuthActionResult | voi
   }
 
   if (authData.session) {
-    redirect("/account");
+    return {
+      success: true,
+      redirectUrl: "/account",
+    };
   }
 
-  redirect("/login?message=Check your email to confirm your account");
+  return {
+    success: true,
+    redirectUrl: "/login?message=Check your email to confirm your account",
+  };
 }
 
 function sanitizeRedirectTarget(target: unknown, fallback = "/account"): string {
@@ -256,11 +263,15 @@ export async function login(formData: FormData): Promise<AuthActionResult | void
   }
 
   const role = data.user.user_metadata?.role || data.user.app_metadata?.role;
-  if (role === "admin" || role === "superadmin") {
-    redirect("/admin/dashboard");
-  }
+  const destination =
+    role === "admin" || role === "superadmin"
+      ? "/admin/dashboard"
+      : redirectTarget;
 
-  redirect(redirectTarget);
+  return {
+    success: true,
+    redirectUrl: destination,
+  };
 }
 
 export async function logout() {
@@ -268,3 +279,4 @@ export async function logout() {
   await supabase.auth.signOut();
   redirect("/");
 }
+

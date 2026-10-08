@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Container from "@/app/components/Container";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
+import { formatTime } from "@/lib/utils/date-format";
 import { useAuth } from "@/lib/auth/auth-context";
 
 function BookingConfirmedInner() {
@@ -63,10 +64,7 @@ function BookingConfirmedInner() {
               <Sparkles size={14} />
               <span>
                 {booking?.bookedAt || booking?.createdAt
-                  ? `Booked at ${new Date(booking.bookedAt || booking.createdAt).toLocaleTimeString([], {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })} • No Upfront Fee`
+                  ? `Booked at ${formatTime(booking.bookedAt || booking.createdAt)} • No Upfront Fee`
                   : "Service Request Received • No Upfront Fee"}
               </span>
             </div>
@@ -120,10 +118,7 @@ function BookingConfirmedInner() {
                     <p className="text-xs font-semibold text-text-secondary">Request Placed</p>
                     <p className="font-bold text-foreground">
                       {booking?.bookedAt || booking?.createdAt
-                        ? new Date(booking.bookedAt || booking.createdAt).toLocaleTimeString([], {
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })
+                        ? formatTime(booking.bookedAt || booking.createdAt)
                         : "Just Now"}
                     </p>
                   </div>

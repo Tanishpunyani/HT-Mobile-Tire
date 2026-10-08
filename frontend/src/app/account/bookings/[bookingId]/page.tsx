@@ -28,6 +28,7 @@ import LiveVanTracker from "@/app/components/LiveVanTracker";
 import ReviewModal from "@/app/components/ReviewModal";
 import { cancelCustomerBookingAction } from "@/app/actions/bookings";
 import { createClient } from "@/lib/supabase/client";
+import { formatDateTime } from "@/lib/utils/date-format";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 
 const statusLabelMap: Record<string, string> = {
@@ -348,13 +349,7 @@ export default function BookingTrackingPage() {
 
   const rawBookedTimestamp = booking.bookedAt || booking.createdAt;
   const formattedBookedAt = rawBookedTimestamp
-    ? new Date(rawBookedTimestamp).toLocaleString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })
+    ? formatDateTime(rawBookedTimestamp)
     : null;
 
   return (

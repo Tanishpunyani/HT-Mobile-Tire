@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Mail, CheckCircle2, ArrowRight } from "lucide-react";
+import { formatDateTime } from "@/lib/utils/date-format";
 import { ContactInquiry } from "../types";
 
 interface ContactInquiriesSectionProps {
@@ -91,13 +92,7 @@ export default function ContactInquiriesSection({
                       {statusFormatted}
                     </span>
                     <span className="text-xs text-slate-400">
-                      {new Date(inquiry.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
+                      {formatDateTime(inquiry.createdAt)}
                     </span>
                   </div>
                 </div>
@@ -142,13 +137,7 @@ export default function ContactInquiriesSection({
                               </span>
                             </div>
                             <span className="text-[11px] text-emerald-700">
-                              {new Date(resp.createdAt).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}
+                              {formatDateTime(resp.createdAt)}
                             </span>
                           </div>
                           <div className="mt-3">

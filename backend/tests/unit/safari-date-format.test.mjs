@@ -19,6 +19,11 @@ import {
   formatAdminDate,
   formatAdminDateTime,
   formatAdminStatus,
+  formatMonthYear,
+  formatTime,
+  formatDate,
+  formatDateTime,
+  formatStatus,
 } from "../../../frontend/src/lib/utils/date-format.ts";
 
 export function runSafariDateFormatTests() {
@@ -279,6 +284,23 @@ export function runSafariDateFormatTests() {
       assertEqual(formatAdminStatus(123), "pending");
       assertEqual(formatAdminStatus({}), "pending");
       assertEqual(formatAdminStatus(false), "pending");
+    });
+  });
+
+  describe("Safari-Safe Month-Year and Universal Aliases", () => {
+    test("formatMonthYear formats dates correctly in UTC", () => {
+      assertEqual(formatMonthYear("2026-10-07T14:30:00Z"), "Oct 2026");
+      assertEqual(formatMonthYear("2024-01-15"), "Jan 2024");
+      assertEqual(formatMonthYear(null), "N/A");
+      assertEqual(formatMonthYear(undefined), "N/A");
+      assertEqual(formatMonthYear("invalid"), "N/A");
+    });
+
+    test("Universal aliases match original functions", () => {
+      assertEqual(formatTime("14:30:00"), formatAdminTime("14:30:00"));
+      assertEqual(formatDate("2026-10-07"), formatAdminDate("2026-10-07"));
+      assertEqual(formatDateTime("2026-10-07T14:30:00Z"), formatAdminDateTime("2026-10-07T14:30:00Z"));
+      assertEqual(formatStatus("in_progress"), formatAdminStatus("in_progress"));
     });
   });
 }

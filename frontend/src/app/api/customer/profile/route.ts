@@ -413,3 +413,6 @@ export async function PATCH(request: Request) {
     );
   }
 }
+
+export const PUT = PATCH;
+

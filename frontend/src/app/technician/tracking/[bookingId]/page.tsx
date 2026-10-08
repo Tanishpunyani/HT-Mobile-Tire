@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { markTechnicianArrivedAction, startTechnicianTripAction } from "@/app/actions/bookings";
+import { formatTime } from "@/lib/utils/date-format";
 
 interface TechnicianTrackingPageProps {
   params: Promise<{
@@ -171,7 +172,7 @@ function TechnicianTrackingContent({ bookingId }: { bookingId: string }) {
 
       if (res.ok) {
         setPingCount((prev) => prev + 1);
-        setLastSentTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+        setLastSentTime(formatTime(new Date()));
         setErrorMsg(null);
         setErrorState(null);
       } else {
@@ -454,7 +455,7 @@ function TechnicianTrackingContent({ bookingId }: { bookingId: string }) {
               <div>
                 <p className="text-xs font-bold text-white">Technician Arrived On-Site</p>
                 <p className="text-[11px] text-emerald-300">
-                  Arrival confirmed at {new Date(arrivedAt || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}. Stand by for admin to start service.
+                  Arrival confirmed at {formatTime(arrivedAt || Date.now())}. Stand by for admin to start service.
                 </p>
               </div>
             </div>

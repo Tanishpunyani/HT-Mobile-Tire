@@ -33,9 +33,13 @@ function SignupForm() {
       if (result && !result.success) {
         setError(result.error || "Failed to create account. Please try again.");
         setLoading(false);
+      } else if (result?.success && result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+        return;
       }
     } catch (err: any) {
       if (err?.digest?.startsWith?.("NEXT_REDIRECT") || err?.message === "NEXT_REDIRECT") {
+        window.location.href = "/account";
         return;
       }
       const rawMsg = err?.message || "";

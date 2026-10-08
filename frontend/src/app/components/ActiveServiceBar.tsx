@@ -48,7 +48,10 @@ export default function ActiveServiceBar() {
     if (!isMountedRef.current || isHiddenRoute || !isCustomerUser) return;
 
     try {
-      const res = await fetch("/api/bookings", { cache: "no-store" });
+      const res = await fetch("/api/bookings", {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
       if (!res.ok) {
         if (isMountedRef.current) setActiveBooking(null);
         return;
@@ -62,7 +65,10 @@ export default function ActiveServiceBar() {
           setCustomerId(data.bookings[0].customerId);
         } else if (!customerId) {
           try {
-            const profRes = await fetch("/api/customer/profile", { cache: "no-store" });
+            const profRes = await fetch("/api/customer/profile", {
+              cache: "no-store",
+              credentials: "same-origin",
+            });
             if (profRes.ok) {
               const profData = await profRes.json();
               if (profData.success && profData.customer?.id && isMountedRef.current) {

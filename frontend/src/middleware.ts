@@ -38,7 +38,15 @@ export async function middleware(request: NextRequest) {
   // Possession of an admin cookie never authenticates as a customer
   if (pathname.startsWith("/account")) {
     if (!user) {
-      return Response.redirect(new URL("/login?redirect=/account", request.url));
+      const redirectUrl = new URL(
+        `/login?redirect=${encodeURIComponent(pathname + request.nextUrl.search)}`,
+        request.url
+      );
+      const redirectResponse = NextResponse.redirect(redirectUrl);
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        redirectResponse.cookies.set(cookie);
+      });
+      return redirectResponse;
     }
   }
 

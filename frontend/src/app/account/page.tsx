@@ -107,7 +107,10 @@ function AccountPageInner() {
         if (isManualRetry) setRetrying(true);
         if (!isSilent) setLoading(true);
 
-        const res = await fetch("/api/customer/profile", { cache: "no-store" });
+        const res = await fetch("/api/customer/profile", {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
 
         if (res.status === 401) {
           setErrorState({
@@ -265,6 +268,7 @@ function AccountPageInner() {
       const res = await fetch("/api/customer/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           name: editName.trim(),
           phone: editPhone.trim(),
@@ -357,6 +361,7 @@ function AccountPageInner() {
       const res = await fetch("/api/customer/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           name: onboardingName.trim(),
           phone: onboardingPhone.trim(),

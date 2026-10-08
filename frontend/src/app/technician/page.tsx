@@ -28,6 +28,7 @@ import {
   getTechnicianPortalDataAction,
   markTechnicianArrivedAction,
 } from "@/app/actions/bookings";
+import { formatDate, formatTime } from "@/lib/utils/date-format";
 import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_RAW } from "@/lib/constants/phone";
 
 interface TechnicianData {
@@ -404,15 +405,8 @@ function TechnicianPortalContent() {
             currentList.map((job) => {
               const serviceName = job.primaryService || job.service?.name || "Mobile Tire Service";
               const shortId = job.id.slice(-6).toUpperCase();
-              const formattedDate = new Date(job.bookingDate).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              });
-              const formattedTime = new Date(job.bookingTime).toLocaleTimeString("en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              const formattedDate = formatDate(job.bookingDate);
+              const formattedTime = formatTime(job.bookingTime);
               const destinationAddress = job.formattedAddress || job.location;
               const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
                 destinationAddress
@@ -527,11 +521,7 @@ function TechnicianPortalContent() {
                     <div className="rounded-xl bg-emerald-950/60 p-2.5 border border-emerald-800/60 flex items-center gap-2 text-xs text-emerald-300">
                       <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
                       <span>
-                        Arrived on-site at{" "}
-                        {new Date(job.arrivedAt!).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        Arrived on-site at {formatTime(job.arrivedAt)}
                       </span>
                     </div>
                   )}

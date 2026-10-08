@@ -12,6 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
+import { formatDate, formatTime } from "@/lib/utils/date-format";
 import { Booking } from "../types";
 
 const statusLabelMap: Record<string, string> = {
@@ -131,21 +132,9 @@ export default function BookingHistorySection({
                           <span className="flex items-center gap-1 font-medium text-slate-700">
                             <Clock3 size={14} className="text-primary shrink-0" />
                             Booked{" "}
-                            {new Date(booking.bookedAt || booking.bookingDate).toLocaleDateString(
-                              undefined,
-                              {
-                                month: "short",
-                                day: "numeric",
-                              }
-                            )}{" "}
+                            {formatDate(booking.bookedAt || booking.bookingDate)}{" "}
                             at{" "}
-                            {new Date(booking.bookedAt || booking.bookingTime).toLocaleTimeString(
-                              [],
-                              {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              }
-                            )}
+                            {formatTime(booking.bookedAt || booking.bookingTime)}
                           </span>
                           <span className="font-mono text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                             #{booking.id.slice(0, 8).toUpperCase()}
