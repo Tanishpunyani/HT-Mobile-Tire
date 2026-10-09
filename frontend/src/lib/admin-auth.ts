@@ -10,9 +10,10 @@ export const ADMIN_SESSION_MAX_AGE_SECONDS = 24 * 60 * 60; // 24 hours
 
 /**
  * Secret used for cryptographic signing of the admin session cookie representation.
+ * SEC-04: Authoritatively requires ADMIN_COOKIE_SECRET with zero fallback.
  */
 function getAdminSigningSecret(): string {
-  const secret = (process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_EMAIL || "").trim();
+  const secret = (process.env.ADMIN_COOKIE_SECRET || "").trim();
   if (!secret) {
     logger.error("admin_auth.secret_missing");
   }
@@ -39,6 +40,7 @@ export function signAdminSessionCookie(rawToken: string, expiresAtMs: number): s
 /**
  * Validates the cryptographic signature and expiration of an admin session cookie.
  * Does NOT query the database; used for early middleware rejection and format validation.
+ * SEC-02: Strictly requires `<rawToken>.<expiresAtMs>.<signature>`; rejects unsigned tokens.
  */
 export function validateAdminCookieSignature(
   cookieValue: string | null | undefined
@@ -82,11 +84,7 @@ export function validateAdminCookieSignature(
     return { valid: true, rawToken, expiresAtMs };
   }
 
-  // 2. Allow raw 64-character hex tokens for backward compatibility
-  if (parts.length === 1 && /^[a-f0-9]{64}$/i.test(parts[0])) {
-    return { valid: true, rawToken: parts[0] };
-  }
-
+  // SEC-02: Legacy unsigned 64-hex tokens are rejected
   return { valid: false, error: "Invalid admin session cookie format." };
 }
 

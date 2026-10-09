@@ -37,7 +37,8 @@ export async function validateAdminCookieEdge(
       return { valid: false, error: "Admin session cookie has expired." };
     }
 
-    const secret = (process.env.ADMIN_PASSWORD_HASH || process.env.ADMIN_EMAIL || "").trim();
+    // SEC-04: Authoritatively requires ADMIN_COOKIE_SECRET with zero fallback
+    const secret = (process.env.ADMIN_COOKIE_SECRET || "").trim();
     if (!secret) {
       return { valid: false, error: "Server admin secret is unconfigured." };
     }
@@ -76,10 +77,6 @@ export async function validateAdminCookieEdge(
     }
   }
 
-  // 2. Allow raw 64-hex tokens for backward compatibility
-  if (parts.length === 1 && /^[a-f0-9]{64}$/i.test(parts[0])) {
-    return { valid: true, rawToken: parts[0] };
-  }
-
+  // SEC-02: Legacy unsigned 64-hex tokens are rejected
   return { valid: false, error: "Invalid admin session cookie format." };
 }

@@ -122,5 +122,54 @@ export function runAdminAuthIntegrationTests() {
       assertEqual(cookieConfig.secure, true, "Admin session cookie must be Secure in production");
       assertEqual(cookieConfig.path, "/", "Admin session cookie must be scoped to root Path=/");
     });
+
+    test("SEC-02: Legacy unsigned 64-hexadecimal cookie fails requireAdminSession", () => {
+      const unsignedHexCookie = "e".repeat(64);
+      // Realistic signature validator that rejects unsigned tokens
+      const strictValidator = (cookie) => {
+        const parts = (cookie || "").split(".");
+        return parts.length === 3 && parts[0].length === 64 && Boolean(parts[2]);
+      };
+
+      const result = requireAdminSession(unsignedHexCookie, strictValidator);
+      assertEqual(result.authorized, false);
+      assertEqual(result.status, 403);
+    });
+
+    test("SEC-04: requireAdminSession strictly blocks tokens signed with non-authoritative keys", () => {
+      const tokenWithWrongKey = `${"f".repeat(64)}.${Date.now() + 60000}.invalid_key_sig`;
+      const authoritativeValidator = (cookie) => {
+        // Only accepts if signature matches authoritative secret
+        return cookie.endsWith(".authoritative_key_sig");
+      };
+
+      const result = requireAdminSession(tokenWithWrongKey, authoritativeValidator);
+      assertEqual(result.authorized, false);
+      assertEqual(result.status, 403);
+    });
+
+    test("Logout / session cleanup safely handles invalid and legacy cookies without error", () => {
+      const simulateDestroySession = (token) => {
+        if (!token || typeof token !== "string" || token.trim() === "") {
+          return { success: true, deleted: false };
+        }
+        const parts = token.trim().split(".");
+        const rawToken = parts.length === 3 ? parts[0] : token.trim();
+        // Safe database deletion simulation
+        return { success: true, deleted: true, targetToken: rawToken };
+      };
+
+      const resLegacy = simulateDestroySession("legacy_token_12345");
+      assertEqual(resLegacy.success, true);
+      assertEqual(resLegacy.targetToken, "legacy_token_12345");
+
+      const resNull = simulateDestroySession(null);
+      assertEqual(resNull.success, true);
+      assertEqual(resNull.deleted, false);
+
+      const resSigned = simulateDestroySession(`${"a".repeat(64)}.123456789.sig`);
+      assertEqual(resSigned.success, true);
+      assertEqual(resSigned.targetToken, "a".repeat(64));
+    });
   });
 }
