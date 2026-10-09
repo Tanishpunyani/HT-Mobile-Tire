@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { logger } from "@/lib/logger";
+import { sanitizeRedirectTarget } from "@/lib/utils/auth-helpers";
 
 export type AuthActionResult = {
   success: boolean;
@@ -122,37 +123,7 @@ export async function signup(formData: FormData): Promise<AuthActionResult | voi
   };
 }
 
-function sanitizeRedirectTarget(target: unknown, fallback = "/account"): string {
-  if (typeof target !== "string") return fallback;
-  const trimmed = target.trim();
-  if (!trimmed) return fallback;
 
-  // Must start with a single "/" and NOT start with "//" (protocol-relative URL)
-  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) {
-    return fallback;
-  }
-
-  // Must not contain backslashes that could trick browser URL resolution
-  if (trimmed.includes("\\")) {
-    return fallback;
-  }
-
-  // Must not contain a protocol scheme (e.g. javascript:, http:, https:, data:)
-  try {
-    const decoded = decodeURIComponent(trimmed);
-    if (
-      decoded.startsWith("//") ||
-      decoded.includes("\\") ||
-      /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(decoded.replace(/^\/+/, ""))
-    ) {
-      return fallback;
-    }
-  } catch {
-    return fallback;
-  }
-
-  return trimmed;
-}
 
 export async function login(formData: FormData): Promise<AuthActionResult | void> {
   const rawEmail = (formData.get("email") as string) || "";

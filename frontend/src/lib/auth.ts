@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
-export { isCustomer, isAdmin } from "@/lib/utils/auth-helpers";
+export { isCustomer, isAdmin, sanitizeRedirectTarget } from "@/lib/utils/auth-helpers";
 
 export interface AuthenticatedUser {
   id: string;

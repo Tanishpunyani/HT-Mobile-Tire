@@ -5,6 +5,7 @@
 
 import { describe, test, testAsync, assert, assertEqual } from "../helpers/test-runner.mjs";
 import { mockCustomerAlice } from "../fixtures/user-fixtures.mjs";
+import { sanitizeRedirectTarget } from "../../../frontend/src/lib/utils/auth-helpers.ts";
 
 export function runCustomerAuthIntegrationTests() {
   describe("Customer Authentication & Session Lifecycle (Integration)", () => {
@@ -181,6 +182,104 @@ export function runCustomerAuthIntegrationTests() {
       const res = getProfile(null);
       assertEqual(res.status, 401);
       assertEqual(res.code, "UNAUTHORIZED");
+    });
+
+    // -------------------------------------------------------------
+    // SEC-01 Open Redirect Remediation Regression Tests
+    // -------------------------------------------------------------
+    test("SEC-01: sanitizeRedirectTarget permits valid internal application paths", () => {
+      assertEqual(sanitizeRedirectTarget("/account"), "/account");
+      assertEqual(sanitizeRedirectTarget("/booking"), "/booking");
+      assertEqual(sanitizeRedirectTarget("/account/bookings/b_123"), "/account/bookings/b_123");
+      assertEqual(sanitizeRedirectTarget("/account?tab=history&page=2"), "/account?tab=history&page=2");
+      assertEqual(sanitizeRedirectTarget("/services/flat-tire-repair"), "/services/flat-tire-repair");
+    });
+
+    test("SEC-01: sanitizeRedirectTarget rejects external URLs", () => {
+      assertEqual(sanitizeRedirectTarget("https://evil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("http://attacker.com/steal-session"), "/account");
+      assertEqual(sanitizeRedirectTarget("ftp://evil.com/payload"), "/account");
+    });
+
+    test("SEC-01: sanitizeRedirectTarget rejects protocol-relative URLs", () => {
+      assertEqual(sanitizeRedirectTarget("//evil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("//evil.com/account"), "/account");
+      assertEqual(sanitizeRedirectTarget("///attacker.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("////attacker.com"), "/account");
+    });
+
+    test("SEC-01: sanitizeRedirectTarget rejects backslash-based bypasses", () => {
+      assertEqual(sanitizeRedirectTarget("\\evil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("/\\evil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("/\\/evil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("/path\\with\\backslash"), "/account");
+    });
+
+    test("SEC-01: sanitizeRedirectTarget rejects unsafe schemes and embedded schemes", () => {
+      assertEqual(sanitizeRedirectTarget("javascript:alert(1)"), "/account");
+      assertEqual(sanitizeRedirectTarget("/javascript:alert(1)"), "/account");
+      assertEqual(sanitizeRedirectTarget("data:text/html,<script>alert(1)</script>"), "/account");
+      assertEqual(sanitizeRedirectTarget("/data:text/html"), "/account");
+      assertEqual(sanitizeRedirectTarget("vbscript:msgbox(1)"), "/account");
+      assertEqual(sanitizeRedirectTarget("/vbscript:msgbox(1)"), "/account");
+    });
+
+    test("SEC-01: sanitizeRedirectTarget rejects encoded bypass attempts and malformed encoding", () => {
+      assertEqual(sanitizeRedirectTarget("%2f%2fevil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("/%2f%2fevil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("/http:%2f%2fevil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("/https:%2f%2fevil.com"), "/account");
+      assertEqual(sanitizeRedirectTarget("%E0%A4%A"), "/account", "Malformed URI encoding should gracefully fall back");
+    });
+
+    test("SEC-01: sanitizeRedirectTarget safely handles missing, empty, or non-string inputs", () => {
+      assertEqual(sanitizeRedirectTarget(null), "/account");
+      assertEqual(sanitizeRedirectTarget(undefined), "/account");
+      assertEqual(sanitizeRedirectTarget(""), "/account");
+      assertEqual(sanitizeRedirectTarget("   "), "/account");
+      assertEqual(sanitizeRedirectTarget(12345), "/account");
+      assertEqual(sanitizeRedirectTarget({}), "/account");
+    });
+
+    test("SEC-01: sanitizeRedirectTarget respects custom fallback parameter", () => {
+      assertEqual(sanitizeRedirectTarget("https://evil.com", "/custom-fallback"), "/custom-fallback");
+      assertEqual(sanitizeRedirectTarget("//evil.com", "/login"), "/login");
+      assertEqual(sanitizeRedirectTarget(null, "/home"), "/home");
+      assertEqual(sanitizeRedirectTarget("/valid-path", "/login"), "/valid-path");
+    });
+
+    test("SEC-01: /auth/callback flow emulation redirects safely on success and error", () => {
+      const origin = "https://htmobiletire.com";
+      
+      const simulateAuthCallback = (code, rawNext, exchangeSucceeds = true) => {
+        const next = sanitizeRedirectTarget(rawNext, "/account");
+        if (code) {
+          if (exchangeSucceeds) {
+            return { redirectedTo: `${origin}${next}`, status: 302 };
+          }
+        }
+        return { redirectedTo: `${origin}/login?error=auth_callback_failed`, status: 302 };
+      };
+
+      // 1. Valid code with safe next -> target
+      const resSafe = simulateAuthCallback("valid_code_123", "/booking");
+      assertEqual(resSafe.redirectedTo, "https://htmobiletire.com/booking");
+
+      // 2. Valid code with malicious next -> sanitized to /account
+      const resMalicious = simulateAuthCallback("valid_code_123", "//evil.com");
+      assertEqual(resMalicious.redirectedTo, "https://htmobiletire.com/account");
+
+      // 3. Valid code with missing next -> default /account
+      const resDefault = simulateAuthCallback("valid_code_123", null);
+      assertEqual(resDefault.redirectedTo, "https://htmobiletire.com/account");
+
+      // 4. Missing code -> error redirect
+      const resMissingCode = simulateAuthCallback(null, "/booking");
+      assertEqual(resMissingCode.redirectedTo, "https://htmobiletire.com/login?error=auth_callback_failed");
+
+      // 5. Auth code exchange failure -> error redirect
+      const resFailedExchange = simulateAuthCallback("invalid_code", "/booking", false);
+      assertEqual(resFailedExchange.redirectedTo, "https://htmobiletire.com/login?error=auth_callback_failed");
     });
   });
 }
