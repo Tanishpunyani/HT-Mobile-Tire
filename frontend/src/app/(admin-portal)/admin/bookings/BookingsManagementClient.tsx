@@ -420,6 +420,7 @@ export default function BookingsManagementClient({
 
           <Link
             href="/admin/dashboard"
+            prefetch={false}
             className="inline-flex w-fit items-center rounded-xl border border-border bg-white px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-slate-50"
           >
             Back to Dashboard

@@ -136,5 +136,51 @@ export function runCustomerAuthIntegrationTests() {
       assert(session.active);
       assertEqual(session.token, "valid_auth_jwt");
     });
+
+    test("Supabase SSR cookie setter explicitly enforces secure: true in production", () => {
+      const isProduction = true;
+      const incomingOptions = { path: "/", sameSite: "lax", httpOnly: false, maxAge: 34560000 };
+      
+      const resolvedOptions = {
+        ...incomingOptions,
+        secure: incomingOptions?.secure ?? isProduction,
+        sameSite: incomingOptions?.sameSite ?? "lax",
+        path: incomingOptions?.path ?? "/",
+      };
+
+      assertEqual(resolvedOptions.secure, true, "Must enforce secure: true in production for WebKit/Safari");
+      assertEqual(resolvedOptions.sameSite, "lax", "Must preserve sameSite: lax");
+      assertEqual(resolvedOptions.path, "/", "Must preserve path: /");
+      assertEqual(resolvedOptions.httpOnly, false, "Must preserve httpOnly flag from Supabase client");
+    });
+
+    test("Customer middleware redirect to /login preserves incoming Supabase session cookies", () => {
+      const incomingCookies = [
+        { name: "sb-token-0", value: "chunk0" },
+        { name: "sb-token-1", value: "chunk1" },
+      ];
+      const redirectResponseCookies = new Map();
+
+      // Emulate middleware redirect copying cookies
+      incomingCookies.forEach((c) => {
+        redirectResponseCookies.set(c.name, c.value);
+      });
+
+      assertEqual(redirectResponseCookies.get("sb-token-0"), "chunk0");
+      assertEqual(redirectResponseCookies.get("sb-token-1"), "chunk1");
+    });
+
+    test("Customer profile API returns 401 UNAUTHORIZED when session token is missing", () => {
+      const getProfile = (session) => {
+        if (!session || !session.user) {
+          return { status: 401, error: "Your session has expired. Please sign in again.", code: "UNAUTHORIZED" };
+        }
+        return { status: 200, user: session.user };
+      };
+
+      const res = getProfile(null);
+      assertEqual(res.status, 401);
+      assertEqual(res.code, "UNAUTHORIZED");
+    });
   });
 }

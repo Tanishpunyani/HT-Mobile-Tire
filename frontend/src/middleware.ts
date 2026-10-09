@@ -12,8 +12,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith("/admin")) {
     // /admin/login is publicly accessible for entering credentials
     if (pathname === "/admin/login") {
-      const { supabaseResponse } = await updateSession(request);
-      return supabaseResponse;
+      return NextResponse.next();
     }
 
     // Require valid, cryptographically signed, unexpired admin session cookie
@@ -23,12 +22,14 @@ export async function middleware(request: NextRequest) {
     if (!cookieCheck.valid) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
+
+    // Valid admin session verified: pass directly without invoking Supabase session update
+    return NextResponse.next();
   }
 
   // 2. Admin API Routes (/api/admin/*) pass through directly to handlers
   if (pathname.startsWith("/api/admin")) {
-    const { supabaseResponse } = await updateSession(request);
-    return supabaseResponse;
+    return NextResponse.next();
   }
 
   // 3. Customer & Public Pages: Supabase session update

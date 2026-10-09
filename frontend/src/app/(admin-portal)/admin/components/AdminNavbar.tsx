@@ -73,11 +73,10 @@ export default function AdminNavbar() {
         method: "POST",
         credentials: "include",
       });
-      router.push("/admin/login");
-      router.refresh();
+      window.location.href = "/admin/login";
     } catch (err) {
       console.error("Admin logout error:", err);
-      router.push("/admin/login");
+      window.location.href = "/admin/login";
     }
   }
 

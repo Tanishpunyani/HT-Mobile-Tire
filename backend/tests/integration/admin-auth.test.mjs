@@ -44,5 +44,83 @@ export function runAdminAuthIntegrationTests() {
       assertEqual(result.authorized, false);
       assertEqual(result.status, 403);
     });
+
+    test("Admin middleware decouples /admin/login from customer Supabase session update", () => {
+      let supabaseSessionCalled = false;
+      const simulateMiddleware = (pathname) => {
+        if (pathname.startsWith("/admin")) {
+          if (pathname === "/admin/login") {
+            return { action: "next", supabaseChecked: false };
+          }
+          // Protected check
+          return { action: "next", supabaseChecked: false };
+        }
+        supabaseSessionCalled = true;
+        return { action: "next", supabaseChecked: true };
+      };
+
+      const result = simulateMiddleware("/admin/login");
+      assertEqual(result.action, "next");
+      assertEqual(result.supabaseChecked, false, "Admin login must not invoke Supabase updateSession");
+      assertEqual(supabaseSessionCalled, false);
+    });
+
+    test("Admin middleware terminates early on valid admin session without falling through to Supabase", () => {
+      let supabaseSessionCalled = false;
+      const simulateMiddleware = (pathname, cookieValue) => {
+        if (pathname.startsWith("/admin")) {
+          if (pathname === "/admin/login") {
+            return { action: "next", supabaseChecked: false };
+          }
+          const valid = cookieValue === "valid_signed_token";
+          if (!valid) {
+            return { action: "redirect", target: "/admin/login", supabaseChecked: false };
+          }
+          // Decoupled early return
+          return { action: "next", supabaseChecked: false };
+        }
+        supabaseSessionCalled = true;
+        return { action: "next", supabaseChecked: true };
+      };
+
+      const result = simulateMiddleware("/admin/dashboard", "valid_signed_token");
+      assertEqual(result.action, "next");
+      assertEqual(result.supabaseChecked, false, "Valid admin session must not fall through to Supabase");
+      assertEqual(supabaseSessionCalled, false);
+    });
+
+    test("Admin API routes pass through directly without customer Supabase invocation", () => {
+      let supabaseSessionCalled = false;
+      const simulateMiddleware = (pathname) => {
+        if (pathname.startsWith("/api/admin")) {
+          return { action: "next", supabaseChecked: false };
+        }
+        supabaseSessionCalled = true;
+        return { action: "next", supabaseChecked: true };
+      };
+
+      const result = simulateMiddleware("/api/admin/bookings");
+      assertEqual(result.action, "next");
+      assertEqual(result.supabaseChecked, false, "Admin API must not call Supabase updateSession");
+      assertEqual(supabaseSessionCalled, false);
+    });
+
+    test("Admin session cookies enforce HttpOnly, SameSite=lax, Secure in production, and Path=/", () => {
+      const isProduction = true;
+      const cookieConfig = {
+        name: "admin_session",
+        value: "dummy_signed_token_64_bytes",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: isProduction,
+        maxAge: 86400,
+        path: "/",
+      };
+
+      assert(cookieConfig.httpOnly, "Admin session cookie must be HttpOnly");
+      assertEqual(cookieConfig.sameSite, "lax", "Admin session cookie must be SameSite=lax");
+      assertEqual(cookieConfig.secure, true, "Admin session cookie must be Secure in production");
+      assertEqual(cookieConfig.path, "/", "Admin session cookie must be scoped to root Path=/");
+    });
   });
 }

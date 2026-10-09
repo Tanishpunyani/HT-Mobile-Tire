@@ -40,8 +40,8 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push("/admin/dashboard");
-      router.refresh();
+      window.location.href = "/admin/dashboard";
+      return;
     } catch (err) {
       console.error("Admin login error:", err);
       setError("Invalid credentials");

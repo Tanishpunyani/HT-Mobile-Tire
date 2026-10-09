@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: `default-src 'self'; script-src 'self' ${scriptSrcPolicy} https://maps.googleapis.com; connect-src 'self' https://*.supabase.co https://maps.googleapis.com; img-src 'self' data: https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';`,
+            value: `default-src 'self'; script-src 'self' ${scriptSrcPolicy} https://maps.googleapis.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com; img-src 'self' data: https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self';`,
           },
           {
             key: "X-Frame-Options",

@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 
 export async function createClient() {
   const cookieStore = await cookies();
+  const isProduction = process.env.NODE_ENV === "production";
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +16,12 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, {
+                ...options,
+                secure: options?.secure ?? isProduction,
+                sameSite: options?.sameSite ?? "lax",
+                path: options?.path ?? "/",
+              })
             );
           } catch {
             /* ignore set from Server Component */
