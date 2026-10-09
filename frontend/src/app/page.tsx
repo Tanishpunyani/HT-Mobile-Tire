@@ -1,4 +1,5 @@
 import Hero from "./components/Hero";
+import GuestActiveServiceTracker from "./components/GuestActiveServiceTracker";
 import BrandMarquee from "./components/BrandMarquee";
 import WhyChooseUs from "./components/WhyChooseUs";
 import CoverageChecker from "./components/CoverageChecker";
@@ -16,6 +17,7 @@ export default function Home() {
   return (
     <div>
       <Hero />
+      <GuestActiveServiceTracker />
       <BrandMarquee />
       <WhyChooseUs />
       <CoverageChecker />

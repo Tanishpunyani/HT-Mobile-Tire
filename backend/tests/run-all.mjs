@@ -30,6 +30,7 @@ import { runEmailLifecycleRewiringUnitTests } from "./unit/email-lifecycle-rewir
 import { runEmergencyNotificationRenderingTests } from "./unit/emergency-notification-rendering.test.mjs";
 import { runEmailNotificationFixTests } from "./unit/email-notification-fix.test.mjs";
 import { runTimeSlotBooking24_7Tests } from "./unit/timeslot-booking-24-7.test.mjs";
+import { runRateLimitIpTests } from "./unit/rate-limit-ip.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -49,6 +50,7 @@ import { runPhase6BLifecycleTests } from "./integration/phase-6b-lifecycle.test.
 import { runPhase6DPaymentHardeningTests } from "./integration/phase-6d-payment-hardening.test.mjs";
 import { runPhase6FCustomerHardeningTests } from "./integration/phase-6f-customer-hardening.test.mjs";
 import { runPhase6HAdminOperationalTests } from "./integration/phase-6h-admin-operational.test.mjs";
+import { runGuestBookingTrackingIntegrationTests } from "./integration/guest-booking-tracking.test.mjs";
 
 // E2E Suites
 import { runCustomerJourneyE2ETests } from "./e2e/customer-journey.test.mjs";
@@ -85,6 +87,7 @@ runEmailLifecycleRewiringUnitTests();
 runEmergencyNotificationRenderingTests();
 runEmailNotificationFixTests();
 runTimeSlotBooking24_7Tests();
+runRateLimitIpTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();
@@ -104,6 +107,7 @@ runPhase6BLifecycleTests();
 runPhase6DPaymentHardeningTests();
 runPhase6FCustomerHardeningTests();
 runPhase6HAdminOperationalTests();
+runGuestBookingTrackingIntegrationTests();
 
 // 3. E2E SUITES
 runCustomerJourneyE2ETests();

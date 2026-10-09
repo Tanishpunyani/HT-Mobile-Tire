@@ -13,6 +13,12 @@ import {
   sendCustomerBookingCancelledAlert,
 } from "@/lib/notifications";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import {
+  createGuestBookingToken,
+  setGuestBookingCookie,
+  getGuestTokenSecret,
+} from "@/lib/guest-auth";
 
 export async function createBookingRequestAction(formData: {
   serviceId?: string;
@@ -49,6 +55,20 @@ export async function createBookingRequestAction(formData: {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    // Guard: Detect missing guest secret configuration BEFORE creating records or transactions,
+    // ensuring guest booking creation never leaves an orphaned booking without working guest access.
+    if (!user) {
+      try {
+        getGuestTokenSecret();
+      } catch (secretErr) {
+        console.error("Guest booking secret is unconfigured:", secretErr);
+        return {
+          success: false,
+          error: "Guest booking service is temporarily unavailable. Please try again later or log in.",
+        };
+      }
+    }
 
     // Normalize submitted email safely
     const rawSubmittedEmail = formData.email ? String(formData.email).trim().toLowerCase() : "";
@@ -270,6 +290,17 @@ export async function createBookingRequestAction(formData: {
     }
 
     const booking = txResult.booking;
+
+    // Issue secure persistent guest token in HttpOnly cookie if unauthenticated
+    if (!user) {
+      try {
+        const cookieStore = await cookies();
+        const guestToken = createGuestBookingToken(booking.id);
+        setGuestBookingCookie(cookieStore, booking.id, guestToken);
+      } catch (cookieErr) {
+        console.warn("Failed to set guest booking cookie:", cookieErr);
+      }
+    }
 
     // 5. Non-blocking Notification Dispatch (Step 8: New booking is ADMIN ONLY)
     const notificationPayload = {
