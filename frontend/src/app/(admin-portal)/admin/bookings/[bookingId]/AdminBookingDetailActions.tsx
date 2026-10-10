@@ -183,6 +183,64 @@ export default function AdminBookingDetailActions({
     }
   }
 
+  async function handleOpenLiveGps() {
+    if (loadingAction) return;
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!booking.id || typeof booking.id !== "string" || !booking.id.trim()) {
+      setErrorMessage("Invalid booking identifier.");
+      return;
+    }
+
+    if (!booking.technicianId) {
+      setErrorMessage("Please assign a technician before opening the Live GPS Dispatch Portal.");
+      return;
+    }
+
+    setLoadingAction("gps");
+    try {
+      const res = await fetch(
+        `/api/technician/location?bookingId=${encodeURIComponent(booking.id)}`,
+        {
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        setErrorMessage(data?.error || "Unable to generate technician dispatch portal URL.");
+        return;
+      }
+
+      const dispatchUrl = data.dispatchUrl;
+      if (!dispatchUrl || typeof dispatchUrl !== "string") {
+        setErrorMessage("Technician dispatch portal URL is unavailable.");
+        return;
+      }
+
+      const parsed = new URL(dispatchUrl, window.location.origin);
+      if (
+        parsed.origin !== window.location.origin ||
+        !parsed.pathname.startsWith(`/technician/tracking/${booking.id}`)
+      ) {
+        setErrorMessage("Invalid dispatch portal destination.");
+        return;
+      }
+
+      const newWindow = window.open(parsed.href, "_blank", "noopener,noreferrer");
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === "undefined") {
+        window.location.assign(parsed.href);
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || "Failed to open Live GPS portal.");
+    } finally {
+      setLoadingAction(null);
+    }
+  }
+
   return (
     <div className="space-y-4">
       {errorMessage && (
@@ -276,14 +334,24 @@ export default function AdminBookingDetailActions({
           </button>
         )}
 
-        {/* 5. Live GPS Telemetry Modal Launcher */}
+        {/* 5. Live GPS Telemetry / Dispatch Portal */}
         <button
           type="button"
-          onClick={() => setShowGpsModal(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-sm"
+          disabled={loadingAction === "gps"}
+          onClick={handleOpenLiveGps}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-sm disabled:opacity-60"
         >
-          <Radio size={14} className="text-primary" />
-          <span>Live GPS Telemetry</span>
+          {loadingAction === "gps" ? (
+            <>
+              <Loader2 size={14} className="animate-spin text-primary" />
+              <span>Opening...</span>
+            </>
+          ) : (
+            <>
+              <Radio size={14} className="text-primary" />
+              <span>Live GPS Telemetry</span>
+            </>
+          )}
         </button>
 
         {/* 6. Technician Assignment Dropdown */}

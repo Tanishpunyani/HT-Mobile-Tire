@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   AlertTriangle,
   Phone,
-  Navigation,
   MapPin,
   Car,
   X,
@@ -40,6 +39,22 @@ export type EmergencyRequest = {
 
 interface EmergencyRequestsManagementClientProps {
   initialRequests?: EmergencyRequest[];
+}
+
+function getCustomerCallUri(phone: string | null | undefined): string | null {
+  if (!phone || typeof phone !== "string") return null;
+  const trimmed = phone.trim();
+  if (!trimmed) return null;
+
+  const startsWithPlus = trimmed.startsWith("+");
+  const digits = trimmed.replace(/\D/g, "");
+
+  if (digits.length < 7) {
+    return null;
+  }
+
+  const normalized = startsWithPlus ? `+${digits}` : digits;
+  return `tel:${normalized}`;
 }
 
 export default function EmergencyRequestsManagementClient({
@@ -150,12 +165,7 @@ export default function EmergencyRequestsManagementClient({
             {/* Mobile Cards View (< md) */}
             <div className="md:hidden space-y-4">
               {requests.map((request) => {
-                const navUrl =
-                  request.latitude && request.longitude
-                    ? `https://www.google.com/maps/dir/?api=1&destination=${request.latitude},${request.longitude}`
-                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        request.currentLocation
-                      )}`;
+                const callUri = getCustomerCallUri(request.customer?.phone);
 
                 return (
                   <div
@@ -219,15 +229,25 @@ export default function EmergencyRequestsManagementClient({
 
                     {/* Dispatch Actions */}
                     <div className="border-t border-red-100 pt-3 flex flex-col gap-2">
-                      <a
-                        href={navUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
-                      >
-                        <Navigation size={14} />
-                        Dispatch Route →
-                      </a>
+                      {callUri ? (
+                        <a
+                          href={callUri}
+                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
+                        >
+                          <Phone size={14} />
+                          Call Customer
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          title="Customer phone number is not available"
+                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-slate-200 px-4 py-2.5 text-xs font-bold text-slate-400 cursor-not-allowed shadow-sm"
+                        >
+                          <Phone size={14} />
+                          Call Customer
+                        </button>
+                      )}
 
                       <button
                         type="button"
@@ -260,9 +280,7 @@ export default function EmergencyRequestsManagementClient({
 
                   <tbody>
                     {requests.map((request) => {
-                      const navUrl = request.latitude && request.longitude
-                        ? `https://www.google.com/maps/dir/?api=1&destination=${request.latitude},${request.longitude}`
-                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(request.currentLocation)}`;
+                      const callUri = getCustomerCallUri(request.customer?.phone);
 
                       return (
                         <tr key={request.id} className="border-b border-border last:border-b-0 hover:bg-red-50/20">
@@ -315,15 +333,25 @@ export default function EmergencyRequestsManagementClient({
                           {/* Dispatch Actions */}
                           <td className="px-5 py-5">
                             <div className="flex flex-col gap-1.5">
-                              <a
-                                href={navUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
-                              >
-                                <Navigation size={13} />
-                                Dispatch Route →
-                              </a>
+                              {callUri ? (
+                                <a
+                                  href={callUri}
+                                  className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
+                                >
+                                  <Phone size={13} />
+                                  Call Customer
+                                </a>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled
+                                  title="Customer phone number is not available"
+                                  className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-400 cursor-not-allowed shadow-sm"
+                                >
+                                  <Phone size={13} />
+                                  Call Customer
+                                </button>
+                              )}
 
                               <button
                                 type="button"

@@ -85,7 +85,7 @@ export default function BookingsManagementClient({
   const [assigningId, setAssigningId] = useState<string | null>(null);
   const [actionPending, setActionPending] = useState<{
     id: string;
-    action: "confirm" | "start" | "paid";
+    action: "confirm" | "start" | "paid" | "gps";
   } | null>(null);
 
   // Live GPS Telemetry Modal state
@@ -312,6 +312,62 @@ export default function BookingsManagementClient({
       alert((err as Error)?.message || "Error cancelling booking.");
     } finally {
       setIsCancelling(false);
+    }
+  }
+
+  async function handleOpenLiveGps(booking: Booking) {
+    if (!booking.id || typeof booking.id !== "string" || !booking.id.trim()) {
+      alert("Invalid booking identifier.");
+      return;
+    }
+
+    if (!booking.technicianId) {
+      alert("Please assign a technician before opening the Live GPS Dispatch Portal.");
+      return;
+    }
+
+    if (actionPending?.id === booking.id) return;
+
+    try {
+      setActionPending({ id: booking.id, action: "gps" });
+      const res = await fetch(
+        `/api/technician/location?bookingId=${encodeURIComponent(booking.id)}`,
+        {
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        alert(data?.error || "Unable to generate technician dispatch portal URL.");
+        return;
+      }
+
+      const dispatchUrl = data.dispatchUrl;
+      if (!dispatchUrl || typeof dispatchUrl !== "string") {
+        alert("Technician dispatch portal URL is unavailable.");
+        return;
+      }
+
+      const parsed = new URL(dispatchUrl, window.location.origin);
+      if (
+        parsed.origin !== window.location.origin ||
+        !parsed.pathname.startsWith(`/technician/tracking/${booking.id}`)
+      ) {
+        alert("Invalid dispatch portal destination.");
+        return;
+      }
+
+      const newWindow = window.open(parsed.href, "_blank", "noopener,noreferrer");
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === "undefined") {
+        window.location.assign(parsed.href);
+      }
+    } catch (err: unknown) {
+      alert((err as Error)?.message || "Failed to open Live GPS portal.");
+    } finally {
+      setActionPending(null);
     }
   }
 
@@ -717,11 +773,21 @@ export default function BookingsManagementClient({
                       {/* Live GPS Telemetry */}
                       <button
                         type="button"
-                        onClick={() => setTrackingModalBooking(booking)}
-                        className="inline-flex w-full items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                        disabled={actionPending?.id === booking.id && actionPending.action === "gps"}
+                        onClick={() => handleOpenLiveGps(booking)}
+                        className="inline-flex w-full items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition disabled:opacity-60"
                       >
-                        <Radio size={14} className="text-primary" />
-                        Live GPS Telemetry
+                        {actionPending?.id === booking.id && actionPending.action === "gps" ? (
+                          <>
+                            <Loader2 size={14} className="animate-spin text-primary" />
+                            <span>Opening...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Radio size={14} className="text-primary" />
+                            <span>Live GPS Telemetry</span>
+                          </>
+                        )}
                       </button>
 
                       {/* 5. Cancel Booking for Pending or Confirmed */}
@@ -997,11 +1063,21 @@ export default function BookingsManagementClient({
                               {/* Live GPS Telemetry */}
                               <button
                                 type="button"
-                                onClick={() => setTrackingModalBooking(booking)}
-                                className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+                                disabled={actionPending?.id === booking.id && actionPending.action === "gps"}
+                                onClick={() => handleOpenLiveGps(booking)}
+                                className="inline-flex items-center justify-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition disabled:opacity-60"
                               >
-                                <Radio size={12} className="text-primary" />
-                                Live GPS
+                                {actionPending?.id === booking.id && actionPending.action === "gps" ? (
+                                  <>
+                                    <Loader2 size={12} className="animate-spin text-primary" />
+                                    <span>Opening...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Radio size={12} className="text-primary" />
+                                    <span>Live GPS</span>
+                                  </>
+                                )}
                               </button>
 
                               {/* 5. Cancel Booking for Pending or Confirmed */}

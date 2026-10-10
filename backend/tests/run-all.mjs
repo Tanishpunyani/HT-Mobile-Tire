@@ -31,6 +31,7 @@ import { runEmergencyNotificationRenderingTests } from "./unit/emergency-notific
 import { runEmailNotificationFixTests } from "./unit/email-notification-fix.test.mjs";
 import { runTimeSlotBooking24_7Tests } from "./unit/timeslot-booking-24-7.test.mjs";
 import { runRateLimitIpTests } from "./unit/rate-limit-ip.test.mjs";
+import { runAdminDispatchAndEmergencyActionTests } from "./unit/admin-dispatch-emergency-actions.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -88,6 +89,7 @@ runEmergencyNotificationRenderingTests();
 runEmailNotificationFixTests();
 runTimeSlotBooking24_7Tests();
 runRateLimitIpTests();
+runAdminDispatchAndEmergencyActionTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();
