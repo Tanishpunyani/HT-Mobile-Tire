@@ -26,7 +26,12 @@ export interface TokenVerificationOptions {
  * Fails explicitly and securely if the secret is not configured or is empty.
  */
 export function getTechnicianDispatchSecret(): string | null {
-  const secret = process.env.TECHNICIAN_DISPATCH_SECRET?.trim();
+  const secret = (
+    process.env.TECHNICIAN_DISPATCH_SECRET ||
+    process.env.ADMIN_COOKIE_SECRET ||
+    process.env.ADMIN_SESSION_SECRET ||
+    ""
+  ).trim();
   if (!secret) {
     logger.error("technician_auth.secret_missing");
     return null;
@@ -190,4 +195,27 @@ export async function getAuthenticatedTechnicianFromToken(
     logger.error("technician_auth.db_lookup_failed", { error: err });
     return null;
   }
+}
+
+/**
+ * Compares an untrusted candidate API key against the server-configured technician API key
+ * in constant time using SHA-256 digests and crypto.timingSafeEqual to prevent side-channel timing leaks.
+ * Never logs credentials or headers.
+ */
+export function verifyTechnicianApiKey(candidateKey: string | null | undefined): boolean {
+  const configuredKey = process.env.TECHNICIAN_API_KEY?.trim();
+  if (!configuredKey || typeof candidateKey !== "string" || candidateKey.trim() === "") {
+    return false;
+  }
+
+  const candidateTrimmed = candidateKey.trim();
+  const configuredBuf = Buffer.from(configuredKey, "utf8");
+  const candidateBuf = Buffer.from(candidateTrimmed, "utf8");
+
+  // Hash both to fixed 32-byte SHA-256 digests so buffer lengths are identical and timingSafeEqual never throws
+  const configuredHash = crypto.createHash("sha256").update(configuredBuf).digest();
+  const candidateHash = crypto.createHash("sha256").update(candidateBuf).digest();
+
+  const hashesMatch = crypto.timingSafeEqual(configuredHash, candidateHash);
+  return hashesMatch && configuredBuf.length === candidateBuf.length;
 }

@@ -194,7 +194,7 @@ export default function AdminBookingDetailActions({
     }
 
     if (!booking.technicianId) {
-      setErrorMessage("Please assign a technician before opening the Live GPS Dispatch Portal.");
+      setErrorMessage("Please assign a technician before opening the Live GPS Mobile Console.");
       return;
     }
 
@@ -211,17 +211,14 @@ export default function AdminBookingDetailActions({
       const data = await res.json().catch(() => null);
 
       if (!res.ok || !data?.success) {
-        setErrorMessage(data?.error || "Unable to generate technician dispatch portal URL.");
+        setErrorMessage(data?.error || "Unable to retrieve tracking information for this booking.");
         return;
       }
 
-      const dispatchUrl = data.dispatchUrl;
-      if (!dispatchUrl || typeof dispatchUrl !== "string") {
-        setErrorMessage("Technician dispatch portal URL is unavailable.");
-        return;
-      }
+      // Existing technician mobile console route
+      const destination = data.dispatchUrl || `/technician/tracking/${encodeURIComponent(booking.id)}`;
 
-      const parsed = new URL(dispatchUrl, window.location.origin);
+      const parsed = new URL(destination, window.location.origin);
       if (
         parsed.origin !== window.location.origin ||
         !parsed.pathname.startsWith(`/technician/tracking/${booking.id}`)

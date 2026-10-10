@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { verifyAdminSession, getAdminSessionToken } from "@/lib/admin-auth";
-import { verifyTechnicianDispatchToken, createTechnicianDispatchToken } from "@/lib/technician-auth";
+import { verifyTechnicianDispatchToken, createTechnicianDispatchToken, verifyTechnicianApiKey } from "@/lib/technician-auth";
 import { logger } from "@/lib/logger";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { BUSINESS_PHONE_RAW } from "@/lib/constants/phone";
 
 // Calculate Great-Circle distance between two coordinates in miles (Haversine formula)
@@ -24,7 +24,7 @@ function calculateDistanceMiles(lat1: number, lon1: number, lat2: number, lon2: 
 export async function POST(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`tech_loc_post_${clientIp}`, 15, 60 * 1000);
+    const rateLimit = await checkRateLimitDistributed("tech_loc_post", clientIp, 15, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(
@@ -33,9 +33,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const configuredKey = process.env.TECHNICIAN_API_KEY?.trim();
     const headerApiKey =
-      request.headers.get("x-api-key") || request.headers.get("x-technician-key");
+      request.headers.get("x-api-key") ||
+      request.headers.get("x-technician-key") ||
+      request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
     let body: any = null;
     try {
@@ -57,11 +58,8 @@ export async function POST(request: Request) {
       }
     }
 
-    const isKeyValid = Boolean(
-      configuredKey &&
-        ((headerApiKey && headerApiKey === configuredKey) ||
-          (technicianKey && technicianKey === configuredKey))
-    );
+    // Constant-time key comparison: check header first, then body technicianKey for backwards compatibility
+    const isKeyValid = verifyTechnicianApiKey(headerApiKey) || verifyTechnicianApiKey(technicianKey);
 
     let isAuthorized = isKeyValid || isTokenVerified;
 
@@ -235,7 +233,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`tech_loc_get_${clientIp}`, 30, 60 * 1000);
+    const rateLimit = await checkRateLimitDistributed("tech_loc_get", clientIp, 30, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(
@@ -255,14 +253,22 @@ export async function GET(request: Request) {
     }
 
     // 1. Fetch booking with customer, technician, and location
-    const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: {
-        technicianLocation: true,
-        technician: true,
-        customer: true,
-      },
-    });
+    let booking: any = null;
+    try {
+      booking = await prisma.booking.findUnique({
+        where: { id: bookingId.trim() },
+        include: {
+          technicianLocation: true,
+          technician: true,
+          customer: true,
+        },
+      });
+    } catch {
+      return Response.json(
+        { success: false, error: "Booking not found." },
+        { status: 404, headers: { "Cache-Control": "no-store" } }
+      );
+    }
 
     if (!booking) {
       return Response.json(
@@ -283,12 +289,13 @@ export async function GET(request: Request) {
       }
     }
 
-    // Check Technician API Key
+    // Check Technician API Key (timing-safe)
     if (!isAuthorized) {
-      const configuredKey = process.env.TECHNICIAN_API_KEY?.trim();
       const headerApiKey =
-        request.headers.get("x-api-key") || request.headers.get("x-technician-key");
-      if (configuredKey && headerApiKey === configuredKey) {
+        request.headers.get("x-api-key") ||
+        request.headers.get("x-technician-key") ||
+        request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+      if (verifyTechnicianApiKey(headerApiKey)) {
         isAuthorized = true;
       }
     }
@@ -394,15 +401,16 @@ export async function GET(request: Request) {
     let dispatchToken: string | null = null;
     let dispatchUrl: string | null = null;
     if (booking.technicianId) {
+      const host = request.headers.get("host") || "localhost:3000";
+      const protocol =
+        request.headers.get("x-forwarded-proto") ||
+        (host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
       try {
         dispatchToken = createTechnicianDispatchToken(booking.technicianId, booking.id);
-        const host = request.headers.get("host") || "localhost:3000";
-        const protocol =
-          request.headers.get("x-forwarded-proto") ||
-          (host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https");
         dispatchUrl = `${protocol}://${host}/technician/tracking/${booking.id}?token=${encodeURIComponent(dispatchToken)}`;
       } catch {
-        // Dispatch secret not configured or token creation error
+        // Fallback to direct technician tracking console URL without token (authorized via admin session)
+        dispatchUrl = `${protocol}://${host}/technician/tracking/${booking.id}`;
       }
     }
 

@@ -77,6 +77,7 @@ function TechnicianTrackingContent({ bookingId }: { bookingId: string }) {
           token ? `&token=${encodeURIComponent(token)}` : ""
         }`;
         const res = await fetch(url, {
+          credentials: "include",
           headers: token ? { "x-dispatch-token": token } : {},
         });
         const data = await res.json();
@@ -158,6 +159,7 @@ function TechnicianTrackingContent({ bookingId }: { bookingId: string }) {
 
       const res = await fetch("/api/technician/location", {
         method: "POST",
+        credentials: "include",
         headers,
         body: JSON.stringify({
           bookingId,

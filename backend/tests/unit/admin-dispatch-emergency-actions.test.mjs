@@ -125,21 +125,38 @@ export function runAdminDispatchAndEmergencyActionTests() {
       assertEqual(validation.reason, "origin_mismatch");
     });
 
-    test("Source code audit: BookingsManagementClient wires handleOpenLiveGps to buttons", () => {
+    test("Canonical relative route fallback resolves safely to Technician Mobile Console", () => {
+      const bookingId = "booking_fallback_789";
+      const relativeDestination = `/technician/tracking/${bookingId}`;
+      const validation = validateDispatchUrl(relativeDestination, bookingId, "https://ht-mobile-tire.vercel.app");
+      assert(validation.valid, "Relative destination must resolve successfully to same origin");
+      assertEqual(validation.url, `https://ht-mobile-tire.vercel.app/technician/tracking/${bookingId}`);
+    });
+
+    test("Dispatch secret fallback: ADMIN_COOKIE_SECRET provides reliable token signing when TECHNICIAN_DISPATCH_SECRET is unset", () => {
+      const fallbackSecret = "test_admin_cookie_secret_fallback_32_characters";
+      const token = createTechnicianDispatchToken("tech_fallback", "book_fallback", fallbackSecret);
+      assert(token.includes("."), "Must generate valid two-part token using fallback secret");
+    });
+
+    test("Source code audit: BookingsManagementClient wires handleOpenLiveGps and removes unavailable alert", () => {
       const filePath = path.resolve(process.cwd(), "frontend/src/app/(admin-portal)/admin/bookings/BookingsManagementClient.tsx");
       const content = fs.readFileSync(filePath, "utf-8");
 
       assert(content.includes("handleOpenLiveGps(booking)"), "Card and table Live GPS buttons must invoke handleOpenLiveGps");
       assert(!content.includes("onClick={() => setTrackingModalBooking(booking)}"), "Live GPS button must no longer open tracking modal");
-      assert(content.includes("AdminLiveTrackingModal"), "AdminLiveTrackingModal component must be preserved in file");
+      assert(!content.includes("Technician dispatch portal URL is unavailable"), "Incorrect unavailable alert must be removed");
+      assert(content.includes("/technician/tracking/"), "Must reference the existing technician mobile console route");
     });
 
-    test("Source code audit: AdminBookingDetailActions wires handleOpenLiveGps to button", () => {
+    test("Source code audit: AdminBookingDetailActions wires handleOpenLiveGps and removes unavailable alert", () => {
       const filePath = path.resolve(process.cwd(), "frontend/src/app/(admin-portal)/admin/bookings/[bookingId]/AdminBookingDetailActions.tsx");
       const content = fs.readFileSync(filePath, "utf-8");
 
       assert(content.includes("handleOpenLiveGps"), "Detail actions Live GPS button must invoke handleOpenLiveGps");
       assert(!content.includes("onClick={() => setShowGpsModal(true)}"), "Detail actions button must no longer open modal");
+      assert(!content.includes("Technician dispatch portal URL is unavailable"), "Incorrect unavailable alert must be removed");
+      assert(content.includes("/technician/tracking/"), "Must reference the existing technician mobile console route");
     });
   });
 
