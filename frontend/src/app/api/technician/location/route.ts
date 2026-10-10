@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { verifyAdminSession, getAdminSessionToken } from "@/lib/admin-auth";
 import { verifyTechnicianDispatchToken, createTechnicianDispatchToken, verifyTechnicianApiKey } from "@/lib/technician-auth";
 import { logger } from "@/lib/logger";
-import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { BUSINESS_PHONE_RAW } from "@/lib/constants/phone";
 
 // Calculate Great-Circle distance between two coordinates in miles (Haversine formula)
@@ -24,7 +24,7 @@ function calculateDistanceMiles(lat1: number, lon1: number, lat2: number, lon2: 
 export async function POST(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = await checkRateLimitDistributed("tech_loc_post", clientIp, 15, 60 * 1000);
+    const rateLimit = checkRateLimit(`tech_loc_post_${clientIp}`, 15, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(
@@ -233,7 +233,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = await checkRateLimitDistributed("tech_loc_get", clientIp, 30, 60 * 1000);
+    const rateLimit = checkRateLimit(`tech_loc_get_${clientIp}`, 30, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(
