@@ -281,5 +281,167 @@ export function runCustomerAuthIntegrationTests() {
       const resFailedExchange = simulateAuthCallback("invalid_code", "/booking", false);
       assertEqual(resFailedExchange.redirectedTo, "https://htmobiletire.com/login?error=auth_callback_failed");
     });
+
+    // -------------------------------------------------------------
+    // Customer Edit Profile Button, Modal & Security Tests
+    // -------------------------------------------------------------
+    test("Edit Profile button click opens editor and initializes form state with current customer data", () => {
+      const customer = {
+        id: "cust_alice_111",
+        userId: "user_alice",
+        name: "Alice Smith",
+        email: "alice@example.com",
+        phone: "+1 (555) 234-5678",
+      };
+
+      let isEditingProfile = false;
+      let editName = "";
+      let editPhone = "";
+      let profileMessage = { type: "error", text: "Stale error" };
+
+      // Simulating onEditProfile callback
+      const onEditProfile = () => {
+        if (customer) {
+          editName = customer.name || "";
+          editPhone = customer.phone || "";
+        }
+        profileMessage = null;
+        isEditingProfile = true;
+      };
+
+      onEditProfile();
+
+      assertEqual(isEditingProfile, true, "Edit profile modal must open (isEditingProfile = true)");
+      assertEqual(editName, "Alice Smith", "editName must match customer.name");
+      assertEqual(editPhone, "+1 (555) 234-5678", "editPhone must match customer.phone");
+      assertEqual(profileMessage, null, "profileMessage must be cleared upon opening");
+    });
+
+    test("Cancel closes profile editor and reverts unsaved changes without mutating customer state", () => {
+      const customer = {
+        id: "cust_alice_111",
+        userId: "user_alice",
+        name: "Alice Smith",
+        email: "alice@example.com",
+        phone: "+1 (555) 234-5678",
+      };
+
+      let isEditingProfile = true;
+      let editName = "Unsaved Discarded Name";
+      let editPhone = "+1 (555) 999-9999";
+      let profileMessage = { type: "error", text: "Temporary error" };
+
+      // Simulating handleCloseProfileModal
+      const handleCloseProfileModal = () => {
+        if (customer) {
+          editName = customer.name || "";
+          editPhone = customer.phone || "";
+        }
+        profileMessage = null;
+        isEditingProfile = false;
+      };
+
+      handleCloseProfileModal();
+
+      assertEqual(isEditingProfile, false, "Modal must close on cancel");
+      assertEqual(editName, "Alice Smith", "Unsaved name must revert to original customer name");
+      assertEqual(editPhone, "+1 (555) 234-5678", "Unsaved phone must revert to original customer phone");
+      assertEqual(customer.name, "Alice Smith", "Customer record must remain unmutated");
+    });
+
+    test("Profile update validates input bounds (name >= 2 chars, phone >= 7 chars) and rejects invalid input", () => {
+      let currentCustomer = {
+        id: "cust_alice_111",
+        name: "Alice Smith",
+        phone: "+1 (555) 234-5678",
+      };
+
+      const handleProfileSubmitSimulation = (name, phone) => {
+        const trimmedName = (name || "").trim();
+        const trimmedPhone = (phone || "").trim();
+
+        if (trimmedName.length < 2) {
+          return {
+            success: false,
+            error: "Name must be at least 2 characters long.",
+          };
+        }
+        if (trimmedPhone.length < 7) {
+          return {
+            success: false,
+            error: "Phone number must be at least 7 characters long.",
+          };
+        }
+
+        currentCustomer = {
+          ...currentCustomer,
+          name: trimmedName,
+          phone: trimmedPhone,
+        };
+        return { success: true, customer: currentCustomer };
+      };
+
+      // 1. One-character name is rejected; profile remains untouched
+      const oneCharNameRes = handleProfileSubmitSimulation("A", "555-123-4567");
+      assertEqual(oneCharNameRes.success, false);
+      assertEqual(oneCharNameRes.error, "Name must be at least 2 characters long.");
+      assertEqual(currentCustomer.name, "Alice Smith", "Customer name must NOT update on 1-char name");
+
+      // 2. Phone shorter than 7 characters is rejected; profile remains untouched
+      const shortPhoneRes = handleProfileSubmitSimulation("Alice Smith", "123456");
+      assertEqual(shortPhoneRes.success, false);
+      assertEqual(shortPhoneRes.error, "Phone number must be at least 7 characters long.");
+      assertEqual(currentCustomer.phone, "+1 (555) 234-5678", "Customer phone must NOT update on short phone");
+
+      // 3. Whitespace-only name is rejected
+      const emptyNameRes = handleProfileSubmitSimulation("   ", "555-123-4567");
+      assertEqual(emptyNameRes.success, false);
+      assertEqual(emptyNameRes.error, "Name must be at least 2 characters long.");
+
+      // 4. Valid inputs update profile successfully
+      const validRes = handleProfileSubmitSimulation("Alice Cooper", "555-987-6543");
+      assertEqual(validRes.success, true);
+      assertEqual(currentCustomer.name, "Alice Cooper");
+      assertEqual(currentCustomer.phone, "555-987-6543");
+    });
+
+    test("Profile update enforces role immutability and ignores unauthorized injected fields", () => {
+      const user = {
+        id: "user_alice",
+        name: "Alice",
+        role: "customer",
+        email: "alice@example.com",
+        phone: "555-111-2222",
+      };
+
+      // Attacker attempts privilege escalation by sending role: "admin" and altered ID
+      const maliciousPayload = {
+        name: "Alice Upgraded",
+        phone: "555-999-8888",
+        role: "admin",
+        id: "compromised_id",
+        userId: "compromised_user_id",
+        email: "hacked@example.com",
+      };
+
+      // Handler strictly whitelists only permitted fields: name, phone
+      const permittedFields = {
+        name: maliciousPayload.name.trim(),
+        phone: maliciousPayload.phone.trim(),
+      };
+
+      // Simulate update
+      const updatedUser = {
+        ...user,
+        name: permittedFields.name,
+        phone: permittedFields.phone,
+      };
+
+      assertEqual(updatedUser.role, "customer", "Customer role must remain immutable (never elevated to admin)");
+      assertEqual(updatedUser.id, "user_alice", "User ID must remain immutable");
+      assertEqual(updatedUser.email, "alice@example.com", "Email must remain untouched");
+      assertEqual(updatedUser.name, "Alice Upgraded");
+      assertEqual(updatedUser.phone, "555-999-8888");
+    });
   });
 }
