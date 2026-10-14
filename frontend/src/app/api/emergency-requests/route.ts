@@ -1,14 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { emergencySchema } from "@/lib/validations/emergency";
 import { sendEmergencyAlert } from "@/lib/notifications";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`emergency_${clientIp}`, 5, 60 * 1000);
+    const rateLimit = await checkRateLimitDistributed("emergency", clientIp, 5, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(

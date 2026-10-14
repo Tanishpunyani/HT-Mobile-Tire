@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { contactSchema } from "@/lib/validations/contact";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { sendAdminContactAlert } from "@/lib/notifications";
 
 export async function POST(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`contact_${clientIp}`, 5, 60 * 1000);
+    const rateLimit = await checkRateLimitDistributed("contact", clientIp, 5, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(

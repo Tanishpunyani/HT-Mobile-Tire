@@ -63,7 +63,8 @@ export const ModelName = {
   Technician: 'Technician',
   TechnicianLocation: 'TechnicianLocation',
   AdminSession: 'AdminSession',
-  AdminLoginAttempt: 'AdminLoginAttempt'
+  AdminLoginAttempt: 'AdminLoginAttempt',
+  RateLimit: 'RateLimit'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -317,6 +318,17 @@ export const AdminLoginAttemptScalarFieldEnum = {
 } as const
 
 export type AdminLoginAttemptScalarFieldEnum = (typeof AdminLoginAttemptScalarFieldEnum)[keyof typeof AdminLoginAttemptScalarFieldEnum]
+
+
+export const RateLimitScalarFieldEnum = {
+  key: 'key',
+  count: 'count',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RateLimitScalarFieldEnum = (typeof RateLimitScalarFieldEnum)[keyof typeof RateLimitScalarFieldEnum]
 
 
 export const SortOrder = {

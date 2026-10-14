@@ -1,4 +1,4 @@
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 
@@ -16,7 +16,7 @@ const reverseGeocodeSchema = z.object({
 export async function POST(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`reverse_geocode_${clientIp}`, 5, 60 * 1000);
+    const rateLimit = await checkRateLimitDistributed("reverse_geocode", clientIp, 5, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(
