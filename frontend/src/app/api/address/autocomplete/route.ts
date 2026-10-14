@@ -1,13 +1,13 @@
 import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
+import {
+  type AutocompleteSuggestion,
+  resolveSearchLocation,
+  mapSerpApiSuggestions,
+  sanitizeProviderErrorMessage,
+} from "@/lib/utils/autocomplete";
 
-export interface AutocompleteSuggestion {
-  value: string;
-  subtext?: string;
-  latitude?: number;
-  longitude?: number;
-  type?: string;
-}
+export type { AutocompleteSuggestion };
 
 interface CacheEntry {
   suggestions: AutocompleteSuggestion[];
@@ -18,14 +18,16 @@ const cache = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes cache to preserve SerpApi quota
 
 // Periodic stale cache sweep
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of cache.entries()) {
-    if (now > entry.expiresAt) {
-      cache.delete(key);
+if (typeof setInterval !== "undefined") {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of cache.entries()) {
+      if (now > entry.expiresAt) {
+        cache.delete(key);
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  }, 5 * 60 * 1000);
+}
 
 export async function GET(request: Request) {
   try {
@@ -46,7 +48,8 @@ export async function GET(request: Request) {
       return Response.json({ suggestions: [] });
     }
 
-    const cacheKey = query.toLowerCase();
+    const resolvedLl = resolveSearchLocation(searchParams.get("ll"));
+    const cacheKey = `${resolvedLl}:${query.toLowerCase()}`;
     const cached = cache.get(cacheKey);
     if (cached && Date.now() < cached.expiresAt) {
       return Response.json({ suggestions: cached.suggestions });
@@ -61,6 +64,7 @@ export async function GET(request: Request) {
     const serpApiUrl = new URL("https://serpapi.com/search.json");
     serpApiUrl.searchParams.set("engine", "google_maps_autocomplete");
     serpApiUrl.searchParams.set("q", query);
+    serpApiUrl.searchParams.set("ll", resolvedLl);
     serpApiUrl.searchParams.set("gl", "ca");
     serpApiUrl.searchParams.set("hl", "en");
     serpApiUrl.searchParams.set("api_key", apiKey);
@@ -79,52 +83,36 @@ export async function GET(request: Request) {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        let providerError: string | undefined;
+        try {
+          const errorText = await response.text();
+          try {
+            const parsed = JSON.parse(errorText);
+            providerError =
+              typeof parsed?.error === "string"
+                ? parsed.error
+                : typeof parsed?.message === "string"
+                ? parsed.message
+                : errorText.slice(0, 150);
+          } catch {
+            providerError = errorText.slice(0, 150);
+          }
+        } catch {
+          // Ignore read error
+        }
+
+        const sanitizedError = sanitizeProviderErrorMessage(providerError, apiKey);
+
         logger.warn("address_autocomplete.serpapi_error", {
           status: response.status,
           statusText: response.statusText,
+          ...(sanitizedError ? { providerMessage: sanitizedError } : {}),
         });
         return Response.json({ suggestions: [] });
       }
 
       const data = await response.json();
-      const rawSuggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
-
-      const suggestions: AutocompleteSuggestion[] = rawSuggestions
-        .map((item: any) => {
-          if (!item) return null;
-          if (typeof item === "string") {
-            return { value: item };
-          }
-          if (typeof item === "object" && typeof item.value === "string" && item.value.trim().length > 0) {
-            const suggestion: AutocompleteSuggestion = {
-              value: item.value.trim(),
-            };
-            if (typeof item.subtext === "string" && item.subtext.trim().length > 0) {
-              suggestion.subtext = item.subtext.trim();
-            }
-            if (typeof item.latitude === "number" && !isNaN(item.latitude)) {
-              suggestion.latitude = item.latitude;
-            }
-            if (typeof item.longitude === "number" && !isNaN(item.longitude)) {
-              suggestion.longitude = item.longitude;
-            }
-            if (typeof item.type === "string") {
-              suggestion.type = item.type;
-            }
-            return suggestion;
-          }
-          return null;
-        })
-        .filter((item: AutocompleteSuggestion | null): item is AutocompleteSuggestion => Boolean(item && item.value));
-
-      // Prioritize place suggestions over generic keyword completions if mixed
-      suggestions.sort((a, b) => {
-        const aIsPlace = a.type === "place" || Boolean(a.subtext);
-        const bIsPlace = b.type === "place" || Boolean(b.subtext);
-        if (aIsPlace && !bIsPlace) return -1;
-        if (!aIsPlace && bIsPlace) return 1;
-        return 0;
-      });
+      const suggestions = mapSerpApiSuggestions(data);
 
       // Store in memory cache (cap cache at 300 entries to prevent memory growth)
       if (cache.size > 300) {
@@ -139,8 +127,10 @@ export async function GET(request: Request) {
       return Response.json({ suggestions });
     } catch (fetchError: any) {
       clearTimeout(timeoutId);
+      const rawMessage = fetchError?.message || String(fetchError);
+      const sanitizedMessage = sanitizeProviderErrorMessage(rawMessage, apiKey);
       logger.warn("address_autocomplete.fetch_aborted_or_failed", {
-        message: fetchError?.message,
+        message: sanitizedMessage,
       });
       return Response.json({ suggestions: [] });
     }
