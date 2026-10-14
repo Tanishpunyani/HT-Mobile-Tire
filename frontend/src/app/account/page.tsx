@@ -7,6 +7,8 @@ import {
   User,
   CalendarDays,
   Siren,
+  CheckCircle2,
+  X,
 } from "lucide-react";
 import Container from "../components/Container";
 import { createClient } from "@/lib/supabase/client";
@@ -22,6 +24,7 @@ import EmergencyRequestsSection from "./components/EmergencyRequestsSection";
 import ContactInquiriesSection from "./components/ContactInquiriesSection";
 import AccountSecuritySection from "./components/AccountSecuritySection";
 import CancelBookingModal from "./components/CancelBookingModal";
+import EditProfileModal from "./components/EditProfileModal";
 
 function AccountPageInner() {
   const router = useRouter();
@@ -259,10 +262,40 @@ function AccountPageInner() {
     };
   }, [customer?.id, loadCustomer]);
 
+  function handleCloseProfileModal() {
+    if (customer) {
+      setEditName(customer.name || "");
+      setEditPhone(customer.phone || "");
+    }
+    setProfileMessage(null);
+    setIsEditingProfile(false);
+  }
+
   async function handleProfileSubmit(e: FormEvent) {
     e.preventDefault();
     setProfileSaving(true);
     setProfileMessage(null);
+
+    const trimmedName = editName.trim();
+    const trimmedPhone = editPhone.trim();
+
+    if (trimmedName.length < 2) {
+      setProfileMessage({
+        type: "error",
+        text: "Name must be at least 2 characters long.",
+      });
+      setProfileSaving(false);
+      return;
+    }
+
+    if (trimmedPhone.length < 7) {
+      setProfileMessage({
+        type: "error",
+        text: "Phone number must be at least 7 characters long.",
+      });
+      setProfileSaving(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/customer/profile", {
@@ -270,14 +303,16 @@ function AccountPageInner() {
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
         body: JSON.stringify({
-          name: editName.trim(),
-          phone: editPhone.trim(),
+          name: trimmedName,
+          phone: trimmedPhone,
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.success && data.customer) {
         setCustomer(data.customer);
+        setEditName(data.customer.name || "");
+        setEditPhone(data.customer.phone || "");
         setProfileMessage({
           type: "success",
           text: "Profile updated successfully.",
@@ -434,7 +469,14 @@ function AccountPageInner() {
           emergencyRequests={emergencyRequests}
           contactInquiries={contactInquiries}
           unauthorizedAdminError={false}
-          onEditProfile={() => setIsEditingProfile(true)}
+          onEditProfile={() => {
+            if (customer) {
+              setEditName(customer.name || "");
+              setEditPhone(customer.phone || "");
+            }
+            setProfileMessage(null);
+            setIsEditingProfile(true);
+          }}
         />
       )}
 
@@ -442,6 +484,22 @@ function AccountPageInner() {
       <div className="py-8 sm:py-10">
         <Container>
           <div className="space-y-8">
+            {profileMessage && profileMessage.type === "success" && (
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-500/50 bg-emerald-950/60 p-4 text-xs font-semibold text-emerald-200 backdrop-blur-md">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+                  <span>{profileMessage.text}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProfileMessage(null)}
+                  className="text-emerald-400 transition hover:text-emerald-200"
+                  aria-label="Dismiss notification"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
             {/* 2. Navigation Tabs */}
             <div className="border-b border-slate-700">
               <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto scrollbar-none pb-px">
@@ -530,6 +588,21 @@ function AccountPageInner() {
           </div>
 
           {/* 4. Modals */}
+          {customer && (
+            <EditProfileModal
+              isOpen={isEditingProfile}
+              name={editName}
+              phone={editPhone}
+              email={customer.email}
+              saving={profileSaving}
+              error={profileMessage?.type === "error" ? profileMessage.text : null}
+              onNameChange={setEditName}
+              onPhoneChange={setEditPhone}
+              onSubmit={handleProfileSubmit}
+              onClose={handleCloseProfileModal}
+            />
+          )}
+
           {reviewModalBooking && (
             <ReviewModal
               bookingId={reviewModalBooking.id}
