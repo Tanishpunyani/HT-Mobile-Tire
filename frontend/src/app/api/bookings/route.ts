@@ -5,7 +5,7 @@ import { serializeDecimal } from "@/lib/utils/serialize-prisma";
 import { calculateCustomerEta } from "@/lib/utils/eta";
 import { bookingSchema } from "@/lib/validations/booking";
 import { sendAdminBookingCreatedEmail } from "@/lib/notifications";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { checkSlotCapacity } from "@/lib/bookings/availability";
 import { isSlotInPast, getTorontoTodayString } from "@/lib/utils/timezone";
@@ -13,7 +13,7 @@ import { isSlotInPast, getTorontoTodayString } from "@/lib/utils/timezone";
 export async function POST(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`booking_${clientIp}`, 5, 60 * 1000);
+    const rateLimit = await checkRateLimitDistributed("booking", clientIp, 5, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(

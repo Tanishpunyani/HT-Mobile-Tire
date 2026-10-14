@@ -6,13 +6,13 @@ import {
   checkSlotCapacity,
   getAvailableSlotsForDate,
 } from "@/lib/bookings/availability";
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`availability_${clientIp}`, 60, 60 * 1000);
+    const rateLimit = await checkRateLimitDistributed("availability", clientIp, 60, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(

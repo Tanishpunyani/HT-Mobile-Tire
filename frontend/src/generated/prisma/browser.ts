@@ -82,3 +82,8 @@ export type AdminSession = Prisma.AdminSessionModel
  * 
  */
 export type AdminLoginAttempt = Prisma.AdminLoginAttemptModel
+/**
+ * Model RateLimit
+ *
+ */
+export type RateLimit = Prisma.RateLimitModel

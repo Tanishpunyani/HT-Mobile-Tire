@@ -1,4 +1,4 @@
-import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { checkRateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 
 export interface AutocompleteSuggestion {
@@ -30,7 +30,7 @@ setInterval(() => {
 export async function GET(request: Request) {
   try {
     const clientIp = getClientIp(request);
-    const rateLimit = checkRateLimit(`address_autocomplete_${clientIp}`, 10, 60 * 1000);
+    const rateLimit = await checkRateLimitDistributed("address_autocomplete", clientIp, 10, 60 * 1000);
 
     if (!rateLimit.allowed) {
       return Response.json(
