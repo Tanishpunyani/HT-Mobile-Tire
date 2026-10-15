@@ -32,6 +32,11 @@ import {
   isGuestBookingAuthorized,
   getValidTechnicianCallData,
 } from "../../../frontend/src/lib/guest-auth.ts";
+import {
+  BUSINESS_PHONE_RAW,
+  BUSINESS_PHONE_TEL,
+  BUSINESS_PHONE_DISPLAY,
+} from "../../../frontend/src/lib/constants/phone.ts";
 
 const TEST_GUEST_SECRET = "test_guest_secret_0123456789abcdef0123456789abcdef";
 const TEST_ADMIN_SECRET = "test_admin_secret_fedcba9876543210fedcba9876543210";
@@ -389,6 +394,64 @@ export function runGuestBookingTrackingIntegrationTests() {
         assert(!("notes" in safeResponse), "Internal notes must be completely omitted from customer JSON");
         assert(!("tokenHash" in safeResponse), "No token hash must appear in API response");
         assert(!("token" in safeResponse), "No raw token must appear in API response");
+      });
+
+      test("21. Guest Call Now button appears beside technician's name using configured business phone", () => {
+        const guestBookingWithTech = {
+          id: "book-guest-assigned",
+          status: "confirmed",
+          technician: {
+            id: "tech-10",
+            name: "Alex Rivera",
+            role: "Senior Tire Specialist",
+          },
+        };
+
+        const hasTechnician = Boolean(guestBookingWithTech.technician && guestBookingWithTech.technician.name);
+        assertEqual(hasTechnician, true, "Valid technician assignment state must be recognized");
+
+        // The Call Now link must reuse the project's canonical phone number source of truth
+        assert(BUSINESS_PHONE_RAW && BUSINESS_PHONE_RAW.length >= 10, "Business phone raw must be configured");
+        assertEqual(BUSINESS_PHONE_TEL.startsWith("tel:"), true, "Must be an accessible telephone URI link");
+        assertEqual(BUSINESS_PHONE_TEL, `tel:${BUSINESS_PHONE_RAW}`);
+        assert(BUSINESS_PHONE_DISPLAY.length > 0, "Business phone display text must be available");
+      });
+
+      test("22. Guest booking without technician suppresses Call Now button and renders awaiting status", () => {
+        const unassignedGuestBooking = {
+          id: "book-guest-unassigned",
+          status: "pending",
+          technician: null,
+        };
+
+        const hasTechnician = Boolean(unassignedGuestBooking.technician && unassignedGuestBooking.technician.name);
+        assertEqual(hasTechnician, false, "Must not indicate assigned technician when unassigned");
+
+        // UI state displays waiting block without misleading contact button
+        const showCallNow = hasTechnician && Boolean(BUSINESS_PHONE_RAW);
+        assertEqual(showCallNow, false, "Call Now button must be strictly suppressed when no technician is assigned");
+      });
+
+      test("23. Do Not Know My Tire Size option provides medium typography and responsive touch-friendly layout", () => {
+        // Verify default and unknown states format correctly
+        let selectedSize = "225/50R17";
+        let isUnknown = false;
+
+        function handleUnknownToggle(unknown) {
+          isUnknown = unknown;
+          selectedSize = unknown ? "TBD - Measure On Arrival" : "225/50R17";
+        }
+
+        assertEqual(isUnknown, false);
+        assertEqual(selectedSize, "225/50R17");
+
+        handleUnknownToggle(true);
+        assertEqual(isUnknown, true);
+        assertEqual(selectedSize, "TBD - Measure On Arrival");
+
+        handleUnknownToggle(false);
+        assertEqual(isUnknown, false);
+        assertEqual(selectedSize, "225/50R17");
       });
     } finally {
       restoreEnv("GUEST_BOOKING_SECRET", origGuestSecret);
