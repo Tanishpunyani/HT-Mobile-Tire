@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { HelpCircle, CheckCircle2, Sparkles, AlertCircle, Wrench } from "lucide-react";
+import { HelpCircle, CheckCircle2, Sparkles, Wrench } from "lucide-react";
 
 const WIDTH_OPTIONS = Array.from({ length: 21 }, (_, i) => 155 + i * 10); // 155 to 355
 const ASPECT_OPTIONS = Array.from({ length: 13 }, (_, i) => 25 + i * 5);  // 25 to 85
@@ -87,21 +87,21 @@ export default function TireSizeSelector({
         </div>
       </div>
 
-      {/* Mode Selector / "I Don't Know My Size" Toggle */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+      {/* Mode Selector / "Do Not Know My Tire Size" Toggle */}
+      <div className="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <button
           type="button"
           onClick={() => {
             setIsUnknown(false);
           }}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+          className={`inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-medium sm:font-semibold transition-all min-h-[42px] ${
             !isUnknown
-              ? "bg-primary text-white shadow-md shadow-primary/20"
-              : "border border-border bg-slate-50 text-text-secondary hover:bg-slate-100"
+              ? "border border-primary bg-primary text-white shadow-sm"
+              : "border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 shadow-sm"
           }`}
         >
-          <Sparkles size={14} />
-          Choose Size from Sidewall
+          <Sparkles size={15} className="shrink-0" />
+          <span>Choose Size from Sidewall</span>
         </button>
 
         <button
@@ -109,14 +109,14 @@ export default function TireSizeSelector({
           onClick={() => {
             setIsUnknown(true);
           }}
-          className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+          className={`inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-medium sm:font-semibold transition-all min-h-[42px] ${
             isUnknown
-              ? "bg-amber-500 text-white shadow-md shadow-amber-500/20"
-              : "border border-border bg-slate-50 text-text-secondary hover:bg-slate-100"
+              ? "border border-amber-500 bg-amber-500 text-white shadow-sm"
+              : "border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 shadow-sm"
           }`}
         >
-          <HelpCircle size={14} />
-          I Don't Know My Size (TBD)
+          <HelpCircle size={15} className="shrink-0" />
+          <span>Do Not Know My Tire Size</span>
         </button>
       </div>
 
@@ -128,7 +128,7 @@ export default function TireSizeSelector({
               <Wrench size={20} />
             </div>
             <div>
-              <h4 className="font-bold text-amber-950">No Problem! We'll Measure On Arrival</h4>
+              <h4 className="font-bold text-amber-950">No Problem! We&apos;ll Measure On Arrival</h4>
               <p className="mt-1 text-xs leading-relaxed text-amber-900">
                 Our fully equipped mobile service van carries professional tread and rim measurement gauges. Your technician will inspect your vehicle on arrival and equip the correct tire size specifications for your make and model.
               </p>

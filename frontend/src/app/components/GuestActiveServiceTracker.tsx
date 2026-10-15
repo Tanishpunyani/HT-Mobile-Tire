@@ -13,12 +13,12 @@ import {
   PhoneCall,
   RefreshCw,
   Sparkles,
-  AlertCircle,
   XCircle,
 } from "lucide-react";
 import Container from "@/app/components/Container";
 import { useAuth } from "@/lib/auth/auth-context";
 import { formatTime, formatDate } from "@/lib/utils/date-format";
+import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_TEL, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
 
 interface GuestBookingSummary {
   id: string;
@@ -152,8 +152,6 @@ export default function GuestActiveServiceTracker() {
 
   const technician = currentBooking.technician;
   const hasTechnician = Boolean(technician && technician.name);
-  const callNowData = currentBooking.callNow;
-  const canCallTechnician = Boolean(callNowData?.isValid && callNowData?.telUri);
 
   // Status visual attributes
   const isPending = currentBooking.status === "pending";
@@ -350,34 +348,27 @@ export default function GuestActiveServiceTracker() {
                         <span className="text-xs font-bold uppercase tracking-wider text-blue-700 block">
                           Assigned Technician
                         </span>
-                        <span className="text-base font-extrabold text-foreground block">
-                          {technician?.name || "Assigned Technician"}
+                        <div className="flex flex-wrap items-center gap-2.5 mt-0.5">
+                          <span className="text-base font-extrabold text-foreground">
+                            {technician?.name || "Assigned Technician"}
+                          </span>
+                          {BUSINESS_PHONE_RAW && (
+                            <a
+                              href={BUSINESS_PHONE_TEL}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                              aria-label={`Call now for technician ${technician?.name || "assistance"} at ${BUSINESS_PHONE_DISPLAY}`}
+                              title={`Call now: ${BUSINESS_PHONE_DISPLAY}`}
+                            >
+                              <PhoneCall size={13} />
+                              <span>Call Now</span>
+                            </a>
+                          )}
+                        </div>
+                        <span className="text-xs text-text-secondary block mt-1">
+                          Direct mobile dispatch &amp; support: {BUSINESS_PHONE_DISPLAY}
                         </span>
-                        {canCallTechnician && callNowData ? (
-                          <span className="text-xs font-semibold text-emerald-700 block mt-0.5">
-                            Direct mobile dispatch: {callNowData.displayPhone}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-text-secondary block mt-0.5">
-                            Technician assigned. Direct contact number is not yet available.
-                          </span>
-                        )}
                       </div>
                     </div>
-
-                    {/* Authoritative Call Now Link (Phase 7) */}
-                    {canCallTechnician && callNowData && (
-                      <div className="shrink-0">
-                        <a
-                          href={callNowData.telUri}
-                          className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-xs font-bold text-white shadow-md shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-95"
-                          aria-label={`Call technician ${callNowData.technicianName} now`}
-                        >
-                          <PhoneCall size={15} />
-                          <span>Call Technician ({callNowData.displayPhone})</span>
-                        </a>
-                      </div>
-                    )}
                   </div>
                 </div>
               ) : (
