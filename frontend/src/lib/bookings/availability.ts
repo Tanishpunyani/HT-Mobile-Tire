@@ -5,14 +5,18 @@ import {
   isSlotInPast,
   CANONICAL_2HOUR_SLOTS,
   CanonicalSlot,
+  getTorontoTodayString,
+  getTorontoCurrentMinutes,
 } from "@/lib/utils/timezone";
 
 export interface BookingAvailabilityResult {
   available: boolean;
   activeCount?: number;
   totalCapacity?: number;
-  estimatedCompletionAt?: string;
-  remainingMinutes?: number;
+  estimatedCompletionAt?: string | null;
+  remainingMinutes?: number | null;
+  reason?: string;
+  error?: string;
 }
 
 export interface SlotAvailabilityItem {
@@ -20,7 +24,7 @@ export interface SlotAvailabilityItem {
   endTime: string;
   label: string;
   available: boolean;
-  reason?: "past" | "occupied";
+  reason?: "past" | "occupied" | "unstaffed";
 }
 
 export const DEFAULT_SERVICE_DURATION_MINUTES = 45;
@@ -79,10 +83,19 @@ export async function checkSlotCapacity(
     where: { isActive: true },
   });
 
+  if (totalActiveTechnicians === 0) {
+    return {
+      available: false,
+      totalTechnicians: 0,
+      overlappingBookingsCount: 0,
+      availableSlotsRemaining: 0,
+    };
+  }
+
   const capacity =
     params.maxCapacity !== undefined
       ? params.maxCapacity
-      : Math.max(1, totalActiveTechnicians || 5);
+      : totalActiveTechnicians;
 
   // 2. Fetch all active bookings (pending, confirmed, in_progress) on the target date
   const startOfDay = new Date(params.bookingDate);
@@ -144,6 +157,20 @@ export async function getAvailableSlotsForDate(
   dateStr: string,
   referenceDate: Date = new Date()
 ): Promise<SlotAvailabilityItem[]> {
+  const totalActiveTechnicians = await txOrPrisma.technician.count({
+    where: { isActive: true },
+  });
+
+  if (totalActiveTechnicians === 0) {
+    return CANONICAL_2HOUR_SLOTS.map((slot: CanonicalSlot) => ({
+      time: slot.value,
+      endTime: slot.endTime,
+      label: slot.label,
+      available: false,
+      reason: "unstaffed",
+    }));
+  }
+
   const [year, month, day] = dateStr.split("-").map(Number);
   const startOfDay = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
   const endOfDay = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
@@ -261,33 +288,152 @@ export async function checkTechnicianAvailability(
 
 /**
  * Checks whether HT Mobile Tire currently has active fleet capacity for on-demand service.
- * Considers all active mobile tire technicians.
+ * Considers all active mobile tire technicians and only jobs currently occupying capacity.
  */
-export async function getBookingAvailability(): Promise<BookingAvailabilityResult> {
+export async function getBookingAvailability(
+  prismaClient: any = prisma,
+  referenceDate?: Date
+): Promise<BookingAvailabilityResult> {
   try {
-    const totalActiveTechs = await prisma.technician.count({
+    const totalActiveTechs = await prismaClient.technician.count({
       where: { isActive: true },
     });
-    const totalCapacity = Math.max(1, totalActiveTechs || 5);
 
-    const activeBookings = await prisma.booking.findMany({
+    if (totalActiveTechs === 0) {
+      return {
+        available: false,
+        activeCount: 0,
+        totalCapacity: 0,
+        reason: "no_active_technicians",
+      };
+    }
+
+    const totalCapacity = totalActiveTechs;
+
+    const now = referenceDate || new Date();
+    const nowMs = now.getTime();
+    const todayTorontoStr = getTorontoTodayString(now);
+    const currentMinutesToronto = getTorontoCurrentMinutes(now);
+
+    const yesterdayDate = new Date(nowMs - 24 * 60 * 60 * 1000);
+    const yesterdayTorontoStr = getTorontoTodayString(yesterdayDate);
+
+    const [tYear, tMonth, tDay] = todayTorontoStr.split("-").map(Number);
+    const todayUtcMidnight = new Date(Date.UTC(tYear, tMonth - 1, tDay));
+
+    const [yYear, yMonth, yDay] = yesterdayTorontoStr.split("-").map(Number);
+    const yesterdayUtcMidnight = new Date(Date.UTC(yYear, yMonth - 1, yDay));
+
+    const candidateBookings = await prismaClient.booking.findMany({
       where: {
-        status: {
-          in: ["confirmed", "in_progress"],
-        },
+        OR: [
+          { status: "in_progress" },
+          {
+            status: "confirmed",
+            bookingDate: {
+              in: [yesterdayUtcMidnight, todayUtcMidnight],
+            },
+          },
+        ],
       },
       select: {
         id: true,
         status: true,
+        bookingDate: true,
+        bookingTime: true,
         serviceConfirmedAt: true,
+        arrivedAt: true,
         estimatedDurationMinutes: true,
         updatedAt: true,
       },
     });
 
-    const activeCount = activeBookings.length;
+    interface ActiveOccupyingJob {
+      id: string;
+      status: string;
+      estimatedCompletionMs: number | null;
+    }
 
-    // If active jobs are less than total fleet capacity, company is available!
+    const activeJobs: ActiveOccupyingJob[] = [];
+
+    for (const b of candidateBookings) {
+      if (b.status === "in_progress") {
+        const durationMinutes =
+          b.estimatedDurationMinutes && b.estimatedDurationMinutes > 0
+            ? b.estimatedDurationMinutes
+            : DEFAULT_SERVICE_DURATION_MINUTES;
+
+        // Trustworthy start timestamp: arrivedAt or updatedAt (when technician started service)
+        const startTime = b.arrivedAt || b.updatedAt || now;
+        const completionMs = new Date(startTime).getTime() + durationMinutes * 60 * 1000;
+
+        activeJobs.push({
+          id: b.id,
+          status: "in_progress",
+          estimatedCompletionMs: completionMs,
+        });
+      } else if (b.status === "confirmed") {
+        if (!b.bookingDate || !b.bookingTime) continue;
+
+        let bDateStr = "";
+        if (b.bookingDate instanceof Date) {
+          const bYear = b.bookingDate.getUTCFullYear();
+          const bMonth = String(b.bookingDate.getUTCMonth() + 1).padStart(2, "0");
+          const bDay = String(b.bookingDate.getUTCDate()).padStart(2, "0");
+          bDateStr = `${bYear}-${bMonth}-${bDay}`;
+        } else if (typeof b.bookingDate === "string") {
+          bDateStr = b.bookingDate.slice(0, 10);
+        }
+
+        const startMinutes = parseTimeToMinutes(b.bookingTime);
+        const durationMinutes =
+          b.estimatedDurationMinutes && b.estimatedDurationMinutes >= 120
+            ? b.estimatedDurationMinutes
+            : Math.max(120, (b.estimatedDurationMinutes || DEFAULT_SERVICE_DURATION_MINUTES) + DEFAULT_BUFFER_MINUTES);
+
+        const endMinutes = startMinutes + durationMinutes;
+
+        let isOverlapping = false;
+        let scheduledCompletionMs: number | null = null;
+
+        if (bDateStr === todayTorontoStr) {
+          if (endMinutes <= 1440) {
+            if (currentMinutesToronto >= startMinutes && currentMinutesToronto < endMinutes) {
+              isOverlapping = true;
+              const minutesRemaining = endMinutes - currentMinutesToronto;
+              scheduledCompletionMs = nowMs + minutesRemaining * 60 * 1000;
+            }
+          } else {
+            // Crosses midnight: startMinutes to 1440 on today
+            if (currentMinutesToronto >= startMinutes) {
+              isOverlapping = true;
+              const minutesRemaining = endMinutes - currentMinutesToronto;
+              scheduledCompletionMs = nowMs + minutesRemaining * 60 * 1000;
+            }
+          }
+        } else if (bDateStr === yesterdayTorontoStr) {
+          if (endMinutes > 1440) {
+            const spilloverMinutes = endMinutes - 1440;
+            if (currentMinutesToronto < spilloverMinutes) {
+              isOverlapping = true;
+              const minutesRemaining = spilloverMinutes - currentMinutesToronto;
+              scheduledCompletionMs = nowMs + minutesRemaining * 60 * 1000;
+            }
+          }
+        }
+
+        if (isOverlapping) {
+          activeJobs.push({
+            id: b.id,
+            status: "confirmed",
+            estimatedCompletionMs: scheduledCompletionMs,
+          });
+        }
+      }
+    }
+
+    const activeCount = activeJobs.length;
+
     if (activeCount < totalCapacity) {
       return {
         available: true,
@@ -296,38 +442,41 @@ export async function getBookingAvailability(): Promise<BookingAvailabilityResul
       };
     }
 
-    // If all technicians are currently active on-site, compute the earliest completing technician
-    let earliestCompletionMs = Infinity;
-    const nowMs = Date.now();
-
-    for (const b of activeBookings) {
-      const durationMinutes =
-        b.estimatedDurationMinutes && b.estimatedDurationMinutes > 0
-          ? b.estimatedDurationMinutes
-          : DEFAULT_SERVICE_DURATION_MINUTES;
-
-      const baseTime = b.serviceConfirmedAt || b.updatedAt || new Date();
-      const completionTimeMs = new Date(baseTime).getTime() + durationMinutes * 60 * 1000;
-      if (completionTimeMs < earliestCompletionMs) {
-        earliestCompletionMs = completionTimeMs;
+    // All active technicians are genuinely occupied right now
+    let earliestCompletionMs: number | null = null;
+    for (const job of activeJobs) {
+      if (job.estimatedCompletionMs && job.estimatedCompletionMs > nowMs) {
+        if (earliestCompletionMs === null || job.estimatedCompletionMs < earliestCompletionMs) {
+          earliestCompletionMs = job.estimatedCompletionMs;
+        }
       }
     }
 
-    const remainingMs = Math.max(0, earliestCompletionMs - nowMs);
-    const remainingMinutes = Math.max(1, Math.ceil(remainingMs / 60000));
-    const estimatedCompletionAt = new Date(
-      earliestCompletionMs === Infinity ? nowMs + 45 * 60 * 1000 : earliestCompletionMs
-    ).toISOString();
+    if (earliestCompletionMs !== null) {
+      const remainingMs = Math.max(0, earliestCompletionMs - nowMs);
+      const remainingMinutes = Math.max(1, Math.ceil(remainingMs / 60000));
+      const estimatedCompletionAt = new Date(earliestCompletionMs).toISOString();
+
+      return {
+        available: false,
+        activeCount,
+        totalCapacity,
+        estimatedCompletionAt,
+        remainingMinutes,
+        reason: "all_technicians_occupied",
+      };
+    }
 
     return {
       available: false,
       activeCount,
       totalCapacity,
-      estimatedCompletionAt,
-      remainingMinutes,
+      estimatedCompletionAt: null,
+      remainingMinutes: null,
+      reason: "all_technicians_occupied",
     };
   } catch (error: any) {
     logger.error("availability.check_failed", { error: error?.message });
-    return { available: true, totalCapacity: 5, activeCount: 0 };
+    throw error;
   }
 }
