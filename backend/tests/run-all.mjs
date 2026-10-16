@@ -34,6 +34,7 @@ import { runRateLimitIpTests } from "./unit/rate-limit-ip.test.mjs";
 import { runAdminDispatchAndEmergencyActionTests } from "./unit/admin-dispatch-emergency-actions.test.mjs";
 import { runAddressAutocompleteUnitTests } from "./unit/address-autocomplete.test.mjs";
 import { runAvailabilitySafetyRegressionTests } from "./unit/availability-safety-regression.test.mjs";
+import { runPreDomainHardeningTests } from "./unit/pre-domain-hardening.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -94,6 +95,7 @@ runRateLimitIpTests();
 runAdminDispatchAndEmergencyActionTests();
 runAddressAutocompleteUnitTests();
 runAvailabilitySafetyRegressionTests();
+runPreDomainHardeningTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();
