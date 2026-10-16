@@ -32,7 +32,7 @@ interface DynamicSlot {
   endTime: string;
   label: string;
   available: boolean;
-  reason?: "past" | "occupied";
+  reason?: "past" | "occupied" | "unstaffed";
 }
 
 type CustomerProfile = {
@@ -72,6 +72,7 @@ export default function BookingFormClient({
   const [bookingTime, setBookingTime] = useState<string>("");
   const [slots, setSlots] = useState<DynamicSlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [slotsError, setSlotsError] = useState<string | null>(null);
 
   const [tireSize, setTireSize] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -85,12 +86,18 @@ export default function BookingFormClient({
   const fetchSlots = useCallback(async (targetDate: string, desiredTime?: string) => {
     try {
       setSlotsLoading(true);
+      setSlotsError(null);
       const res = await fetch(`/api/bookings/availability?date=${targetDate}`, {
         cache: "no-store",
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setSlots([]);
+        setSlotsError("Unable to load appointment slots right now. Please try again or call us.");
+        return;
+      }
       const data = await res.json();
       if (Array.isArray(data.slots)) {
+        setSlotsError(null);
         const fetchedSlots: DynamicSlot[] = data.slots;
         setSlots(fetchedSlots);
 
@@ -555,9 +562,13 @@ export default function BookingFormClient({
                           onChange={(e) => setBookingTime(e.target.value)}
                           className="w-full rounded-xl border border-border bg-slate-50/50 pl-9 pr-4 py-2.5 text-sm font-medium text-foreground outline-none transition focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10"
                         >
-                          {slots.length === 0 ? (
+                          {slotsError ? (
                             <option value="" disabled>
-                              Loading available slots...
+                              {slotsError}
+                            </option>
+                          ) : slots.length === 0 ? (
+                            <option value="" disabled>
+                              {slotsLoading ? "Loading available slots..." : "No appointment slots available for this date."}
                             </option>
                           ) : (
                             <>
@@ -567,11 +578,14 @@ export default function BookingFormClient({
                               {slots.map((slot) => {
                                 const isPast = slot.reason === "past";
                                 const isOccupied = slot.reason === "occupied";
+                                const isUnstaffed = slot.reason === "unstaffed";
                                 const disabled = !slot.available;
                                 const statusSuffix = isPast
                                   ? " (Passed)"
                                   : isOccupied
-                                  ? " (Unavailable / Booked)"
+                                  ? " (Booked)"
+                                  : isUnstaffed
+                                  ? " (Unavailable)"
                                   : "";
 
                                 return (

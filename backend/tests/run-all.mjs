@@ -33,6 +33,7 @@ import { runTimeSlotBooking24_7Tests } from "./unit/timeslot-booking-24-7.test.m
 import { runRateLimitIpTests } from "./unit/rate-limit-ip.test.mjs";
 import { runAdminDispatchAndEmergencyActionTests } from "./unit/admin-dispatch-emergency-actions.test.mjs";
 import { runAddressAutocompleteUnitTests } from "./unit/address-autocomplete.test.mjs";
+import { runAvailabilitySafetyRegressionTests } from "./unit/availability-safety-regression.test.mjs";
 
 // Integration Suites
 import { runCustomerAuthIntegrationTests } from "./integration/customer-auth.test.mjs";
@@ -92,6 +93,7 @@ runTimeSlotBooking24_7Tests();
 runRateLimitIpTests();
 runAdminDispatchAndEmergencyActionTests();
 runAddressAutocompleteUnitTests();
+runAvailabilitySafetyRegressionTests();
 
 // 2. INTEGRATION SUITES
 runCustomerAuthIntegrationTests();

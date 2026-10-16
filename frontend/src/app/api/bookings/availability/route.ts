@@ -88,8 +88,18 @@ export async function GET(request: Request) {
   } catch (error: any) {
     logger.error("availability_api.get_failed", { error: error?.message });
     return Response.json(
-      { available: true },
-      { status: 200 }
+      {
+        available: false,
+        error: "Availability service is temporarily unavailable. Please try again shortly.",
+      },
+      {
+        status: 503,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
     );
   }
 }

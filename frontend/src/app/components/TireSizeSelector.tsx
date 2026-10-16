@@ -128,10 +128,9 @@ export default function TireSizeSelector({
               <Wrench size={20} />
             </div>
             <div>
-              <h4 className="font-bold text-amber-950">No Problem! We&apos;ll Measure On Arrival</h4>
-              <p className="mt-1 text-xs leading-relaxed text-amber-900">
-                Our fully equipped mobile service van carries professional tread and rim measurement gauges. Your technician will inspect your vehicle on arrival and equip the correct tire size specifications for your make and model.
-              </p>
+              <h4 className="font-bold text-amber-950">
+                No problem! Once your booking is confirmed, please call your assigned technician to discuss your tire size and clarify any related details.
+              </h4>
               <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-white/80 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
                 <CheckCircle2 size={13} className="text-amber-600" />
                 Marked as: <strong>TBD (To Be Determined on-site)</strong>

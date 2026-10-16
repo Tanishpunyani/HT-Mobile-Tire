@@ -69,6 +69,16 @@ export default function BookingWaitScreen({
         });
         const data = await res.json();
 
+        if (!res.ok || data.error) {
+          if (!isAuto) {
+            setFeedbackMsg(
+              data.error || "Unable to check fleet availability right now. Please try again or call us."
+            );
+            setTimeout(() => setFeedbackMsg(null), 5000);
+          }
+          return;
+        }
+
         if (data.available) {
           if (onAvailable) {
             onAvailable();
@@ -81,7 +91,7 @@ export default function BookingWaitScreen({
 
         if (data.estimatedCompletionAt) {
           const parsed = new Date(data.estimatedCompletionAt).getTime();
-          if (!isNaN(parsed)) {
+          if (!isNaN(parsed) && parsed > Date.now()) {
             setTargetTimeMs(parsed);
           }
         }

@@ -8,7 +8,10 @@ import { logger } from "@/lib/logger";
 
 export default async function BookingPage() {
   let customer = null;
-  let availability = { available: true };
+  let availability: { available: boolean; error?: string } = {
+    available: false,
+    error: "Unable to verify live availability",
+  };
 
   try {
     const [authUser, avail] = await Promise.all([

@@ -11,55 +11,61 @@ if (!directUrl) {
 
 export const INITIAL_TECHNICIANS = [
   {
-    name: "Alex Morgan",
-    role: "Senior Tire Technician",
-    phone: null,
-    isActive: true,
-  },
-  {
-    name: "Daniel Brooks",
+    id: "90056f7b-1cba-4a17-aa3b-8f8708d38c5c",
+    name: "Harsh Technician",
     role: "Mobile Tire Technician",
     phone: null,
     isActive: true,
   },
   {
-    name: "Ryan Carter",
-    role: "Tire Service Technician",
+    id: "629d02dd-41ac-4598-8940-434fc8a2bd9e",
+    name: "Jerry Technician",
+    role: "Mobile Tire Technician",
     phone: null,
     isActive: true,
   },
   {
+    id: "2cf14402-a791-41c9-89c1-efbe531ff7ac",
+    name: "Harry Technician",
+    role: "Mobile Tire Technician",
+    phone: null,
+    isActive: true,
+  },
+  {
+    id: "ee646c95-ec73-4f65-81fb-f2343285b601",
     name: "Ethan Wilson",
     role: "Senior Mobile Technician",
     phone: null,
-    isActive: true,
+    isActive: false,
   },
   {
+    id: "91a86430-3346-4330-b217-4671c067e8cb",
     name: "Noah Bennett",
     role: "Tire Repair Technician",
     phone: null,
-    isActive: true,
+    isActive: false,
   },
 ];
 
 export async function seedTechnicians() {
-  console.log("\n🌱 Seeding 5 initial technicians into database...");
+  console.log("\n🌱 Seeding technicians into database with stable IDs...");
   const client = new Client({ connectionString: directUrl });
 
   try {
     await client.connect();
 
     for (const tech of INITIAL_TECHNICIANS) {
-      // Idempotent upsert by name
+      // Idempotent upsert by stable primary key ID
       const res = await client.query(
         `INSERT INTO public.technicians (id, name, role, phone, is_active, created_at, updated_at)
-         VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW(), NOW())
-         ON CONFLICT (name) DO UPDATE 
-         SET role = EXCLUDED.role,
+         VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+         ON CONFLICT (id) DO UPDATE
+         SET name = EXCLUDED.name,
+             role = EXCLUDED.role,
              is_active = EXCLUDED.is_active,
              updated_at = NOW()
          RETURNING id, name, role, is_active;`,
-        [tech.name, tech.role, tech.phone, tech.isActive]
+        [tech.id, tech.name, tech.role, tech.phone, tech.isActive]
       );
 
       const row = res.rows[0];
