@@ -12,20 +12,9 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
 });
 
-function getValidBaseUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (envUrl && envUrl !== "..." && envUrl.trim() !== "") {
-    try {
-      new URL(envUrl);
-      return envUrl;
-    } catch {
-      // Fallback on malformed URL
-    }
-  }
-  return "https://mobiletire.clinic";
-}
+import { getCanonicalBaseUrl } from "@/lib/utils/url";
 
-const baseUrl = getValidBaseUrl();
+const baseUrl = getCanonicalBaseUrl();
 const businessPhone = process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+16479956665";
 
 export const metadata: Metadata = {

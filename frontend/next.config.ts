@@ -46,8 +46,11 @@ const nextConfig: NextConfig = {
             value: "camera=(), microphone=(), geolocation=(self)",
           },
           {
+            // SEC-AUDIT-01: Relaxed pre-domain transition policy (1 day) without includeSubDomains or preload.
+            // Avoids browser lockout of unconfigured subdomains during initial custom domain cutover.
+            // Post-launch decision required: increase to max-age=31536000 only after all subdomains support HTTPS.
             key: "Strict-Transport-Security",
-            value: "max-age=63072000; includeSubDomains; preload",
+            value: "max-age=86400",
           },
         ],
       },

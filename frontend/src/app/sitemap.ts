@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getAllCitySlugs } from "@/lib/cities";
+import { getCanonicalBaseUrl } from "@/lib/utils/url";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://mobiletire.clinic";
+  const baseUrl = getCanonicalBaseUrl();
   const citySlugs = getAllCitySlugs();
 
   const staticPages: MetadataRoute.Sitemap = [
