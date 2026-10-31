@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Container from "../../components/Container";
 import { BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 const features = [
   "Fast mobile flat tire repair",
@@ -21,8 +22,32 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "Flat Tire Repair | HT Mobile Tire",
+  title: "Flat Tire Repair",
   description: "Fast and convenient mobile flat tire repair service. We come to your location to get you safely back on the road.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/services/flat-tire-repair`,
+  },
+  openGraph: {
+    title: "Flat Tire Repair | HT Mobile Tire",
+    description: "Fast and convenient mobile flat tire repair service. We come to your location to get you safely back on the road.",
+    url: `${CANONICAL_SITE_URL}/services/flat-tire-repair`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/flat_tire_repair.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Flat Tire Repair Service",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Flat Tire Repair | HT Mobile Tire",
+    description: "Fast and convenient mobile flat tire repair service. We come to your location to get you safely back on the road.",
+    images: [`${CANONICAL_SITE_URL}/images/flat_tire_repair.webp`],
+  },
 };
 
 export default function FlatTireRepairPage() {

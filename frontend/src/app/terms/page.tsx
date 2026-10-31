@@ -1,10 +1,35 @@
 import type { Metadata } from "next";
 import Container from "../components/Container";
 import SectionHeading from "../components/SectionHeading";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | HT Mobile Tire",
+  title: "Terms of Service",
   description: "Terms and conditions for scheduling and receiving mobile tire services from HT Mobile Tire.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/terms`,
+  },
+  openGraph: {
+    title: "Terms of Service | HT Mobile Tire",
+    description: "Terms and conditions for scheduling and receiving mobile tire services from HT Mobile Tire.",
+    url: `${CANONICAL_SITE_URL}/terms`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Tire Terms of Service",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service | HT Mobile Tire",
+    description: "Terms and conditions for scheduling and receiving mobile tire services from HT Mobile Tire.",
+    images: [`${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`],
+  },
 };
 
 export default function TermsPage() {

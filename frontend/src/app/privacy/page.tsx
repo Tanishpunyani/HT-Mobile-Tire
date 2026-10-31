@@ -2,10 +2,35 @@ import type { Metadata } from "next";
 import Container from "../components/Container";
 import SectionHeading from "../components/SectionHeading";
 import { BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | HT Mobile Tire",
+  title: "Privacy Policy",
   description: "Learn how HT Mobile Tire collects, protects, and uses customer information for mobile tire services.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/privacy`,
+  },
+  openGraph: {
+    title: "Privacy Policy | HT Mobile Tire",
+    description: "Learn how HT Mobile Tire collects, protects, and uses customer information for mobile tire services.",
+    url: `${CANONICAL_SITE_URL}/privacy`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Tire Privacy Policy",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy | HT Mobile Tire",
+    description: "Learn how HT Mobile Tire collects, protects, and uses customer information for mobile tire services.",
+    images: [`${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`],
+  },
 };
 
 export default function PrivacyPage() {

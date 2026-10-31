@@ -11,6 +11,7 @@ import {
 import Container from "../../components/Container";
 import TireSizeServiceSection from "./TireSizeServiceSection";
 import { BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 const features = [
 
@@ -22,8 +23,32 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "New and Used Tires | HT Mobile Tire",
+  title: "New and Used Tires",
   description: "Quality new and used tires delivered and installed at your location. Mobile tire service that comes to you.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/services/new-used-tires`,
+  },
+  openGraph: {
+    title: "New and Used Tires | HT Mobile Tire",
+    description: "Quality new and used tires delivered and installed at your location. Mobile tire service that comes to you.",
+    url: `${CANONICAL_SITE_URL}/services/new-used-tires`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Tire New and Used Tire Service",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "New and Used Tires | HT Mobile Tire",
+    description: "Quality new and used tires delivered and installed at your location. Mobile tire service that comes to you.",
+    images: [`${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`],
+  },
 };
 
 export default function NewUsedTiresPage() {

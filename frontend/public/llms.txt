@@ -1,0 +1,59 @@
+# HT Mobile Tire
+
+> On-demand mobile tire service bringing professional tire mounting, balancing, puncture repairs, and seasonal changeovers directly to your driveway, workplace, or roadside across the Greater Toronto Area (GTA), Ontario.
+
+## Core Information
+- Website: https://htmobiletire.com
+- Dispatch Phone: +1 (647) 995-6665
+- Service Hours: 24/7 emergency roadside assistance and daily scheduled on-site mobile appointments.
+- Operating Model: Fully equipped mobile tire service vans dispatched directly to the customer's vehicle location.
+
+## Primary Services
+1. New and Used Tires
+   - Quality new brand-name tires and certified inspected used tires delivered, mounted, and balanced on-site.
+   - URL: https://htmobiletire.com/services/new-used-tires
+
+2. Swap Rim Tire On/Off
+   - Seasonal tire changeover service for winter, summer, and all-season tires on or off rims.
+   - URL: https://htmobiletire.com/services/swap-rim-tire
+
+3. Wheel Balancing
+   - Computerized laser dynamic wheel balancing to eliminate steering vibration, improve highway smoothness, and prevent uneven tread wear.
+   - URL: https://htmobiletire.com/services/wheel-balancing
+
+4. Flat Tire Repair
+   - On-site puncture assessment, radial tire patching, bead leak resealing, and vulcanization for road hazards.
+   - URL: https://htmobiletire.com/services/flat-tire-repair
+
+5. Fleet Tire Service
+   - Turnkey scheduled mobile maintenance and emergency support for commercial delivery vans, corporate fleets, and light trucks.
+   - URL: https://htmobiletire.com/services/fleet-tire-service
+
+6. 24/7 Emergency Roadside Tire Assistance
+   - Rapid on-demand roadside response for blowouts, flats, and emergency spare tire installations.
+   - URL: https://htmobiletire.com/emergency
+
+## Confirmed Service Areas (Ontario, Canada)
+HT Mobile Tire provides on-site mobile service across the Greater Toronto Area, including:
+- Brampton, ON: https://htmobiletire.com/service-area/brampton
+- Toronto, ON: https://htmobiletire.com/service-area/toronto
+- Mississauga, ON: https://htmobiletire.com/service-area/mississauga
+- Etobicoke, ON: https://htmobiletire.com/service-area/etobicoke
+- North York, ON: https://htmobiletire.com/service-area/north-york
+- Vaughan, ON: https://htmobiletire.com/service-area/vaughan
+- Woodbridge, ON: https://htmobiletire.com/service-area/woodbridge
+- Milton, ON: https://htmobiletire.com/service-area/milton
+- Georgetown, ON: https://htmobiletire.com/service-area/georgetown
+- All Service Areas: https://htmobiletire.com/service-areas
+
+## Important Public Links
+- Online Appointment Booking: https://htmobiletire.com/booking
+- Emergency Roadside Dispatch: https://htmobiletire.com/emergency
+- Contact & Inquiries: https://htmobiletire.com/contact
+- About HT Mobile Tire: https://htmobiletire.com/about
+- Services Overview: https://htmobiletire.com/services
+- XML Sitemap: https://htmobiletire.com/sitemap.xml
+- Robots Policy: https://htmobiletire.com/robots.txt
+- Privacy Policy: https://htmobiletire.com/privacy
+- Terms of Service: https://htmobiletire.com/terms
+

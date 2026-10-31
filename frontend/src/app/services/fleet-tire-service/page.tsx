@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Container from "../../components/Container";
 import { BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 const features = [
   "Mobile tire service for fleet vehicles",
@@ -21,8 +22,32 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "Fleet Tire Service | HT Mobile Tire",
+  title: "Fleet Tire Service",
   description: "Reliable mobile tire service for businesses. Keep your fleet vehicles moving with convenient on-site tire care.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/services/fleet-tire-service`,
+  },
+  openGraph: {
+    title: "Fleet Tire Service | HT Mobile Tire",
+    description: "Reliable mobile tire service for businesses. Keep your fleet vehicles moving with convenient on-site tire care.",
+    url: `${CANONICAL_SITE_URL}/services/fleet-tire-service`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/fleet_tire_services.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Fleet Tire Service",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Fleet Tire Service | HT Mobile Tire",
+    description: "Reliable mobile tire service for businesses. Keep your fleet vehicles moving with convenient on-site tire care.",
+    images: [`${CANONICAL_SITE_URL}/images/fleet_tire_services.webp`],
+  },
 };
 
 export default function FleetTireServicePage() {
