@@ -22,7 +22,7 @@ import { describe, test, testAsync, assert, assertEqual, assertDeepEqual } from 
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { normalizeBaseUrl, getCanonicalBaseUrl, buildCanonicalUrl, DEFAULT_PRODUCTION_URL } from "../../../frontend/src/lib/utils/url.ts";
+import { normalizeBaseUrl, getCanonicalBaseUrl, buildCanonicalUrl, DEFAULT_PRODUCTION_URL, CANONICAL_SITE_URL, buildCanonicalSiteUrl, getCanonicalSiteUrl } from "../../../frontend/src/lib/utils/url.ts";
 import {
   renderBookingReceivedEmail,
   renderBookingConfirmedEmail,
@@ -298,9 +298,16 @@ export function runPreDomainHardeningTests() {
       assert(fs.existsSync(robotsPath), "robots.ts must exist");
       const content = fs.readFileSync(robotsPath, "utf-8");
 
-      assert(content.includes('import { getCanonicalBaseUrl } from "@/lib/utils/url"'), "robots.ts must import getCanonicalBaseUrl");
+      assert(
+        /import\s*\{\s*[^}]*\bgetCanonicalBaseUrl\b[^}]*\}\s*from\s*["']@\/lib\/utils\/url["']/.test(content),
+        "robots.ts must import getCanonicalBaseUrl"
+      );
       assert(content.includes("const baseUrl = getCanonicalBaseUrl()"), "robots.ts must resolve base URL dynamically");
-      assert(content.includes("sitemap: `${baseUrl}/sitemap.xml`"), "robots.ts must reference dynamic canonical sitemap URL");
+      assert(
+        content.includes("sitemap: `${canonicalDomain}/sitemap.xml`") ||
+        content.includes("sitemap: `${baseUrl}/sitemap.xml`"),
+        "robots.ts must reference dynamic canonical sitemap URL"
+      );
       assert(!content.includes('"https://mobiletire.clinic"'), "robots.ts must not contain hardcoded unpurchased domain");
     });
 
@@ -477,6 +484,300 @@ export function runPreDomainHardeningTests() {
       if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
       else delete process.env.NEXT_PUBLIC_APP_URL;
     }
+  });
+
+  // =========================================================================
+  // 6. CANONICAL WWW DOMAIN STANDARDIZATION & SEO VERIFICATION TESTS
+  // =========================================================================
+  describe("Canonical WWW Domain Standardization (htmobiletire.com -> www.htmobiletire.com)", () => {
+    test("CANONICAL_SITE_URL equals the official canonical WWW domain", () => {
+      assertEqual(CANONICAL_SITE_URL, "https://www.htmobiletire.com");
+      assertEqual(getCanonicalSiteUrl(), "https://www.htmobiletire.com");
+    });
+
+    test("Apex business-domain input resolves to www", () => {
+      assertEqual(getCanonicalBaseUrl("https://htmobiletire.com"), "https://www.htmobiletire.com");
+      assertEqual(getCanonicalBaseUrl("https://htmobiletire.com/"), "https://www.htmobiletire.com");
+      assertEqual(getCanonicalBaseUrl("http://htmobiletire.com"), "https://www.htmobiletire.com");
+      assertEqual(getCanonicalBaseUrl("http://htmobiletire.com/"), "https://www.htmobiletire.com");
+      assertEqual(buildCanonicalSiteUrl("https://htmobiletire.com"), "https://www.htmobiletire.com");
+      assertEqual(buildCanonicalSiteUrl("https://htmobiletire.com/services"), "https://www.htmobiletire.com/services");
+      assertEqual(buildCanonicalUrl("/services", "https://htmobiletire.com"), "https://www.htmobiletire.com/services");
+
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      try {
+        process.env.NEXT_PUBLIC_APP_URL = "https://htmobiletire.com";
+        assertEqual(getCanonicalBaseUrl(), "https://www.htmobiletire.com");
+        process.env.NEXT_PUBLIC_APP_URL = "http://htmobiletire.com/";
+        assertEqual(getCanonicalBaseUrl(), "https://www.htmobiletire.com");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+      }
+    });
+
+    test("WWW business-domain input remains www", () => {
+      assertEqual(getCanonicalBaseUrl("https://www.htmobiletire.com"), "https://www.htmobiletire.com");
+      assertEqual(getCanonicalBaseUrl("https://www.htmobiletire.com/"), "https://www.htmobiletire.com");
+      assertEqual(buildCanonicalSiteUrl("https://www.htmobiletire.com/services"), "https://www.htmobiletire.com/services");
+      assertEqual(buildCanonicalUrl("/services", "https://www.htmobiletire.com"), "https://www.htmobiletire.com/services");
+
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      try {
+        process.env.NEXT_PUBLIC_APP_URL = "https://www.htmobiletire.com";
+        assertEqual(getCanonicalBaseUrl(), "https://www.htmobiletire.com");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+      }
+    });
+
+    test("Custom unrelated domain handling remains correct", () => {
+      assertEqual(getCanonicalBaseUrl("https://custom-domain.com"), "https://custom-domain.com");
+      assertEqual(getCanonicalBaseUrl("https://explicit.com/"), "https://explicit.com");
+
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      try {
+        process.env.NEXT_PUBLIC_APP_URL = "https://my-custom-domain.com/";
+        assertEqual(getCanonicalBaseUrl(), "https://my-custom-domain.com");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+      }
+    });
+
+    test("Vercel preview URL handling remains correct", () => {
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      const origVercel = process.env.VERCEL_URL;
+      const origVercelEnv = process.env.VERCEL_ENV;
+      try {
+        delete process.env.NEXT_PUBLIC_APP_URL;
+        process.env.VERCEL_ENV = "preview";
+        process.env.VERCEL_URL = "my-preview-branch.vercel.app";
+        assertEqual(getCanonicalBaseUrl(), "https://my-preview-branch.vercel.app");
+
+        process.env.VERCEL_URL = "https://preview-123.vercel.app";
+        assertEqual(getCanonicalBaseUrl(), "https://preview-123.vercel.app");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+        if (origVercel !== undefined) process.env.VERCEL_URL = origVercel;
+        else delete process.env.VERCEL_URL;
+        if (origVercelEnv !== undefined) process.env.VERCEL_ENV = origVercelEnv;
+        else delete process.env.VERCEL_ENV;
+      }
+    });
+
+    test("Production with missing NEXT_PUBLIC_APP_URL returns canonical WWW domain", () => {
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      const origVercel = process.env.VERCEL_URL;
+      const origVercelEnv = process.env.VERCEL_ENV;
+      try {
+        delete process.env.NEXT_PUBLIC_APP_URL;
+        delete process.env.VERCEL_URL;
+        process.env.VERCEL_ENV = "production";
+        assertEqual(getCanonicalBaseUrl(), "https://www.htmobiletire.com");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+        if (origVercel !== undefined) process.env.VERCEL_URL = origVercel;
+        else delete process.env.VERCEL_URL;
+        if (origVercelEnv !== undefined) process.env.VERCEL_ENV = origVercelEnv;
+        else delete process.env.VERCEL_ENV;
+      }
+    });
+
+    test("Production with a deployment-specific VERCEL_URL returns canonical WWW domain", () => {
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      const origVercel = process.env.VERCEL_URL;
+      const origVercelEnv = process.env.VERCEL_ENV;
+      try {
+        delete process.env.NEXT_PUBLIC_APP_URL;
+        process.env.VERCEL_ENV = "production";
+        process.env.VERCEL_URL = "ht-mobile-tire-deploy123.vercel.app";
+        assertEqual(getCanonicalBaseUrl(), "https://www.htmobiletire.com");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+        if (origVercel !== undefined) process.env.VERCEL_URL = origVercel;
+        else delete process.env.VERCEL_URL;
+        if (origVercelEnv !== undefined) process.env.VERCEL_ENV = origVercelEnv;
+        else delete process.env.VERCEL_ENV;
+      }
+    });
+
+    test("Preview deployment with its own VERCEL_URL returns preview deployment URL", () => {
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      const origVercel = process.env.VERCEL_URL;
+      const origVercelEnv = process.env.VERCEL_ENV;
+      try {
+        delete process.env.NEXT_PUBLIC_APP_URL;
+        process.env.VERCEL_ENV = "preview";
+        process.env.VERCEL_URL = "ht-mobile-tire-git-feat-preview.vercel.app";
+        assertEqual(getCanonicalBaseUrl(), "https://ht-mobile-tire-git-feat-preview.vercel.app");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+        if (origVercel !== undefined) process.env.VERCEL_URL = origVercel;
+        else delete process.env.VERCEL_URL;
+        if (origVercelEnv !== undefined) process.env.VERCEL_ENV = origVercelEnv;
+        else delete process.env.VERCEL_ENV;
+      }
+    });
+
+    test("Custom domain is preserved even in production environment", () => {
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      const origVercel = process.env.VERCEL_URL;
+      const origVercelEnv = process.env.VERCEL_ENV;
+      try {
+        process.env.VERCEL_ENV = "production";
+        process.env.VERCEL_URL = "ht-mobile-tire-deploy123.vercel.app";
+        process.env.NEXT_PUBLIC_APP_URL = "https://my-custom-fleet.ca";
+        assertEqual(getCanonicalBaseUrl(), "https://my-custom-fleet.ca");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+        if (origVercel !== undefined) process.env.VERCEL_URL = origVercel;
+        else delete process.env.VERCEL_URL;
+        if (origVercelEnv !== undefined) process.env.VERCEL_ENV = origVercelEnv;
+        else delete process.env.VERCEL_ENV;
+      }
+    });
+
+    test("Localhost development URL is preserved", () => {
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      const origNodeEnv = process.env.NODE_ENV;
+      try {
+        process.env.NODE_ENV = "development";
+        process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
+        assertEqual(getCanonicalBaseUrl(), "http://localhost:3000");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+        if (origNodeEnv !== undefined) process.env.NODE_ENV = origNodeEnv;
+        else delete process.env.NODE_ENV;
+      }
+    });
+
+    test("Missing Vercel environment variables fall back to DEFAULT_PRODUCTION_URL", () => {
+      const origEnv = process.env.NEXT_PUBLIC_APP_URL;
+      const origVercel = process.env.VERCEL_URL;
+      const origVercelEnv = process.env.VERCEL_ENV;
+      try {
+        delete process.env.NEXT_PUBLIC_APP_URL;
+        delete process.env.VERCEL_URL;
+        delete process.env.VERCEL_ENV;
+        assertEqual(getCanonicalBaseUrl(), DEFAULT_PRODUCTION_URL);
+        assertEqual(getCanonicalBaseUrl(), "https://ht-mobile-tire.vercel.app");
+      } finally {
+        if (origEnv !== undefined) process.env.NEXT_PUBLIC_APP_URL = origEnv;
+        else delete process.env.NEXT_PUBLIC_APP_URL;
+        if (origVercel !== undefined) process.env.VERCEL_URL = origVercel;
+        else delete process.env.VERCEL_URL;
+        if (origVercelEnv !== undefined) process.env.VERCEL_ENV = origVercelEnv;
+        else delete process.env.VERCEL_ENV;
+      }
+    });
+
+    test("All sitemap entries use www domain and total 23 URLs", () => {
+      const sitemapPath = path.join(projectRoot, "frontend/src/app/sitemap.ts");
+      const content = fs.readFileSync(sitemapPath, "utf-8");
+
+      assert(content.includes("CANONICAL_SITE_URL"), "sitemap.ts must reference CANONICAL_SITE_URL");
+
+      // Verify the 14 static pages and 9 city slugs resolve under CANONICAL_SITE_URL
+      const expectedStaticSlugs = [
+        "",
+        "/services",
+        "/service-areas",
+        "/services/new-used-tires",
+        "/services/swap-rim-tire",
+        "/services/wheel-balancing",
+        "/services/flat-tire-repair",
+        "/services/fleet-tire-service",
+        "/about",
+        "/contact",
+        "/booking",
+        "/emergency",
+        "/privacy",
+        "/terms",
+      ];
+      assertEqual(expectedStaticSlugs.length, 14);
+
+      const citySlugs = [
+        "brampton", "toronto", "mississauga", "etobicoke",
+        "north-york", "vaughan", "woodbridge", "milton", "georgetown"
+      ];
+      assertEqual(citySlugs.length, 9);
+
+      const allUrls = [
+        ...expectedStaticSlugs.map(slug => `${CANONICAL_SITE_URL}${slug}`),
+        ...citySlugs.map(slug => `${CANONICAL_SITE_URL}/service-area/${slug}`),
+      ];
+
+      assertEqual(allUrls.length, 23);
+      for (const url of allUrls) {
+        assert(url.startsWith("https://www.htmobiletire.com"), `Sitemap URL must start with www: ${url}`);
+        assert(!url.startsWith("https://htmobiletire.com/"), `Sitemap URL must not use apex domain: ${url}`);
+      }
+    });
+
+    test("Robots sitemap URL uses www canonical domain", () => {
+      const robotsPath = path.join(projectRoot, "frontend/src/app/robots.ts");
+      const content = fs.readFileSync(robotsPath, "utf-8");
+
+      assert(
+        content.includes("sitemap: `${canonicalDomain}/sitemap.xml`") ||
+        content.includes("sitemap: `${baseUrl}/sitemap.xml`"),
+        "robots.ts must reference dynamic canonical sitemap URL"
+      );
+
+      // Verify resolved sitemap URL
+      const resolvedSitemap = `${CANONICAL_SITE_URL}/sitemap.xml`;
+      assertEqual(resolvedSitemap, "https://www.htmobiletire.com/sitemap.xml");
+    });
+
+    test("Root canonical metadata and OpenGraph use www domain", () => {
+      const layoutPath = path.join(projectRoot, "frontend/src/app/layout.tsx");
+      const content = fs.readFileSync(layoutPath, "utf-8");
+
+      assert(content.includes("const siteUrl = CANONICAL_SITE_URL;"), "layout.tsx must alias CANONICAL_SITE_URL as siteUrl");
+      assert(content.includes("canonical: siteUrl"), "layout.tsx must set canonical to siteUrl");
+      assert(content.includes("url: siteUrl"), "layout.tsx must set OpenGraph url to siteUrl");
+      assertEqual(CANONICAL_SITE_URL, "https://www.htmobiletire.com");
+    });
+
+    test("JSON-LD in layout.tsx uses www domain for business URLs and images", () => {
+      const layoutPath = path.join(projectRoot, "frontend/src/app/layout.tsx");
+      const content = fs.readFileSync(layoutPath, "utf-8");
+
+      assert(content.includes("image: `${siteUrl}/images/hero-mobile-tire-clinic.webp`"), "JSON-LD must use siteUrl for primary image");
+      assert(content.includes("url: siteUrl"), "JSON-LD must use siteUrl for main entity URL");
+    });
+
+    test("llms.txt internal URLs all use www domain with zero apex leaks", () => {
+      const llmsPath = path.join(projectRoot, "frontend/public/llms.txt");
+      assert(fs.existsSync(llmsPath), "llms.txt must exist");
+      const content = fs.readFileSync(llmsPath, "utf-8");
+
+      const urlMatches = content.match(/https?:\/\/[^\s\)\>]+/g) || [];
+
+      assert(urlMatches.length >= 25, `llms.txt should contain all public routes (found ${urlMatches.length})`);
+
+      for (const url of urlMatches) {
+        if (url.includes("htmobiletire.com")) {
+          assert(
+            url.startsWith("https://www.htmobiletire.com"),
+            `llms.txt URL must use www host: ${url}`
+          );
+        }
+      }
+
+      // Explicit check for apex leaks
+      const apexMatches = content.match(/https?:\/\/htmobiletire\.com(?!\w)/g) || [];
+      const apexWithPath = content.match(/https?:\/\/htmobiletire\.com\//g) || [];
+      assertEqual(apexMatches.length + apexWithPath.length, 0);
+    });
   });
 }
 

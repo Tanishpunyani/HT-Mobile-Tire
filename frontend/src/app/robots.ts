@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
-import { getCanonicalBaseUrl } from "@/lib/utils/url";
+import { getCanonicalBaseUrl, CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = getCanonicalBaseUrl();
+  const canonicalDomain = CANONICAL_SITE_URL || baseUrl;
 
   return {
     rules: {
@@ -10,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin/", "/api/", "/account/"],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${canonicalDomain}/sitemap.xml`,
   };
 }

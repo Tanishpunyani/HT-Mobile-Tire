@@ -249,7 +249,7 @@ export function runCustomerAuthIntegrationTests() {
     });
 
     test("SEC-01: /auth/callback flow emulation redirects safely on success and error", () => {
-      const origin = "https://htmobiletire.com";
+      const origin = "https://www.htmobiletire.com";
       
       const simulateAuthCallback = (code, rawNext, exchangeSucceeds = true) => {
         const next = sanitizeRedirectTarget(rawNext, "/account");
@@ -263,23 +263,23 @@ export function runCustomerAuthIntegrationTests() {
 
       // 1. Valid code with safe next -> target
       const resSafe = simulateAuthCallback("valid_code_123", "/booking");
-      assertEqual(resSafe.redirectedTo, "https://htmobiletire.com/booking");
+      assertEqual(resSafe.redirectedTo, "https://www.htmobiletire.com/booking");
 
       // 2. Valid code with malicious next -> sanitized to /account
       const resMalicious = simulateAuthCallback("valid_code_123", "//evil.com");
-      assertEqual(resMalicious.redirectedTo, "https://htmobiletire.com/account");
+      assertEqual(resMalicious.redirectedTo, "https://www.htmobiletire.com/account");
 
       // 3. Valid code with missing next -> default /account
       const resDefault = simulateAuthCallback("valid_code_123", null);
-      assertEqual(resDefault.redirectedTo, "https://htmobiletire.com/account");
+      assertEqual(resDefault.redirectedTo, "https://www.htmobiletire.com/account");
 
       // 4. Missing code -> error redirect
       const resMissingCode = simulateAuthCallback(null, "/booking");
-      assertEqual(resMissingCode.redirectedTo, "https://htmobiletire.com/login?error=auth_callback_failed");
+      assertEqual(resMissingCode.redirectedTo, "https://www.htmobiletire.com/login?error=auth_callback_failed");
 
       // 5. Auth code exchange failure -> error redirect
       const resFailedExchange = simulateAuthCallback("invalid_code", "/booking", false);
-      assertEqual(resFailedExchange.redirectedTo, "https://htmobiletire.com/login?error=auth_callback_failed");
+      assertEqual(resFailedExchange.redirectedTo, "https://www.htmobiletire.com/login?error=auth_callback_failed");
     });
 
     // -------------------------------------------------------------
