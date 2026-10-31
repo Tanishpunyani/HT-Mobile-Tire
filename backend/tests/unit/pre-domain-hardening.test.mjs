@@ -284,7 +284,10 @@ export function runPreDomainHardeningTests() {
       assert(fs.existsSync(sitemapPath), "sitemap.ts must exist");
       const content = fs.readFileSync(sitemapPath, "utf-8");
 
-      assert(content.includes('import { getCanonicalBaseUrl } from "@/lib/utils/url"'), "sitemap.ts must import getCanonicalBaseUrl");
+      assert(
+        /import\s*\{\s*[^}]*\bgetCanonicalBaseUrl\b[^}]*\}\s*from\s*["']@\/lib\/utils\/url["']/.test(content),
+        "sitemap.ts must import getCanonicalBaseUrl"
+      );
       assert(content.includes("const baseUrl = getCanonicalBaseUrl()"), "sitemap.ts must resolve base URL dynamically");
       assert(!content.includes('"https://mobiletire.clinic"'), "sitemap.ts must not contain hardcoded unpurchased domain");
       assert(!content.includes("https://mobiletire.clinic"), "sitemap.ts must not hardcode mobiletire.clinic");
@@ -306,7 +309,10 @@ export function runPreDomainHardeningTests() {
       assert(fs.existsSync(layoutPath), "layout.tsx must exist");
       const content = fs.readFileSync(layoutPath, "utf-8");
 
-      assert(content.includes('import { getCanonicalBaseUrl } from "@/lib/utils/url"'), "layout.tsx must import getCanonicalBaseUrl");
+      assert(
+        /import\s*\{\s*[^}]*\bgetCanonicalBaseUrl\b[^}]*\}\s*from\s*["']@\/lib\/utils\/url["']/.test(content),
+        "layout.tsx must import getCanonicalBaseUrl"
+      );
       assert(content.includes("const baseUrl = getCanonicalBaseUrl()"), "layout.tsx must resolve base URL dynamically");
       assert(content.includes("metadataBase: new URL(baseUrl)"), "layout.tsx metadataBase must use resolved baseUrl");
       assert(!content.includes("https://mobiletire.clinic"), "layout.tsx must not hardcode mobiletire.clinic");
