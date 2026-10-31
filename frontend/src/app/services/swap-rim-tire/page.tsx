@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Container from "../../components/Container";
 import { BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 const features = [
   "Professional tire removal from rims",
@@ -20,8 +21,32 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "Swap Rim Tire On/Off | HT Mobile Tire",
+  title: "Swap Rim Tire On/Off",
   description: "Professional tire removal and installation service. We swap tires on and off your rims at your location.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/services/swap-rim-tire`,
+  },
+  openGraph: {
+    title: "Swap Rim Tire On/Off | HT Mobile Tire",
+    description: "Professional tire removal and installation service. We swap tires on and off your rims at your location.",
+    url: `${CANONICAL_SITE_URL}/services/swap-rim-tire`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/Swap_Tire_rim_ON_OFF.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Tire Seasonal Rim Swap Service",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Swap Rim Tire On/Off | HT Mobile Tire",
+    description: "Professional tire removal and installation service. We swap tires on and off your rims at your location.",
+    images: [`${CANONICAL_SITE_URL}/images/Swap_Tire_rim_ON_OFF.webp`],
+  },
 };
 
 export default function SwapRimTirePage() {

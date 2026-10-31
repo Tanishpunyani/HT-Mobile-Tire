@@ -7,6 +7,7 @@ import PricingTable from "../components/PricingTable";
 import FAQ from "../components/FAQ";
 import ContactCTA from "../components/ContactCTA";
 import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 const services = [
   {
@@ -50,6 +51,32 @@ export const metadata: Metadata = {
   title: "Professional Mobile Tire Services",
   description:
     "Explore our complete range of mobile tire services: new & used tire installation, seasonal rim swap, laser wheel balancing, emergency puncture repair, and commercial fleet maintenance.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/services`,
+  },
+  openGraph: {
+    title: "Professional Mobile Tire Services | HT Mobile Tire",
+    description:
+      "Explore our complete range of mobile tire services: new & used tire installation, seasonal rim swap, laser wheel balancing, emergency puncture repair, and commercial fleet maintenance.",
+    url: `${CANONICAL_SITE_URL}/services`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Tire Services Overview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Professional Mobile Tire Services | HT Mobile Tire",
+    description:
+      "Explore our complete range of mobile tire services: new & used tire installation, seasonal rim swap, laser wheel balancing, emergency puncture repair, and commercial fleet maintenance.",
+    images: [`${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`],
+  },
 };
 
 export default function ServicesPage() {

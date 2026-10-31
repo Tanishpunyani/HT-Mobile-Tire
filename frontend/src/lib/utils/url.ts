@@ -9,6 +9,35 @@
 export const DEFAULT_PRODUCTION_URL = "https://ht-mobile-tire.vercel.app";
 
 /**
+ * Official canonical apex domain for HT Mobile Tire SEO, sitemaps, Open Graph, and metadata.
+ */
+export const CANONICAL_SITE_URL = "https://htmobiletire.com";
+
+/**
+ * Resolves the confirmed public canonical site URL for SEO.
+ */
+export function getCanonicalSiteUrl(): string {
+  return CANONICAL_SITE_URL;
+}
+
+/**
+ * Builds an absolute canonical URL on the official canonical domain (https://htmobiletire.com).
+ * Preserves query strings, handles leading slashes cleanly, and avoids double-slashes.
+ */
+export function buildCanonicalSiteUrl(pathAndQuery: string): string {
+  const cleanPath = (pathAndQuery || "").trim();
+  if (!cleanPath || cleanPath === "/") {
+    return CANONICAL_SITE_URL;
+  }
+  if (/^https?:\/\//i.test(cleanPath)) {
+    const normalized = normalizeBaseUrl(cleanPath);
+    if (normalized) return normalized;
+  }
+  const formattedPath = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
+  return `${CANONICAL_SITE_URL}${formattedPath}`;
+}
+
+/**
  * Validates and normalizes an application base URL string.
  *
  * Rules:
@@ -63,6 +92,9 @@ export function getCanonicalBaseUrl(customCandidate?: string | null): string {
   const envAppUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (envAppUrl) {
     const normalized = normalizeBaseUrl(envAppUrl);
+    if (normalized === "https://www.htmobiletire.com") {
+      return CANONICAL_SITE_URL;
+    }
     if (normalized) return normalized;
   }
 

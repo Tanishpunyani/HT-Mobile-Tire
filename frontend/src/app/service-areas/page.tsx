@@ -13,12 +13,34 @@ import {
 import Container from "@/app/components/Container";
 import { getAllCities } from "@/lib/cities";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 export const metadata: Metadata = {
-  title: "Service Areas | HT Mobile Tire",
+  title: "Service Areas",
   description: "Explore our mobile tire service coverage areas across Brampton, Toronto, Mississauga, Etobicoke, North York, Vaughan, Woodbridge, Milton, and Georgetown.",
   alternates: {
-    canonical: "https://mobiletire.clinic/service-areas",
+    canonical: `${CANONICAL_SITE_URL}/service-areas`,
+  },
+  openGraph: {
+    title: "Service Areas | HT Mobile Tire",
+    description: "Explore our mobile tire service coverage areas across Brampton, Toronto, Mississauga, Etobicoke, North York, Vaughan, Woodbridge, Milton, and Georgetown.",
+    url: `${CANONICAL_SITE_URL}/service-areas`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Tire Ontario Service Coverage Areas",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Service Areas | HT Mobile Tire",
+    description: "Explore our mobile tire service coverage areas across Brampton, Toronto, Mississauga, Etobicoke, North York, Vaughan, Woodbridge, Milton, and Georgetown.",
+    images: [`${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`],
   },
 };
 

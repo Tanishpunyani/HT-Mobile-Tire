@@ -18,6 +18,7 @@ import Container from "@/app/components/Container";
 import Testimonials from "@/app/components/Testimonials";
 import { getAllCities, getCityBySlug, getAllCitySlugs } from "@/lib/cities";
 import { BUSINESS_PHONE_RAW, BUSINESS_PHONE_DISPLAY } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 interface CityPageProps {
   params: Promise<{
@@ -36,14 +37,14 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
 
   if (!city) {
     return {
-      title: "Service Area Not Found | HT Mobile Tire",
+      title: "Service Area Not Found",
       description: "Mobile tire repair and installation at your location.",
     };
   }
 
-  const title = `${city.headline} | HT Mobile Tire`;
+  const title = city.headline;
   const description = city.metaDescription;
-  const canonicalUrl = `https://mobiletire.clinic/service-area/${city.slug}`;
+  const canonicalUrl = `${CANONICAL_SITE_URL}/service-area/${city.slug}`;
 
   return {
     title,
@@ -52,7 +53,7 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
       canonical: canonicalUrl,
     },
     openGraph: {
-      title,
+      title: `${city.headline} | HT Mobile Tire`,
       description,
       url: canonicalUrl,
       siteName: "HT Mobile Tire",
@@ -60,7 +61,7 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
       type: "website",
       images: [
         {
-          url: "/images/hero-mobile-tire-clinic.webp",
+          url: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
           width: 1200,
           height: 630,
           alt: `HT Mobile Tire servicing ${city.name}, ON`,
@@ -69,9 +70,9 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: `${city.headline} | HT Mobile Tire`,
       description,
-      images: ["/images/hero-mobile-tire-clinic.webp"],
+      images: [`${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`],
     },
   };
 }
@@ -126,9 +127,9 @@ export default async function CityLandingPage({ params }: CityPageProps) {
     "@context": "https://schema.org",
     "@type": "AutoRepair",
     name: `HT Mobile Tire - ${city.name}`,
-    image: "https://mobiletire.clinic/images/hero-mobile-tire-clinic.webp",
-    "@id": `https://mobiletire.clinic/service-area/${city.slug}`,
-    url: `https://mobiletire.clinic/service-area/${city.slug}`,
+    image: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
+    "@id": `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
+    url: `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
     telephone: BUSINESS_PHONE_RAW,
     priceRange: "$$",
     description: city.metaDescription,

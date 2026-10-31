@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Container from "../components/Container";
 import SectionHeading from "../components/SectionHeading";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 const values = [
   {
@@ -41,9 +42,35 @@ const process = [
 ];
 
 export const metadata: Metadata = {
-  title: "About Us | HT Mobile Tire",
+  title: "About Us",
   description:
     "Learn about HT Mobile Tire — professional mobile tire services brought directly to your location for your convenience.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/about`,
+  },
+  openGraph: {
+    title: "About Us | HT Mobile Tire",
+    description:
+      "Learn about HT Mobile Tire — professional mobile tire services brought directly to your location for your convenience.",
+    url: `${CANONICAL_SITE_URL}/about`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Tire Service Van",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Us | HT Mobile Tire",
+    description:
+      "Learn about HT Mobile Tire — professional mobile tire services brought directly to your location for your convenience.",
+    images: [`${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`],
+  },
 };
 
 export default function AboutPage() {

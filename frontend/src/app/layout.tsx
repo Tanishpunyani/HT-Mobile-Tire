@@ -12,9 +12,10 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
 });
 
-import { getCanonicalBaseUrl } from "@/lib/utils/url";
+import { getCanonicalBaseUrl, CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 const baseUrl = getCanonicalBaseUrl();
+const siteUrl = CANONICAL_SITE_URL;
 const businessPhone = process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+16479956665";
 
 export const metadata: Metadata = {
@@ -36,7 +37,10 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "HT Mobile Tire" }],
   alternates: {
-    canonical: baseUrl,
+    canonical: siteUrl,
+  },
+  verification: {
+    google: "erZAKKd8QpcdZMSBJTkfiVK_TRmCO7U-DheitzwkNEQ",
   },
   icons: {
     icon: [
@@ -54,10 +58,10 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_CA",
     siteName: "HT Mobile Tire",
-    url: baseUrl,
+    url: siteUrl,
     images: [
       {
-        url: `${baseUrl}/images/hero-mobile-tire-clinic.webp`,
+        url: `${siteUrl}/images/hero-mobile-tire-clinic.webp`,
         width: 1200,
         height: 630,
         alt: "HT Mobile Tire Van & Professional Service",
@@ -69,7 +73,7 @@ export const metadata: Metadata = {
     title: "HT Mobile Tire | On-Demand Mobile Tire Service",
     description:
       "Professional mobile tire service brought directly to your location. Fast, reliable, and convenient mobile tire installation & repair.",
-    images: [`${baseUrl}/images/hero-mobile-tire-clinic.webp`],
+    images: [`${siteUrl}/images/hero-mobile-tire-clinic.webp`],
   },
 };
 
@@ -77,12 +81,12 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "AutoRepair",
   name: "HT Mobile Tire",
-  image: `${baseUrl}/images/hero-mobile-tire-clinic.webp`,
+  image: `${siteUrl}/images/hero-mobile-tire-clinic.webp`,
   description:
     "Professional mobile tire services brought directly to your location. Fast, reliable, and convenient mobile tire installation, flat repair, and wheel balancing.",
   telephone: businessPhone,
   priceRange: "$$",
-  url: baseUrl,
+  url: siteUrl,
   address: {
     "@type": "PostalAddress",
     addressRegion: "ON",

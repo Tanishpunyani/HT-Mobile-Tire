@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Container from "../../components/Container";
 import { BUSINESS_PHONE_TEL } from "@/lib/constants/phone";
+import { CANONICAL_SITE_URL } from "@/lib/utils/url";
 
 const features = [
   "Professional wheel balancing",
@@ -20,8 +21,32 @@ const features = [
 ];
 
 export const metadata: Metadata = {
-  title: "Wheel Balancing | HT Mobile Tire",
+  title: "Wheel Balancing",
   description: "Improve ride quality and tire performance with professional mobile wheel balancing service.",
+  alternates: {
+    canonical: `${CANONICAL_SITE_URL}/services/wheel-balancing`,
+  },
+  openGraph: {
+    title: "Wheel Balancing | HT Mobile Tire",
+    description: "Improve ride quality and tire performance with professional mobile wheel balancing service.",
+    url: `${CANONICAL_SITE_URL}/services/wheel-balancing`,
+    type: "website",
+    siteName: "HT Mobile Tire",
+    images: [
+      {
+        url: `${CANONICAL_SITE_URL}/images/Wheel_Balancing.webp`,
+        width: 1200,
+        height: 630,
+        alt: "HT Mobile Tire Computerized Wheel Balancing",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Wheel Balancing | HT Mobile Tire",
+    description: "Improve ride quality and tire performance with professional mobile wheel balancing service.",
+    images: [`${CANONICAL_SITE_URL}/images/Wheel_Balancing.webp`],
+  },
 };
 
 export default function WheelBalancingPage() {
