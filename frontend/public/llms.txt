@@ -1,58 +1,43 @@
 # HT Mobile Tire
 
-> On-demand mobile tire service bringing professional tire mounting, balancing, puncture repairs, and seasonal changeovers directly to your driveway, workplace, or roadside across the Greater Toronto Area (GTA), Ontario.
+> Professional on-demand mobile tire service bringing tire mounting, balancing, puncture repairs, and seasonal changeovers directly to your driveway, workplace, or roadside across the Greater Toronto Area (GTA), Ontario.
 
 ## Core Information
 - Website: https://www.htmobiletire.com
 - Dispatch Phone: +1 (647) 995-6665
-- Service Hours: 24/7 emergency roadside assistance and daily scheduled on-site mobile appointments.
-- Operating Model: Fully equipped mobile tire service vans dispatched directly to the customer's vehicle location.
+- Service Availability: 24/7 emergency roadside assistance; regular on-site services scheduled by appointment.
+- Operating Model: Mobile tire service van equipped with professional mounting, balancing, and repair equipment dispatched directly to the customer's vehicle location.
+- Service Region: Greater Toronto Area (GTA), Ontario, Canada.
 
-## Primary Services
-1. New and Used Tires
-   - Quality new brand-name tires and certified inspected used tires delivered, mounted, and balanced on-site.
-   - URL: https://www.htmobiletire.com/services/new-used-tires
+## Core Services
+- [New and Used Tires](https://www.htmobiletire.com/services/new-used-tires): Quality new and used tires delivered and installed directly at your location.
+- [Swap Rim Tire On/Off](https://www.htmobiletire.com/services/swap-rim-tire): Professional seasonal tire removal and installation, swapping tires on or off rims directly at your location.
+- [Wheel Balancing](https://www.htmobiletire.com/services/wheel-balancing): Professional mobile wheel balancing to help reduce steering vibration, improve ride comfort, and support even tire performance.
+- [Flat Tire Repair](https://www.htmobiletire.com/services/flat-tire-repair): Fast and convenient mobile flat tire repair and puncture assessment brought directly to your location.
+- [Fleet Tire Service](https://www.htmobiletire.com/services/fleet-tire-service): Reliable on-site mobile tire service, replacement, and maintenance support for commercial and business fleet vehicles.
 
-2. Swap Rim Tire On/Off
-   - Seasonal tire changeover service for winter, summer, and all-season tires on or off rims.
-   - URL: https://www.htmobiletire.com/services/swap-rim-tire
-
-3. Wheel Balancing
-   - Computerized laser dynamic wheel balancing to eliminate steering vibration, improve highway smoothness, and prevent uneven tread wear.
-   - URL: https://www.htmobiletire.com/services/wheel-balancing
-
-4. Flat Tire Repair
-   - On-site puncture assessment, radial tire patching, bead leak resealing, and vulcanization for road hazards.
-   - URL: https://www.htmobiletire.com/services/flat-tire-repair
-
-5. Fleet Tire Service
-   - Turnkey scheduled mobile maintenance and emergency support for commercial delivery vans, corporate fleets, and light trucks.
-   - URL: https://www.htmobiletire.com/services/fleet-tire-service
-
-6. 24/7 Emergency Roadside Tire Assistance
-   - Rapid on-demand roadside response for blowouts, flats, and emergency spare tire installations.
-   - URL: https://www.htmobiletire.com/emergency
+## Emergency Roadside Assistance (24/7)
+- [24/7 Emergency Roadside Assistance](https://www.htmobiletire.com/emergency): Fast 24/7 on-demand roadside mobile tire assistance for flat tires, blowouts, and urgent spare tire installations across the GTA.
 
 ## Confirmed Service Areas (Ontario, Canada)
 HT Mobile Tire provides on-site mobile service across the Greater Toronto Area, including:
-- Brampton, ON: https://www.htmobiletire.com/service-area/brampton
-- Toronto, ON: https://www.htmobiletire.com/service-area/toronto
-- Mississauga, ON: https://www.htmobiletire.com/service-area/mississauga
-- Etobicoke, ON: https://www.htmobiletire.com/service-area/etobicoke
-- North York, ON: https://www.htmobiletire.com/service-area/north-york
-- Vaughan, ON: https://www.htmobiletire.com/service-area/vaughan
-- Woodbridge, ON: https://www.htmobiletire.com/service-area/woodbridge
-- Milton, ON: https://www.htmobiletire.com/service-area/milton
-- Georgetown, ON: https://www.htmobiletire.com/service-area/georgetown
-- All Service Areas: https://www.htmobiletire.com/service-areas
+- [Brampton, ON](https://www.htmobiletire.com/service-area/brampton): Mobile tire repair and on-site tire service in Brampton.
+- [Toronto, ON](https://www.htmobiletire.com/service-area/toronto): Mobile tire installation, balancing, and flat repairs in Toronto.
+- [Mississauga, ON](https://www.htmobiletire.com/service-area/mississauga): On-demand mobile tire changes and balancing in Mississauga.
+- [Etobicoke, ON](https://www.htmobiletire.com/service-area/etobicoke): Mobile tire service, swaps, and puncture repairs in Etobicoke.
+- [North York, ON](https://www.htmobiletire.com/service-area/north-york): Driveway and workplace mobile tire service in North York.
+- [Vaughan, ON](https://www.htmobiletire.com/service-area/vaughan): Mobile tire repair and seasonal tire installation in Vaughan.
+- [Woodbridge, ON](https://www.htmobiletire.com/service-area/woodbridge): Mobile tire service and tire swaps in Woodbridge.
+- [Milton, ON](https://www.htmobiletire.com/service-area/milton): On-site mobile tire installation and flat repair in Milton.
+- [Georgetown, ON](https://www.htmobiletire.com/service-area/georgetown): Professional mobile tire repair and mounting in Georgetown.
+- [All Service Areas](https://www.htmobiletire.com/service-areas): Comprehensive list of all GTA coverage areas.
 
-## Important Public Links
-- Online Appointment Booking: https://www.htmobiletire.com/booking
-- Emergency Roadside Dispatch: https://www.htmobiletire.com/emergency
-- Contact & Inquiries: https://www.htmobiletire.com/contact
-- About HT Mobile Tire: https://www.htmobiletire.com/about
-- Services Overview: https://www.htmobiletire.com/services
-- XML Sitemap: https://www.htmobiletire.com/sitemap.xml
-- Robots Policy: https://www.htmobiletire.com/robots.txt
-- Privacy Policy: https://www.htmobiletire.com/privacy
-- Terms of Service: https://www.htmobiletire.com/terms
+## Public Tools & Policies
+- [Online Booking](https://www.htmobiletire.com/booking): Schedule regular mobile tire service appointments online.
+- [Contact Dispatch](https://www.htmobiletire.com/contact): Customer inquiries, quotes, and dispatch contact details.
+- [About Us](https://www.htmobiletire.com/about): Company overview, mobile service philosophy, and technician standards.
+- [Services Overview](https://www.htmobiletire.com/services): Overview of all residential and commercial mobile tire services.
+- [XML Sitemap](https://www.htmobiletire.com/sitemap.xml): Machine-readable index of public website pages.
+- [Robots Policy](https://www.htmobiletire.com/robots.txt): Web crawler directives and sitemap reference.
+- [Privacy Policy](https://www.htmobiletire.com/privacy): Customer data privacy and protection disclosures.
+- [Terms of Service](https://www.htmobiletire.com/terms): Service terms, conditions, and dispatch policies.
