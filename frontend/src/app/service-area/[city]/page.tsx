@@ -122,41 +122,56 @@ export default async function CityLandingPage({ params }: CityPageProps) {
     },
   ];
 
-  // LocalBusiness / AutoRepair JSON-LD Structured Schema
+  const geoType = [
+    "etobicoke",
+    "north-york",
+    "woodbridge",
+    "georgetown",
+  ].includes(city.slug)
+    ? "AdministrativeArea"
+    : "City";
+
+  // Schema.org Service & BreadcrumbList JSON-LD
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "AutoRepair",
-    name: `HT Mobile Tire - ${city.name}`,
-    image: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
-    "@id": `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
-    url: `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
-    telephone: BUSINESS_PHONE_RAW,
-    priceRange: "$$",
-    description: city.metaDescription,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: city.name,
-      addressRegion: city.state,
-      addressCountry: "CA",
-    },
-    areaServed: {
-      "@type": "City",
-      name: `${city.name}, ${city.state}`,
-    },
-    openingHoursSpecification: [
+    "@graph": [
       {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: CANONICAL_SITE_URL,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Service Areas",
+            item: `${CANONICAL_SITE_URL}/service-areas`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: `${city.name}, ON`,
+            item: `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
+          },
         ],
-        opens: "00:00",
-        closes: "23:59",
+      },
+      {
+        "@type": "Service",
+        "@id": `${CANONICAL_SITE_URL}/service-area/${city.slug}#service`,
+        name: `Mobile Tire Service in ${city.name}, ON`,
+        description: city.metaDescription,
+        url: `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
+        provider: {
+          "@id": `${CANONICAL_SITE_URL}/#business`,
+        },
+        areaServed: {
+          "@type": geoType,
+          name: `${city.name}, ${city.state}`,
+        },
+        serviceType: "Mobile Tire Repair and Installation",
       },
     ],
   };

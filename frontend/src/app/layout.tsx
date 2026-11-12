@@ -79,29 +79,25 @@ export const metadata: Metadata = {
 
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "AutoRepair",
+  "@type": "Organization",
+  "@id": `${siteUrl}/#business`,
   name: "HT Mobile Tire",
-  image: `${siteUrl}/images/hero-mobile-tire-clinic.webp`,
+  url: siteUrl,
+  telephone: businessPhone,
   description:
     "Professional mobile tire services brought directly to your location. Fast, reliable, and convenient mobile tire installation, flat repair, and wheel balancing.",
-  telephone: businessPhone,
-  priceRange: "$$",
-  url: siteUrl,
-  address: {
-    "@type": "PostalAddress",
-    addressRegion: "ON",
-    addressCountry: "CA",
-  },
+  logo: `${siteUrl}/images/logo.png`,
+  image: `${siteUrl}/images/hero-mobile-tire-clinic.webp`,
   areaServed: [
     { "@type": "City", name: "Brampton, ON" },
     { "@type": "City", name: "Toronto, ON" },
     { "@type": "City", name: "Mississauga, ON" },
-    { "@type": "City", name: "Etobicoke, ON" },
-    { "@type": "City", name: "North York, ON" },
+    { "@type": "AdministrativeArea", name: "Etobicoke, ON" },
+    { "@type": "AdministrativeArea", name: "North York, ON" },
     { "@type": "City", name: "Vaughan, ON" },
-    { "@type": "City", name: "Woodbridge, ON" },
+    { "@type": "AdministrativeArea", name: "Woodbridge, ON" },
     { "@type": "City", name: "Milton, ON" },
-    { "@type": "City", name: "Georgetown, ON" },
+    { "@type": "AdministrativeArea", name: "Georgetown, ON" },
   ],
   hasOfferCatalog: {
     "@type": "OfferCatalog",
@@ -111,14 +107,8 @@ const jsonLd = {
         "@type": "Offer",
         itemOffered: {
           "@type": "Service",
-          name: "Flat Tire Repair",
-        },
-      },
-      {
-        "@type": "Offer",
-        itemOffered: {
-          "@type": "Service",
           name: "New and Used Tires",
+          url: `${siteUrl}/services/new-used-tires`,
         },
       },
       {
@@ -126,6 +116,7 @@ const jsonLd = {
         itemOffered: {
           "@type": "Service",
           name: "Swap Rim Tire On/Off",
+          url: `${siteUrl}/services/swap-rim-tire`,
         },
       },
       {
@@ -133,6 +124,23 @@ const jsonLd = {
         itemOffered: {
           "@type": "Service",
           name: "Wheel Balancing",
+          url: `${siteUrl}/services/wheel-balancing`,
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Flat Tire Repair",
+          url: `${siteUrl}/services/flat-tire-repair`,
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Fleet Tire Service",
+          url: `${siteUrl}/services/fleet-tire-service`,
         },
       },
       {
@@ -140,26 +148,11 @@ const jsonLd = {
         itemOffered: {
           "@type": "Service",
           name: "24/7 Emergency Roadside Assistance",
+          url: `${siteUrl}/emergency`,
         },
       },
     ],
   },
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      opens: "00:00",
-      closes: "23:59",
-    },
-  ],
 };
 
 export default function RootLayout({

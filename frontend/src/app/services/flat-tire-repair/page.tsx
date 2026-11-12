@@ -50,9 +50,54 @@ export const metadata: Metadata = {
   },
 };
 
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: CANONICAL_SITE_URL,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Services",
+          item: `${CANONICAL_SITE_URL}/services`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Flat Tire Repair",
+          item: `${CANONICAL_SITE_URL}/services/flat-tire-repair`,
+        },
+      ],
+    },
+    {
+      "@type": "Service",
+      "@id": `${CANONICAL_SITE_URL}/services/flat-tire-repair#service`,
+      name: "Flat Tire Repair",
+      description:
+        "Fast and convenient mobile flat tire repair service. We come to your location to get you safely back on the road.",
+      url: `${CANONICAL_SITE_URL}/services/flat-tire-repair`,
+      provider: {
+        "@id": `${CANONICAL_SITE_URL}/#business`,
+      },
+      serviceType: "Mobile Flat Tire Repair",
+    },
+  ],
+};
+
 export default function FlatTireRepairPage() {
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
       {/* Hero */}
       <section className="bg-secondary py-20 sm:py-24">
         <Container>

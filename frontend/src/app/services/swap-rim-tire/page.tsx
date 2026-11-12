@@ -49,9 +49,54 @@ export const metadata: Metadata = {
   },
 };
 
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: CANONICAL_SITE_URL,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Services",
+          item: `${CANONICAL_SITE_URL}/services`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Swap Rim Tire On/Off",
+          item: `${CANONICAL_SITE_URL}/services/swap-rim-tire`,
+        },
+      ],
+    },
+    {
+      "@type": "Service",
+      "@id": `${CANONICAL_SITE_URL}/services/swap-rim-tire#service`,
+      name: "Swap Rim Tire On/Off",
+      description:
+        "Professional tire removal and installation service. We swap tires on and off your rims at your location.",
+      url: `${CANONICAL_SITE_URL}/services/swap-rim-tire`,
+      provider: {
+        "@id": `${CANONICAL_SITE_URL}/#business`,
+      },
+      serviceType: "Seasonal Rim and Tire Swap",
+    },
+  ],
+};
+
 export default function SwapRimTirePage() {
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
       {/* Hero */}
       <section className="bg-secondary py-20 sm:py-24">
         <Container>

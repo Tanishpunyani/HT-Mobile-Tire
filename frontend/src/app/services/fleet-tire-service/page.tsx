@@ -50,9 +50,54 @@ export const metadata: Metadata = {
   },
 };
 
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: CANONICAL_SITE_URL,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Services",
+          item: `${CANONICAL_SITE_URL}/services`,
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Fleet Tire Service",
+          item: `${CANONICAL_SITE_URL}/services/fleet-tire-service`,
+        },
+      ],
+    },
+    {
+      "@type": "Service",
+      "@id": `${CANONICAL_SITE_URL}/services/fleet-tire-service#service`,
+      name: "Fleet Tire Service",
+      description:
+        "Reliable mobile tire service for businesses. Keep your fleet vehicles moving with convenient on-site tire care.",
+      url: `${CANONICAL_SITE_URL}/services/fleet-tire-service`,
+      provider: {
+        "@id": `${CANONICAL_SITE_URL}/#business`,
+      },
+      serviceType: "Commercial Fleet Tire Service",
+    },
+  ],
+};
+
 export default function FleetTireServicePage() {
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
       {/* Hero */}
       <section className="bg-secondary py-20 sm:py-24">
         <Container>
