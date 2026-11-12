@@ -7,91 +7,95 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const canonicalDomain = CANONICAL_SITE_URL || baseUrl;
   const citySlugs = getAllCitySlugs();
 
-  // Stable, credible content release timestamp for active service & landing pages
-  const contentLastModified = new Date("2026-10-16T00:00:00.000Z");
+  // Evidence-based static release timestamp derived from repository Git commit history
+  // and aligned strictly with Google Search Central guidelines:
+  // - Commits 2117cf4 and a685a24 (October 31, 2026) updated canonical domain URLs and
+  //   Schema.org AutoRepair JSON-LD structured data in root layout.tsx and city pages.
+  // - Google Search Central classifies structured data updates as significant page changes.
+  // - For legal compliance pages (/privacy, /terms), lastModified is omitted because their displayed
+  //   policy date is "August 2026" and minor wording adjustments do not constitute reliable revision dates.
+  const seoReleaseLastModified = new Date("2026-10-31T00:00:00.000Z");
 
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: canonicalDomain,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "weekly",
       priority: 1,
     },
     {
       url: `${canonicalDomain}/services`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: `${canonicalDomain}/service-areas`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: `${canonicalDomain}/services/new-used-tires`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${canonicalDomain}/services/swap-rim-tire`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${canonicalDomain}/services/wheel-balancing`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${canonicalDomain}/services/flat-tire-repair`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${canonicalDomain}/services/fleet-tire-service`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${canonicalDomain}/about`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${canonicalDomain}/contact`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${canonicalDomain}/booking`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${canonicalDomain}/emergency`,
-      lastModified: contentLastModified,
+      lastModified: seoReleaseLastModified,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: `${canonicalDomain}/privacy`,
-      lastModified: new Date("2026-01-01T00:00:00.000Z"),
       changeFrequency: "yearly",
       priority: 0.5,
     },
     {
       url: `${canonicalDomain}/terms`,
-      lastModified: new Date("2026-01-01T00:00:00.000Z"),
       changeFrequency: "yearly",
       priority: 0.5,
     },
@@ -100,7 +104,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Dynamically map all local city SEO landing pages
   const cityPages: MetadataRoute.Sitemap = citySlugs.map((slug) => ({
     url: `${canonicalDomain}/service-area/${slug}`,
-    lastModified: contentLastModified,
+    lastModified: seoReleaseLastModified,
     changeFrequency: "weekly",
     priority: 0.85,
   }));
