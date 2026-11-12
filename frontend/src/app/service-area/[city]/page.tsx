@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: CityPageProps): Promise<Metad
           url: `${CANONICAL_SITE_URL}/images/hero-mobile-tire-clinic.webp`,
           width: 1200,
           height: 630,
-          alt: `HT Mobile Tire servicing ${city.name}, ON`,
+          alt: "HT Mobile Tire mobile service van",
         },
       ],
     },
@@ -88,39 +88,103 @@ export default async function CityLandingPage({ params }: CityPageProps) {
   const allCities = getAllCities();
   const otherCities = allCities.filter((c) => c.slug !== city.slug);
 
-  const localServices = [
-    {
-      name: "Flat Tire Repair & Puncture Patch",
-      price: "Custom Quote",
-      description: `Full radial patch and bead leak repair at your ${city.name} location.`,
-      slug: "flat-tire-repair",
-    },
-    {
-      name: "Swap Rim Tire & Wheel Balancing",
-      price: "Custom Quote",
-      description: `Seasonal tire and rim mounting with computerized wheel balancing on-site.`,
-      slug: "swap-rim-tire",
-    },
-    {
-      name: "New and Quality Used Tires",
-      price: "Custom Quote",
-      description: `Top brand new and inspected pre-owned tires delivered & installed.`,
-      slug: "new-used-tires",
-    },
-    {
-      name: "Computerized Wheel Balancing",
-      price: "Custom Quote",
-      description: `Eliminate highway steering wheel vibration with mobile computerized balancing in ${city.name}.`,
-      slug: "wheel-balancing",
-    },
-    {
-      name: "Emergency Roadside Tire Service",
-      price: "On-Site Assessment",
-      description: `Fast roadside help for punctures, damaged rims, and spare tire installations.`,
-      slug: "emergency",
-      isEmergency: true,
-    },
-  ];
+  const isBrampton = city.slug === "brampton";
+
+  interface LocalServiceItem {
+    name: string;
+    price: string;
+    description: string;
+    slug: string;
+    infoHref?: string;
+    infoText?: string;
+    isEmergency?: boolean;
+  }
+
+  const localServices: LocalServiceItem[] = isBrampton
+    ? [
+        {
+          name: "Flat Tire Repair",
+          price: "Custom Quote",
+          description: `Mobile puncture repair, bead sealing, and pressure calibration brought to your vehicle in Brampton.`,
+          slug: "flat-tire-repair",
+          infoHref: "/services/flat-tire-repair",
+          infoText: "Flat tire repair details",
+        },
+        {
+          name: "Swap Rim Tire On/Off",
+          price: "Custom Quote",
+          description: `Seasonal tire and wheel changeover service performed at your driveway or workplace in Brampton.`,
+          slug: "swap-rim-tire",
+          infoHref: "/services/swap-rim-tire",
+          infoText: "Seasonal swap details",
+        },
+        {
+          name: "Wheel Balancing",
+          price: "Custom Quote",
+          description: `Computerized wheel balancing to eliminate highway vibration and promote even tire wear.`,
+          slug: "wheel-balancing",
+          infoHref: "/services/wheel-balancing",
+          infoText: "Wheel balancing details",
+        },
+        {
+          name: "New and Used Tires",
+          price: "Custom Quote",
+          description: `Quality new tires and inspected pre-owned tires supplied, delivered, and installed at your location.`,
+          slug: "new-used-tires",
+          infoHref: "/services/new-used-tires",
+          infoText: "New & used tire options",
+        },
+        {
+          name: "Fleet Tire Service",
+          price: "Custom Quote",
+          description: `Scheduled mobile tire maintenance and repair for commercial vans, service vehicles, and business fleets.`,
+          slug: "fleet-tire-service",
+          infoHref: "/services/fleet-tire-service",
+          infoText: "Fleet service details",
+        },
+        {
+          name: "Emergency Roadside Tire Service",
+          price: "On-Site Assessment",
+          description: `Urgent roadside assistance for tire punctures, blowouts, and spare tire installation across Brampton.`,
+          slug: "emergency",
+          infoHref: "/emergency",
+          infoText: "Emergency roadside details",
+          isEmergency: true,
+        },
+      ]
+    : [
+        {
+          name: "Flat Tire Repair & Puncture Patch",
+          price: "Custom Quote",
+          description: `Full radial patch and bead leak repair at your ${city.name} location.`,
+          slug: "flat-tire-repair",
+        },
+        {
+          name: "Swap Rim Tire & Wheel Balancing",
+          price: "Custom Quote",
+          description: `Seasonal tire and rim mounting with computerized wheel balancing on-site.`,
+          slug: "swap-rim-tire",
+        },
+        {
+          name: "New and Quality Used Tires",
+          price: "Custom Quote",
+          description: `Top brand new and inspected pre-owned tires delivered & installed.`,
+          slug: "new-used-tires",
+        },
+        {
+          name: "Computerized Wheel Balancing",
+          price: "Custom Quote",
+          description: `Eliminate highway steering wheel vibration with mobile computerized balancing in ${city.name}.`,
+          slug: "wheel-balancing",
+        },
+        {
+          name: "Emergency Roadside Tire Service",
+          price: "On-Site Assessment",
+          description: `Fast roadside help for punctures, damaged rims, and spare tire installations.`,
+          slug: "emergency",
+          isEmergency: true,
+        },
+      ];
 
   const geoType = [
     "etobicoke",
@@ -162,7 +226,9 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         "@type": "Service",
         "@id": `${CANONICAL_SITE_URL}/service-area/${city.slug}#service`,
         name: `Mobile Tire Service in ${city.name}, ON`,
-        description: city.metaDescription,
+        description: isBrampton
+          ? "Professional mobile tire services in Brampton available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7."
+          : city.metaDescription,
         url: `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
         provider: {
           "@id": `${CANONICAL_SITE_URL}/#business`,
@@ -379,7 +445,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   </p>
                 </div>
 
-                <div className="mt-6 border-t border-border pt-4">
+                <div className="mt-6 border-t border-border pt-4 space-y-3">
                   <Link
                     href={
                       srv.isEmergency
@@ -391,12 +457,139 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                     <span>Book in {city.name}</span>
                     <ArrowRight size={14} />
                   </Link>
+
+                  {srv.infoHref && (
+                    <div className="text-center">
+                      <Link
+                        href={srv.infoHref}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                      >
+                        <span>{srv.infoText || "Learn more"}</span>
+                        <ChevronRight size={13} />
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </Container>
       </section>
+
+      {/* Brampton-Specific Content Sections */}
+      {isBrampton && (
+        <>
+          {/* Section 5: Mobile Tire Service Across Brampton */}
+          <section className="border-b border-border bg-white py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Local Coverage &amp; Service Model
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                  Mobile Tire Service Across Brampton
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  HT Mobile Tire operates as an on-demand mobile tire clinic delivering professional tire repair, mounting, seasonal changeovers, and balancing directly to your parked vehicle in Brampton. Instead of hauling tires in your car or waiting at a tire shop, our technician travels to your driveway, workplace parking lot, or roadside location with all necessary equipment on board.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  Our mobile tire service vans cover residential neighborhoods across Brampton including Bramalea, Downtown Brampton, Mount Pleasant, Springdale, Castlemore, Heart Lake, Credit Valley, Fletcher&apos;s Meadow, and Snelgrove. We also assist drivers along key arterial routes and transportation corridors such as Highway 410, Highway 407 ETR, Queen Street, Bovaird Drive, and Steeles Avenue.
+                </p>
+              </div>
+            </Container>
+          </section>
+
+          {/* Section 6: Commercial Fleet Tire Support */}
+          <section className="border-b border-border bg-background-light py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-center">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                      Commercial &amp; Business Fleets
+                    </p>
+                    <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                      Commercial Fleet Tire Services in Brampton
+                    </h2>
+                    <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                      Brampton is one of Ontario&apos;s primary logistics and commercial corridors. For local delivery businesses, trades, service contractors, and companies operating commercial vans and business vehicles, vehicle downtime directly impacts operations. HT Mobile Tire provides scheduled on-site fleet tire maintenance, seasonal swaps, and tire servicing directly at your commercial location or parking facility.
+                    </p>
+                    <p className="mt-3 text-base leading-relaxed text-text-secondary">
+                      Whether your fleet operates along Steeles Avenue, the Bramalea Industrial district, or surrounding commercial hubs, you can enquire about scheduled mobile service to maintain your vehicles without sending drivers to off-site tire facilities.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+                    <h3 className="text-lg font-bold text-foreground">
+                      Need Fleet Support?
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Enquire about scheduled mobile tire maintenance for your commercial vehicles in Brampton.
+                    </p>
+                    <Link
+                      href="/services/fleet-tire-service"
+                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-xs font-bold text-white transition hover:bg-primary-hover"
+                    >
+                      <span>Fleet Service Details</span>
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+
+          {/* Section 7: Driveway & Service Preparation */}
+          <section className="border-b border-border bg-white py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Service Preparation Guidelines
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                  Preparing for Your Mobile Tire Service Visit
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  To ensure a safe and efficient service appointment at your Brampton home or workplace, please keep these general preparation guidelines in mind:
+                </p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Provide Exact Location
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Confirm your vehicle&apos;s exact address and parking position (e.g., driveway side, workplace visitor lot) when submitting your booking.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Ensure Vehicle Accessibility
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Park the vehicle on a reasonably level, accessible surface where the technician can safely position equipment around the wheels.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Note Access Restrictions
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Notify us in advance if your vehicle is inside a gated property, commercial compound, or area with specific visitor parking rules.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Safety Communication
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Follow any safety guidance communicated by our technician upon arrival, especially during roadside or high-traffic area services.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+        </>
+      )}
 
       {/* City Service Highlights & Map */}
       <section className="bg-white py-20 sm:py-24 border-y border-border">
