@@ -90,6 +90,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
 
   const isBrampton = city.slug === "brampton";
   const isMississauga = city.slug === "mississauga";
+  const isVaughan = city.slug === "vaughan";
 
   interface LocalServiceItem {
     name: string;
@@ -205,6 +206,58 @@ export default async function CityLandingPage({ params }: CityPageProps) {
           isEmergency: true,
         },
       ]
+    : isVaughan
+    ? [
+        {
+          name: "Flat Tire Repair",
+          price: "Custom Quote",
+          description: `Mobile flat tire repair service for repairable punctures, provided directly at your vehicle's location in Vaughan.`,
+          slug: "flat-tire-repair",
+          infoHref: "/services/flat-tire-repair",
+          infoText: "Flat tire repair details",
+        },
+        {
+          name: "Swap Rim Tire On/Off",
+          price: "Custom Quote",
+          description: `Seasonal tire and wheel changeover service at your residential driveway or workplace in Vaughan by scheduled appointment.`,
+          slug: "swap-rim-tire",
+          infoHref: "/services/swap-rim-tire",
+          infoText: "Seasonal swap details",
+        },
+        {
+          name: "Wheel Balancing",
+          price: "Custom Quote",
+          description: `Mobile wheel balancing service provided directly at your vehicle's location in Vaughan.`,
+          slug: "wheel-balancing",
+          infoHref: "/services/wheel-balancing",
+          infoText: "Wheel balancing details",
+        },
+        {
+          name: "New and Used Tires",
+          price: "Custom Quote",
+          description: `New and used tire options supplied, delivered, and installed at your location in Vaughan by scheduled appointment.`,
+          slug: "new-used-tires",
+          infoHref: "/services/new-used-tires",
+          infoText: "New & used tire options",
+        },
+        {
+          name: "Fleet Tire Service",
+          price: "Custom Quote",
+          description: `Scheduled mobile fleet tire maintenance and servicing in Vaughan arranged by appointment.`,
+          slug: "fleet-tire-service",
+          infoHref: "/services/fleet-tire-service",
+          infoText: "Fleet service details",
+        },
+        {
+          name: "Emergency Roadside Tire Service",
+          price: "On-Site Assessment",
+          description: `24/7 emergency roadside assistance for urgent tire problems and spare tire installation in Vaughan.`,
+          slug: "emergency",
+          infoHref: "/emergency",
+          infoText: "Emergency roadside details",
+          isEmergency: true,
+        },
+      ]
     : [
         {
           name: "Flat Tire Repair & Puncture Patch",
@@ -283,6 +336,8 @@ export default async function CityLandingPage({ params }: CityPageProps) {
           ? "Professional mobile tire services in Brampton available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7."
           : isMississauga
           ? "Professional mobile tire services in Mississauga available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7."
+          : isVaughan
+          ? "Professional mobile tire services in Vaughan available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7."
           : city.metaDescription,
         url: `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
         provider: {
@@ -326,7 +381,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               {/* Response Time Pill */}
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-4 py-1.5 text-xs font-bold text-primary backdrop-blur-md">
                 <Clock3 size={14} />
-                <span>⚡ {isMississauga ? "Mississauga Regular Services" : `${city.name} Mobile Service`}: <strong>{city.averageResponseTime}</strong></span>
+                <span>⚡ {isMississauga || isVaughan ? `${city.name} Regular Services` : `${city.name} Mobile Service`}: <strong>{city.averageResponseTime}</strong></span>
               </div>
 
               <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.1]">
@@ -391,7 +446,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Clock3 size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>{isMississauga ? "Availability" : "Arrival"}: <strong>{city.averageResponseTime}</strong></span>
+                    <span>{isMississauga || isVaughan ? "Availability" : "Arrival"}: <strong>{city.averageResponseTime}</strong></span>
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Disc size={16} className="mt-0.5 shrink-0 text-primary" />
@@ -423,11 +478,13 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
                 {isMississauga
                   ? "Mississauga Neighbourhoods and Service Area"
+                  : isVaughan
+                  ? "Vaughan Communities and Service Area"
                   : `We Serve ${city.name} and Surrounding Areas`}
               </h2>
               <p className="mt-3 text-sm text-text-secondary">
-                {isMississauga
-                  ? "Our mobile tire services in Mississauga are arranged by scheduled appointment. For urgent roadside tire situations, emergency assistance is available 24/7."
+                {isMississauga || isVaughan
+                  ? `Our mobile tire services in ${city.name} are arranged by scheduled appointment. For urgent roadside tire situations, emergency assistance is available 24/7.`
                   : `Our mobile tire service vans operate across ${city.name} for scheduled and on-demand service.`}
               </p>
 
@@ -765,6 +822,121 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         </>
       )}
 
+      {/* Vaughan-Specific Content Sections */}
+      {isVaughan && (
+        <>
+          {/* Section: Mobile Tire Service Across Vaughan */}
+          <section className="border-b border-border bg-white py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Local Coverage &amp; Service Model
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                  Mobile Tire Service Across Vaughan
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  HT Mobile Tire operates as a mobile tire service delivering tire repair, mounting, seasonal changeovers, and wheel balancing directly to your parked vehicle in Vaughan. Instead of driving to a retail tire garage or waiting in shop line-ups, our technician travels directly to your residential driveway, workplace parking area, or agreed service location. Regular mobile tire services are arranged by scheduled appointment, with emergency roadside tire assistance available 24/7.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  Our mobile tire service provides coverage across Vaughan&apos;s diverse communities, including Maple, Concord, Thornhill, Kleinburg, the Vaughan Metropolitan Centre (VMC), Vellore Village, Sonoma Heights, Patterson, Islington Woods, and Elder Mills. We also assist drivers along major regional arterials and highway corridors, including Highway 400, Highway 407 ETR, Highway 7, Highway 27, Highway 50, Major Mackenzie Drive, Rutherford Road, Langstaff Road, and Steeles Avenue. For drivers specifically located in Woodbridge, HT Mobile Tire also maintains a dedicated <Link href="/service-area/woodbridge" className="text-primary font-semibold hover:underline">Woodbridge mobile tire service</Link> page.
+                </p>
+              </div>
+            </Container>
+          </section>
+
+          {/* Section: Commercial Fleet Tire Support */}
+          <section className="border-b border-border bg-background-light py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-center">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                      Commercial &amp; Business Fleets
+                    </p>
+                    <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                      Commercial Fleet Tire Services in Vaughan
+                    </h2>
+                    <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                      Vaughan is one of Ontario&apos;s primary economic engines and goods-movement hubs. With extensive industrial and logistics operations centered around the Concord employment area, the CN MacMillan Yard vicinity, and the Highway 400 commercial corridor, unexpected vehicle downtime disrupts business schedules. HT Mobile Tire provides scheduled on-site mobile fleet tire maintenance, seasonal changeovers, and tire servicing arranged by appointment directly at your commercial yard, depot, or business parking facility.
+                    </p>
+                    <p className="mt-3 text-base leading-relaxed text-text-secondary">
+                      Whether your company operates in Concord, along the Highway 400 business corridor, or within the Vaughan Metropolitan Centre commercial area, businesses can enquire about scheduled mobile fleet tire services to maintain commercial vehicles on-site.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+                    <h3 className="text-lg font-bold text-foreground">
+                      Need Fleet Support?
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Enquire about scheduled mobile fleet tire services for your business in Vaughan.
+                    </p>
+                    <Link
+                      href="/services/fleet-tire-service"
+                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-xs font-bold text-white transition hover:bg-primary-hover"
+                    >
+                      <span>Fleet Service Details</span>
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+
+          {/* Section: Driveway & Service Preparation */}
+          <section className="border-b border-border bg-white py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Service Preparation Guidelines
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                  Preparing for Your Mobile Tire Service Visit
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  To ensure a safe and smooth service appointment at your Vaughan residence, workplace, or agreed service location, please keep these general booking guidelines in mind:
+                </p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Provide Vehicle Location Details
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Share your vehicle&apos;s specific parking location (such as a private driveway, workplace parking lot, or visitor parking area) when scheduling your booking so the technician can locate the vehicle smoothly upon arrival.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Parking &amp; Clearance Information
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Share your parking arrangements and any access restrictions when booking so the technician can understand the vehicle&apos;s location and position equipment safely.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Property &amp; Access Protocols
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Mention any property access considerations in advance, such as entry gates, security buzzers, managed visitor parking rules, or commercial property check-in procedures.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      On-Site Communication
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Keep your phone accessible around your scheduled appointment time so the technician can easily connect with you upon arrival or if parking directions need clarification.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+        </>
+      )}
+
       {/* City Service Highlights & Map */}
       <section className="bg-white py-20 sm:py-24 border-y border-border">
         <Container>
@@ -774,10 +946,14 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                 Why Drivers Choose Us
               </p>
               <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
-                {isMississauga ? "Serving Drivers Across Mississauga" : `Serving ${city.name} Daily`}
+                {isMississauga
+                  ? "Serving Drivers Across Mississauga"
+                  : isVaughan
+                  ? "Serving Drivers Across Vaughan"
+                  : `Serving ${city.name} Daily`}
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-                {isMississauga
+                {isMississauga || isVaughan
                   ? "Whether your vehicle is parked at home, at work, or at an agreed service location, you can arrange regular mobile tire services by appointment. Emergency roadside tire assistance is available 24/7."
                   : `Whether you are parked at home, at work, or on the road, our mobile tire units provide prompt on-site service.`}
               </p>
@@ -856,6 +1032,74 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                     </div>
                   </div>
                 </div>
+              ) : isVaughan ? (
+                <div className="mt-8 pt-6 border-t border-border space-y-4">
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-2">
+                      Local Landmarks:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {city.localLandmarks.map((landmark) => (
+                        <span
+                          key={landmark}
+                          className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                        >
+                          📍 {landmark}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-2">
+                      Major Roads &amp; Transportation Corridors:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        "Highway 400",
+                        "Highway 407 ETR",
+                        "Highway 7",
+                        "Highway 27",
+                        "Highway 50",
+                        "Major Mackenzie Drive",
+                        "Rutherford Road",
+                        "Langstaff Road",
+                        "Jane Street",
+                        "Weston Road",
+                        "Keele Street",
+                        "Bathurst Street",
+                        "Steeles Avenue",
+                      ].map((corridor) => (
+                        <span
+                          key={corridor}
+                          className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                        >
+                          🚗 {corridor}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-2">
+                      Employment &amp; Business Areas:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        "Vaughan Metropolitan Centre (VMC)",
+                        "Concord Employment Area",
+                        "Highway 400 Business Corridor",
+                        "Highway 7 Commercial Corridor",
+                        "Huntington Road Employment Area",
+                      ].map((area) => (
+                        <span
+                          key={area}
+                          className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                        >
+                          🏢 {area}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               ) : (
                 city.localLandmarks.length > 0 && (
                   <div className="mt-8 pt-6 border-t border-border">
@@ -918,7 +1162,25 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                     {faq.question}
                   </h3>
                   <p className="mt-2 text-xs sm:text-sm leading-relaxed text-text-secondary">
-                    {faq.answer}
+                    {isVaughan && faq.question.includes("communities and neighbourhoods") ? (
+                      <>
+                        Our Vaughan service area includes communities such as Maple, Concord, Thornhill, Kleinburg, Vaughan Metropolitan Centre, Vellore Village, Sonoma Heights, Patterson, Islington Woods, and surrounding areas. Woodbridge also has a{" "}
+                        <Link href="/service-area/woodbridge" className="text-primary font-semibold hover:underline">
+                          dedicated service-area page
+                        </Link>{" "}
+                        for customers looking for more localized information.
+                      </>
+                    ) : isVaughan && faq.question.includes("commercial fleet tire services") ? (
+                      <>
+                        Yes. Businesses in Vaughan can enquire about{" "}
+                        <Link href="/services/fleet-tire-service" className="text-primary font-semibold hover:underline">
+                          scheduled mobile fleet tire services
+                        </Link>
+                        . Contact HT Mobile Tire to discuss your service requirements and arrange an appointment.
+                      </>
+                    ) : (
+                      faq.answer
+                    )}
                   </p>
                 </div>
               ))}
