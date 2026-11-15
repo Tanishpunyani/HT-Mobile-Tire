@@ -95,6 +95,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
   const isMilton = city.slug === "milton";
   const isGeorgetown = city.slug === "georgetown";
   const isToronto = city.slug === "toronto";
+  const isEtobicoke = city.slug === "etobicoke";
 
   interface LocalServiceItem {
     name: string;
@@ -470,6 +471,58 @@ export default async function CityLandingPage({ params }: CityPageProps) {
           isEmergency: true,
         },
       ]
+    : isEtobicoke
+    ? [
+        {
+          name: "Flat Tire Repair",
+          price: "Custom Quote",
+          description: `Mobile flat tire repair for repairable punctures, arranged at your agreed vehicle location in Etobicoke by scheduled appointment.`,
+          slug: "flat-tire-repair",
+          infoHref: "/services/flat-tire-repair",
+          infoText: "Flat tire repair details",
+        },
+        {
+          name: "Swap Rim Tire On/Off",
+          price: "Custom Quote",
+          description: `Arrange seasonal tire and pre-mounted rim changeovers at your residential driveway or agreed parking location in Etobicoke by scheduled appointment.`,
+          slug: "swap-rim-tire",
+          infoHref: "/services/swap-rim-tire",
+          infoText: "Seasonal swap details",
+        },
+        {
+          name: "Wheel Balancing",
+          price: "Custom Quote",
+          description: `Request mobile wheel balancing at your agreed vehicle location in Etobicoke. Regular service appointments are arranged in advance.`,
+          slug: "wheel-balancing",
+          infoHref: "/services/wheel-balancing",
+          infoText: "Wheel balancing details",
+        },
+        {
+          name: "New and Used Tires",
+          price: "Custom Quote",
+          description: `Explore new and used tire options for your vehicle. Contact HT Mobile Tire to discuss tire specifications, availability, pricing, and scheduled mobile installation in Etobicoke.`,
+          slug: "new-used-tires",
+          infoHref: "/services/new-used-tires",
+          infoText: "New & used tire options",
+        },
+        {
+          name: "Fleet Tire Service",
+          price: "Custom Quote",
+          description: `Businesses with commercial fleets in Etobicoke can enquire about scheduled mobile tire services. Requests are assessed according to vehicle specifications, location, and service requirements.`,
+          slug: "fleet-tire-service",
+          infoHref: "/services/fleet-tire-service",
+          infoText: "Fleet service details",
+        },
+        {
+          name: "Emergency Roadside Tire Service",
+          price: "On-Site Assessment",
+          description: `24/7 emergency roadside tire assistance for urgent tire situations in Etobicoke. Share your exact location so the service request can be assessed for feasibility and safety.`,
+          slug: "emergency",
+          infoHref: "/emergency",
+          infoText: "Emergency roadside details",
+          isEmergency: true,
+        },
+      ]
     : [
         {
           name: "Flat Tire Repair & Puncture Patch",
@@ -558,6 +611,8 @@ export default async function CityLandingPage({ params }: CityPageProps) {
           ? "Professional mobile tire services in Georgetown available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7, subject to location and service assessment."
           : isToronto
           ? "Professional mobile tire services in Toronto available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7, subject to location and service assessment."
+          : isEtobicoke
+          ? "Professional mobile tire services in Etobicoke by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet tire services. Emergency roadside tire assistance is available 24/7, subject to location and service assessment."
           : city.metaDescription,
         url: `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
         provider: {
@@ -601,7 +656,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               {/* Response Time Pill */}
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-4 py-1.5 text-xs font-bold text-primary backdrop-blur-md">
                 <Clock3 size={14} />
-                <span>⚡ {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto ? `${city.name} Regular Services` : `${city.name} Mobile Service`}: <strong>{city.averageResponseTime}</strong></span>
+                <span>⚡ {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto || isEtobicoke ? `${city.name} Regular Services` : `${city.name} Mobile Service`}: <strong>{city.averageResponseTime}</strong></span>
               </div>
 
               <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.1]">
@@ -609,7 +664,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-                {isGeorgetown || isToronto ? (
+                {isGeorgetown || isToronto || isEtobicoke ? (
                   <>{city.subheadline} No waiting at tire shops — our mobile service brings tire care directly to your agreed vehicle location in <strong>{city.name}</strong>.</>
                 ) : (
                   <>{city.subheadline} No waiting at tire shops — our fully equipped mobile service vans come directly to you in <strong>{city.name}</strong>.</>
@@ -657,7 +712,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                       Local Service Unit
                     </p>
                     <h3 className="text-lg font-bold text-white">
-                      {isGeorgetown || isToronto ? `${city.name} Mobile Service` : `${city.name} Mobile Van`}
+                      {isGeorgetown || isToronto || isEtobicoke ? `${city.name} Mobile Service` : `${city.name} Mobile Van`}
                     </h3>
                   </div>
                   <span className="flex h-3 w-3 rounded-full bg-green-500 animate-ping" />
@@ -670,11 +725,11 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Clock3 size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>{isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto ? "Availability" : "Arrival"}: <strong>{city.averageResponseTime}</strong></span>
+                    <span>{isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto || isEtobicoke ? "Availability" : "Arrival"}: <strong>{city.averageResponseTime}</strong></span>
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Disc size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>{isGeorgetown || isToronto ? "Mobile wheel balancing available by appointment" : "On-board computerized wheel balancing"}</span>
+                    <span>{isGeorgetown || isToronto || isEtobicoke ? "Mobile wheel balancing available by appointment" : "On-board computerized wheel balancing"}</span>
                   </div>
                 </div>
 
@@ -713,7 +768,9 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   : `We Serve ${city.name} and Surrounding Areas`}
               </h2>
               <p className="mt-3 text-sm text-text-secondary">
-                {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto
+                {isEtobicoke
+                  ? "Service requests in Etobicoke are assessed according to the agreed vehicle location, service requirements, and availability."
+                  : isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto
                   ? `Our mobile tire services in ${city.name} are arranged by scheduled appointment. For urgent roadside tire situations, emergency assistance is available 24/7.`
                   : `Our mobile tire service vans operate across ${city.name} for scheduled and on-demand service.`}
               </p>
@@ -1627,6 +1684,121 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         </>
       )}
 
+      {/* Etobicoke-Specific Content Sections */}
+      {isEtobicoke && (
+        <>
+          {/* Section: Mobile Tire Service in Etobicoke */}
+          <section className="border-b border-border bg-white py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Local Coverage &amp; Service Model
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                  Mobile Tire Service in Etobicoke
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  HT Mobile Tire provides mobile tire services arranged at your agreed vehicle location in Etobicoke. Rather than transporting tires to a traditional garage or waiting in shop queues, our technician travels to the agreed vehicle location. Regular mobile tire services—including seasonal rim and tire swaps, mobile wheel balancing, flat tire repairs, and new or used tire installation—are arranged by scheduled appointment.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  Service requests in Etobicoke are assessed according to the agreed vehicle location, service requirements, and availability. For urgent roadside assistance, emergency service is available 24/7, subject to location and site safety assessment.
+                </p>
+              </div>
+            </Container>
+          </section>
+
+          {/* Section: Commercial Fleet Tire Support */}
+          <section className="border-b border-border bg-background-light py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-center">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                      Commercial &amp; Business Fleets
+                    </p>
+                    <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                      Commercial Fleet Tire Services in Etobicoke
+                    </h2>
+                    <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                      Businesses operating commercial fleets in Etobicoke can enquire about scheduled mobile fleet tire services. Contact HT Mobile Tire to discuss tire-related service requirements and appointment arrangements at a commercial facility or another agreed vehicle location.
+                    </p>
+                    <p className="mt-3 text-base leading-relaxed text-text-secondary">
+                      Fleet service enquiries are assessed according to vehicle specifications, service requirements, and site suitability. Regular fleet tire services are arranged by appointment.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+                    <h3 className="text-lg font-bold text-foreground">
+                      Need Fleet Support?
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Enquire about scheduled mobile fleet tire services for your business in Etobicoke.
+                    </p>
+                    <Link
+                      href="/services/fleet-tire-service"
+                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-xs font-bold text-white transition hover:bg-primary-hover"
+                    >
+                      <span>Fleet Service Details</span>
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+
+          {/* Section: Driveway & Service Preparation */}
+          <section className="border-b border-border bg-white py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Service Preparation Guidelines
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                  Preparing for Your Mobile Tire Service Visit
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  To help prepare for a safe and efficient appointment at your agreed Etobicoke vehicle location, please review these practical guidelines:
+                </p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Vehicle Location Details
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Share specific parking details, such as a private residential driveway, designated parking space, or commercial lot, when booking so the technician can locate your vehicle.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Parking and Working Clearance
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Provide information about the surface, available working space, and vehicle positioning. The service location must be suitable for safe vehicle servicing. Active roadway lanes, unsafe surfaces, or restricted working areas are not suitable.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Property Access Requirements
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Mention any access restrictions, visitor parking rules, security procedures, or property-management requirements when booking. Confirm that mobile vehicle servicing is permitted at the proposed location. Underground parking locations may have clearance or workspace limitations; confirm suitability before the appointment.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Contact and Appointment Communication
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Provide a reachable phone number when scheduling. Keep your phone available around your agreed appointment time so the technician can clarify directions or communicate about the service visit.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+        </>
+      )}
+
       {/* City Service Highlights & Map */}
       <section className="bg-white py-20 sm:py-24 border-y border-border">
         <Container>
@@ -1648,10 +1820,12 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   ? "Serving Drivers Across Georgetown"
                   : isToronto
                   ? "Serving Drivers Across Toronto"
+                  : isEtobicoke
+                  ? "Serving Drivers Across Etobicoke"
                   : `Serving ${city.name} Daily`}
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-                {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto
+                {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto || isEtobicoke
                   ? "Whether your vehicle is parked at home, at work, or at an agreed service location, you can arrange regular mobile tire services by appointment. Emergency roadside tire assistance is available 24/7."
                   : `Whether you are parked at home, at work, or on the road, our mobile tire units provide prompt on-site service.`}
               </p>
@@ -2057,6 +2231,24 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                     </div>
                   </div>
                 </div>
+              ) : isEtobicoke ? (
+                <div className="mt-8 pt-6 border-t border-border space-y-4">
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-2">
+                      Key Etobicoke Destinations:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {city.localLandmarks.map((landmark) => (
+                        <span
+                          key={landmark}
+                          className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                        >
+                          📍 {landmark}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               ) : (
                 city.localLandmarks.length > 0 && (
                   <div className="mt-8 pt-6 border-t border-border">
@@ -2119,7 +2311,15 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                     {faq.question}
                   </h3>
                   <p className="mt-2 text-xs sm:text-sm leading-relaxed text-text-secondary">
-                    {isToronto && faq.question.includes("fleet tire services") ? (
+                    {isEtobicoke && faq.question.includes("fleet tire services") ? (
+                      <>
+                        Yes. Businesses operating commercial fleets in Etobicoke can enquire about{" "}
+                        <Link href="/services/fleet-tire-service" className="text-primary font-semibold hover:underline">
+                          scheduled mobile fleet tire services
+                        </Link>
+                        . Contact HT Mobile Tire to discuss your tire-related service requirements, vehicle details, and appointment arrangements.
+                      </>
+                    ) : isToronto && faq.question.includes("fleet tire services") ? (
                       <>
                         Businesses in Toronto can enquire about{" "}
                         <Link href="/services/fleet-tire-service" className="text-primary font-semibold hover:underline">
