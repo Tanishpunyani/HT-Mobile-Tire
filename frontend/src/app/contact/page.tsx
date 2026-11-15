@@ -414,7 +414,7 @@ function ContactFormInner() {
             {/* Additional Contact Information Cards */}
             <div className="grid gap-6 sm:grid-cols-3 pt-6 border-t border-border">
               <a
-                href="mailto:dispatch@mobiletire.clinic"
+                href="mailto:info@htmobiletire.com"
                 className="group flex items-start gap-4 rounded-[16px] border border-border bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md"
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-red-50 text-primary">
@@ -426,7 +426,7 @@ function ContactFormInner() {
                     Email Inquiries
                   </p>
                   <p className="mt-1 text-xs text-text-secondary sm:text-sm">
-                    dispatch@mobiletire.clinic
+                    info@htmobiletire.com
                   </p>
                 </div>
               </a>
@@ -438,13 +438,13 @@ function ContactFormInner() {
 
                 <div>
                   <p className="text-sm font-bold text-foreground">
-                    Hours of Operation
+                    Service Availability
                   </p>
                   <p className="mt-1 text-xs text-text-secondary sm:text-sm">
-                    24/7 Roadside Emergencies
+                    Regular Services by Appointment
                   </p>
-                  <p className="mt-0.5 text-[11px] text-slate-400 sm:text-xs">
-                    Mon–Sat 7:00 AM – 8:00 PM
+                  <p className="mt-0.5 text-[11px] text-slate-500 sm:text-xs">
+                    24/7 Emergency Roadside Assistance
                   </p>
                 </div>
               </div>

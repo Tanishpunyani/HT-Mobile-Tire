@@ -8,27 +8,27 @@ import SectionHeading from "./SectionHeading";
 const FAQS = [
   {
     q: "How does HT Mobile Tire service work?",
-    a: "We operate equipped mobile service vans outfitted with commercial tire changers, computerized wheel balancers, and air compressors. You schedule an appointment or request emergency service, tell us where your vehicle is located, and our technician arrives to service your tires right on your driveway, office parking lot, or roadside location.",
+    a: "You schedule an appointment for regular tire service or call for emergency roadside tire assistance and provide your vehicle location. A technician travels to your agreed location to service your tires on-site, subject to safe and lawful working clearance.",
   },
   {
     q: "Do I need to be present while you change my tires?",
-    a: "No! As long as your vehicle is parked in an accessible location (driveway, workplace parking lot, street parking) and we have access to your wheel lock key, our technician can perform the entire service while you work, relax inside your home, or go about your day. We'll send you digital photos and a completion notification when done.",
+    a: "Service is arranged at an agreed vehicle location, subject to safe, lawful access and working clearance. As long as your vehicle is parked in an accessible location (such as a private driveway or designated workplace parking area) and we have access to your vehicle and wheel lock key, you do not necessarily need to wait outside while service is performed.",
   },
   {
-    q: "Can you change custom or expensive alloy rims without scratching them?",
-    a: "Absolutely. Our mobile vans use touchless clamping technology and nylon-lined mounting heads designed specifically for luxury, sports, and custom alloy wheels up to 24 inches. We guarantee 100% scratch-free installation.",
+    q: "Can you service custom or alloy rims carefully?",
+    a: "Yes. Our technicians take care when servicing alloy and standard wheels, utilizing appropriate procedures and protective equipment to mount, demount, and balance wheels properly.",
   },
   {
-    q: "How fast do you arrive for an emergency flat tire blowout?",
-    a: "For emergency roadside help, our average arrival time is 30 to 45 minutes depending on your location and traffic conditions. You can submit an emergency request directly on our Emergency page or call us 24/7.",
+    q: "How fast do you respond to an emergency flat tire request?",
+    a: "For emergency roadside tire assistance, response times depend on your vehicle location, traffic conditions, and current technician availability. When you submit a request or call our hotline, our dispatch team will assess your location and provide an estimated arrival time.",
   },
   {
     q: "Do you supply new tires, or can I provide my own?",
-    a: "Both! We carry a full inventory of new and certified used tires from top brands (Michelin, Goodyear, Continental, Bridgestone, etc.), or you can supply tires you've purchased online (e.g. TireRack, Amazon) and we will gladly mount and balance them for you.",
+    a: "Both! We can source new and used tires for your vehicle, or you can provide tires you already own or purchased independently, and our technician will mount and balance them for you.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "Our technicians carry mobile point-of-sale terminals that accept all major credit/debit cards (Visa, MasterCard, Amex, Discover), Apple Pay, Google Pay, and corporate invoicing for fleet clients.",
+    a: "We accept major credit and debit cards, as well as electronic payment methods upon completion of service.",
   },
 ];
 
@@ -41,7 +41,7 @@ export default function FAQ() {
         <SectionHeading
           eyebrow="Got Questions?"
           title="Frequently Asked Questions"
-          description="Everything you need to know about our on-demand mobile tire service and roadside assistance."
+          description="Everything you need to know about our mobile tire services and emergency roadside assistance."
           centered
         />
 

@@ -128,7 +128,7 @@ export default function EmergencyPage() {
 
             <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-white border border-white/20 backdrop-blur-sm">
               <Clock3 size={14} className="text-primary" />
-              Average Roadside Response: 30–45 Minutes
+              24/7 Emergency Roadside Assistance Across the GTA
             </div>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -159,12 +159,12 @@ export default function EmergencyPage() {
                 </h2>
 
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-text-secondary">
-                  Your roadside emergency request has been prioritized in our system. An on-duty mobile technician has received your coordinates. Please stay in a safe spot away from traffic.
+                  Your emergency request has been received. HT Mobile Tire will assess your location and service requirements and contact you to confirm availability and an estimated arrival time. Please stay in a safe spot away from traffic.
                 </p>
 
                 <div className="mx-auto mt-6 max-w-sm rounded-xl bg-slate-50 p-4 text-xs text-text-secondary border border-border">
                   <p><strong>Hotline:</strong> {BUSINESS_PHONE_DISPLAY}</p>
-                  <p className="mt-1 text-slate-400">Estimated Arrival Time: 30–45 mins</p>
+                  <p className="mt-1 text-slate-500">Arrival time confirmed upon dispatch contact</p>
                 </div>
 
                 <div className="mt-7 flex flex-wrap items-center justify-center gap-3">

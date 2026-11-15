@@ -131,7 +131,7 @@ export default function FlatTireRepairPage() {
               <div className="mt-8 space-y-3">
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <Link
-                    href="/emergency"
+                    href="/booking?service=flat-tire-repair"
                     className="inline-flex items-center justify-center gap-2 rounded-[10px] bg-primary px-6 py-3.5 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-lg"
                   >
                     Book This Service

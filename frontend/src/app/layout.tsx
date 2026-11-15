@@ -21,11 +21,11 @@ const businessPhone = process.env.NEXT_PUBLIC_BUSINESS_PHONE || "+16479956665";
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "HT Mobile Tire | On-Demand Mobile Tire Service & 24/7 Roadside Assistance",
+    default: "HT Mobile Tire | Mobile Tire Services in the GTA",
     template: "%s | HT Mobile Tire",
   },
   description:
-    "Professional mobile tire service that comes to your driveway, workplace, or roadside. New & used tires, rim mounting, wheel balancing, flat tire repair, and 24/7 emergency roadside help.",
+    "Mobile tire services delivered to your location in the GTA. New and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet tire inquiries. Regular services by appointment, plus emergency roadside tire assistance subject to location and service assessment.",
   keywords: [
     "mobile tire service",
     "mobile tire repair",
@@ -52,9 +52,9 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "HT Mobile Tire | Professional Mobile Tire Service",
+    title: "HT Mobile Tire | Mobile Tire Services in the GTA",
     description:
-      "We come to you! On-demand mobile tire repair, new/used tire replacement, wheel balancing, and roadside emergency service.",
+      "Mobile tire services delivered to your vehicle location across the GTA. Regular services by appointment, plus 24/7 emergency roadside assistance.",
     type: "website",
     locale: "en_CA",
     siteName: "HT Mobile Tire",
@@ -64,15 +64,15 @@ export const metadata: Metadata = {
         url: `${siteUrl}/images/hero-mobile-tire-clinic.webp`,
         width: 1200,
         height: 630,
-        alt: "HT Mobile Tire Van & Professional Service",
+        alt: "HT Mobile Tire Mobile Service",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HT Mobile Tire | On-Demand Mobile Tire Service",
+    title: "HT Mobile Tire | Mobile Tire Services in the GTA",
     description:
-      "Professional mobile tire service brought directly to your location. Fast, reliable, and convenient mobile tire installation & repair.",
+      "Mobile tire services delivered to your vehicle location across the GTA. Regular services by appointment, plus 24/7 emergency roadside assistance.",
     images: [`${siteUrl}/images/hero-mobile-tire-clinic.webp`],
   },
 };

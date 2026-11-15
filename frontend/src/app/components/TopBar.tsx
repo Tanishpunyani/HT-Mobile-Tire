@@ -24,15 +24,17 @@ export default function TopBar() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
-            <span className="font-semibold text-white">24/7 HT Mobile Tire Services:</span>
-            <span className="hidden sm:inline text-slate-400">Average response 30–45 mins</span>
+            <span className="font-semibold text-white">Regular Tire Services by Appointment</span>
+            <span className="text-slate-400">|</span>
+            <span className="font-semibold text-white">24/7 Emergency Roadside Assistance</span>
+            <span className="hidden xl:inline text-slate-400 text-[11px]">(Subject to location and service assessment)</span>
           </div>
 
           {/* Quick Contact & Action */}
           <div className="flex items-center gap-4">
             <div className="hidden items-center gap-1.5 md:flex text-slate-300">
               <ShieldCheck size={14} className="text-primary" />
-              <span>Licensed, Insured & ASE Certified</span>
+              <span>Mobile Tire Service Across the GTA</span>
             </div>
 
             <a

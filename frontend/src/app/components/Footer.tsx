@@ -38,7 +38,7 @@ export default function Footer() {
 
             <div className="mt-6 flex items-center gap-2 text-xs font-semibold text-slate-300">
               <ShieldCheck size={16} className="text-primary" />
-              <span>Licensed & Insured Mobile Technicians</span>
+              <span>Mobile Tire Service Across the GTA</span>
             </div>
           </div>
 
@@ -63,7 +63,7 @@ export default function Footer() {
                 Emergency Roadside
               </Link>
               <Link href="/about" className="text-sm text-slate-300 hover:text-white transition-colors">
-                About Our Clinic
+                About HT Mobile Tire
               </Link>
               <Link href="/contact" className="text-sm text-slate-300 hover:text-white transition-colors">
                 Contact & Support
@@ -120,24 +120,24 @@ export default function Footer() {
               </a>
 
               <a
-                href="mailto:dispatch@mobiletire.clinic"
+                href="mailto:info@htmobiletire.com"
                 className="flex items-center gap-2.5 text-slate-300 transition hover:text-white"
               >
                 <Mail size={16} className="text-primary shrink-0" />
-                <span>dispatch@mobiletire.clinic</span>
+                <span>info@htmobiletire.com</span>
               </a>
 
               <div className="flex items-start gap-2.5 text-slate-300">
                 <MapPin size={16} className="mt-0.5 text-primary shrink-0" />
-                <span>Mobile Vans Come Directly To Your Location</span>
+                <span>Mobile Service at Your Agreed Location</span>
               </div>
 
               <div className="flex items-start gap-2.5 text-slate-300">
                 <Clock size={16} className="mt-0.5 text-primary shrink-0" />
                 <div>
-                  <p className="font-semibold text-white">Hours:</p>
-                  <p className="text-xs text-slate-400">24/7 Roadside Emergencies</p>
-                  <p className="text-xs text-slate-400">Scheduled: Mon–Sat 7AM–8PM</p>
+                  <p className="font-semibold text-white">Availability:</p>
+                  <p className="text-xs text-slate-400">Regular Services by Appointment</p>
+                  <p className="text-xs text-slate-400">24/7 Emergency Roadside Assistance</p>
                 </div>
               </div>
             </div>
@@ -189,7 +189,6 @@ export default function Footer() {
             <Link href="/contact" className="hover:text-white transition-colors">
               Support
             </Link>
-            <span>Touchless Rim Guarantee</span>
           </div>
         </div>
       </Container>

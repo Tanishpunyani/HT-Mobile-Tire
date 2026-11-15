@@ -157,7 +157,7 @@ export default function FleetTireServicePage() {
             <div className="relative h-[320px] overflow-hidden rounded-[20px] border border-white/10 bg-secondary-light sm:h-[400px]">
                           <Image
                             src="/images/fleet_tire_services.webp"
-                            alt="Swap Rim Tire On/Off"
+                            alt="HT Mobile Tire fleet tire service"
                             fill
                             priority
                             sizes="(max-width: 1024px) 100vw, 50vw"
