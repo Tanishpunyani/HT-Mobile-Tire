@@ -94,6 +94,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
   const isWoodbridge = city.slug === "woodbridge";
   const isMilton = city.slug === "milton";
   const isGeorgetown = city.slug === "georgetown";
+  const isToronto = city.slug === "toronto";
 
   interface LocalServiceItem {
     name: string;
@@ -417,6 +418,58 @@ export default async function CityLandingPage({ params }: CityPageProps) {
           isEmergency: true,
         },
       ]
+    : isToronto
+    ? [
+        {
+          name: "Flat Tire Repair",
+          price: "Custom Quote",
+          description: `Mobile flat tire repair for repairable punctures, provided at your agreed vehicle location in Toronto.`,
+          slug: "flat-tire-repair",
+          infoHref: "/services/flat-tire-repair",
+          infoText: "Flat tire repair details",
+        },
+        {
+          name: "Swap Rim Tire On/Off",
+          price: "Custom Quote",
+          description: `Arrange seasonal tire and rim changeover at your residential driveway or another agreed vehicle location in Toronto by scheduled appointment.`,
+          slug: "swap-rim-tire",
+          infoHref: "/services/swap-rim-tire",
+          infoText: "Seasonal swap details",
+        },
+        {
+          name: "Wheel Balancing",
+          price: "Custom Quote",
+          description: `Request mobile wheel balancing at your vehicle location in Toronto. Regular service appointments are arranged in advance.`,
+          slug: "wheel-balancing",
+          infoHref: "/services/wheel-balancing",
+          infoText: "Wheel balancing details",
+        },
+        {
+          name: "New and Used Tires",
+          price: "Custom Quote",
+          description: `Explore new and used tire options for your vehicle. Contact HT Mobile Tire to discuss availability, pricing, and scheduled mobile installation in Toronto.`,
+          slug: "new-used-tires",
+          infoHref: "/services/new-used-tires",
+          infoText: "New & used tire options",
+        },
+        {
+          name: "Fleet Tire Service",
+          price: "Custom Quote",
+          description: `Scheduled mobile tire services for business fleets in Toronto, including applicable tire changeovers and tire-related services, subject to vehicle and location assessment.`,
+          slug: "fleet-tire-service",
+          infoHref: "/services/fleet-tire-service",
+          infoText: "Fleet service details",
+        },
+        {
+          name: "Emergency Roadside Tire Service",
+          price: "On-Site Assessment",
+          description: `24/7 emergency roadside tire assistance for urgent tire-related requests in Toronto. Share your location when contacting HT Mobile Tire so the service request can be assessed.`,
+          slug: "emergency",
+          infoHref: "/emergency",
+          infoText: "Emergency roadside details",
+          isEmergency: true,
+        },
+      ]
     : [
         {
           name: "Flat Tire Repair & Puncture Patch",
@@ -503,6 +556,8 @@ export default async function CityLandingPage({ params }: CityPageProps) {
           ? "Professional mobile tire services in Milton available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7."
           : isGeorgetown
           ? "Professional mobile tire services in Georgetown available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7, subject to location and service assessment."
+          : isToronto
+          ? "Professional mobile tire services in Toronto available by scheduled appointment, including new and used tires, seasonal rim swaps, wheel balancing, flat tire repair, and fleet service, with emergency roadside tire assistance available 24/7, subject to location and service assessment."
           : city.metaDescription,
         url: `${CANONICAL_SITE_URL}/service-area/${city.slug}`,
         provider: {
@@ -546,7 +601,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               {/* Response Time Pill */}
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-4 py-1.5 text-xs font-bold text-primary backdrop-blur-md">
                 <Clock3 size={14} />
-                <span>⚡ {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown ? `${city.name} Regular Services` : `${city.name} Mobile Service`}: <strong>{city.averageResponseTime}</strong></span>
+                <span>⚡ {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto ? `${city.name} Regular Services` : `${city.name} Mobile Service`}: <strong>{city.averageResponseTime}</strong></span>
               </div>
 
               <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl leading-[1.1]">
@@ -554,7 +609,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
               </h1>
 
               <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 sm:text-lg">
-                {isGeorgetown ? (
+                {isGeorgetown || isToronto ? (
                   <>{city.subheadline} No waiting at tire shops — our mobile service brings tire care directly to your agreed vehicle location in <strong>{city.name}</strong>.</>
                 ) : (
                   <>{city.subheadline} No waiting at tire shops — our fully equipped mobile service vans come directly to you in <strong>{city.name}</strong>.</>
@@ -602,7 +657,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                       Local Service Unit
                     </p>
                     <h3 className="text-lg font-bold text-white">
-                      {isGeorgetown ? `${city.name} Mobile Service` : `${city.name} Mobile Van`}
+                      {isGeorgetown || isToronto ? `${city.name} Mobile Service` : `${city.name} Mobile Van`}
                     </h3>
                   </div>
                   <span className="flex h-3 w-3 rounded-full bg-green-500 animate-ping" />
@@ -615,11 +670,11 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Clock3 size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>{isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown ? "Availability" : "Arrival"}: <strong>{city.averageResponseTime}</strong></span>
+                    <span>{isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto ? "Availability" : "Arrival"}: <strong>{city.averageResponseTime}</strong></span>
                   </div>
                   <div className="flex items-start gap-2.5">
                     <Disc size={16} className="mt-0.5 shrink-0 text-primary" />
-                    <span>{isGeorgetown ? "Mobile wheel balancing available by appointment" : "On-board computerized wheel balancing"}</span>
+                    <span>{isGeorgetown || isToronto ? "Mobile wheel balancing available by appointment" : "On-board computerized wheel balancing"}</span>
                   </div>
                 </div>
 
@@ -658,7 +713,7 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   : `We Serve ${city.name} and Surrounding Areas`}
               </h2>
               <p className="mt-3 text-sm text-text-secondary">
-                {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown
+                {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto
                   ? `Our mobile tire services in ${city.name} are arranged by scheduled appointment. For urgent roadside tire situations, emergency assistance is available 24/7.`
                   : `Our mobile tire service vans operate across ${city.name} for scheduled and on-demand service.`}
               </p>
@@ -1457,6 +1512,121 @@ export default async function CityLandingPage({ params }: CityPageProps) {
         </>
       )}
 
+      {/* Toronto-Specific Content Sections */}
+      {isToronto && (
+        <>
+          {/* Section: Mobile Tire Service Across Toronto */}
+          <section className="border-b border-border bg-white py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Local Coverage &amp; Service Model
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                  Mobile Tire Service Across Toronto
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  HT Mobile Tire operates as a mobile tire service delivering tire repair, mounting, seasonal changeovers, and mobile wheel balancing directly to your agreed vehicle location in Toronto. Instead of traveling to a retail tire garage or waiting in shop line-ups, our technician travels directly to your residential driveway, workplace parking area, or commercial facility. Regular mobile tire services are arranged by scheduled appointment, with emergency roadside tire assistance available 24/7, subject to location and service assessment.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  Major Toronto transportation corridors include the Gardiner Expressway, Don Valley Parkway (DVP), Allen Road, Yonge Street, the Bloor-Danforth corridor, Lakeshore Boulevard, and Eglinton Avenue. For regular or emergency tire services, service availability and scheduling depend on your agreed vehicle location and safe, lawful access.
+                </p>
+              </div>
+            </Container>
+          </section>
+
+          {/* Section: Commercial Fleet Tire Support */}
+          <section className="border-b border-border bg-background-light py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <div className="grid gap-8 lg:grid-cols-[1fr_320px] lg:items-center">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                      Commercial &amp; Business Fleets
+                    </p>
+                    <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                      Commercial Fleet Tire Services in Toronto
+                    </h2>
+                    <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                      Businesses in Toronto can enquire about scheduled mobile fleet tire services. Contact HT Mobile Tire to discuss your service requirements and arrange an appointment at your facility.
+                    </p>
+                    <p className="mt-3 text-base leading-relaxed text-text-secondary">
+                      Whether your company operates courier vans, contractor vehicles, or commercial fleets across Downtown Toronto, the Financial District, or regional business and commercial corridors, businesses can enquire about scheduled mobile tire changeovers and tire-related services arranged by appointment at your commercial facility or agreed parking location, subject to vehicle and location assessment.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+                    <h3 className="text-lg font-bold text-foreground">
+                      Need Fleet Support?
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Enquire about scheduled mobile fleet tire services for your business in Toronto.
+                    </p>
+                    <Link
+                      href="/services/fleet-tire-service"
+                      className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-xs font-bold text-white transition hover:bg-primary-hover"
+                    >
+                      <span>Fleet Service Details</span>
+                      <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+
+          {/* Section: Driveway & Service Preparation */}
+          <section className="border-b border-border bg-white py-16 sm:py-20">
+            <Container>
+              <div className="mx-auto max-w-4xl">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                  Service Preparation Guidelines
+                </p>
+                <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+                  Preparing for Your Mobile Tire Service Visit
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-text-secondary">
+                  To ensure a safe and smooth service appointment at your Toronto residence, workplace, or commercial facility, please keep these general booking guidelines in mind:
+                </p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Provide Vehicle Location Details
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Share your vehicle&apos;s specific parking location (such as a residential driveway, workplace parking lot, or commercial facility) when scheduling your booking so the technician can locate the vehicle smoothly upon arrival.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Parking &amp; Clearance Information
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Ensure your vehicle is parked on a reasonably level surface with adequate workspace around each wheel. If your vehicle is in a condominium, private garage, or commercial facility, confirm that mobile on-site service is permitted on the property.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Property &amp; Access Information
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Mention any property access considerations in advance, such as security gates, buzzers, visitor parking protocols, or commercial facility check-in procedures.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background-light p-5">
+                    <h3 className="text-sm font-bold text-foreground">
+                      Contact Information
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-text-secondary">
+                      Keep an accessible phone number available around your scheduled appointment time so the technician can easily connect with you upon arrival or if parking directions need clarification.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Container>
+          </section>
+        </>
+      )}
+
       {/* City Service Highlights & Map */}
       <section className="bg-white py-20 sm:py-24 border-y border-border">
         <Container>
@@ -1476,10 +1646,12 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                   ? "Serving Drivers Across Milton"
                   : isGeorgetown
                   ? "Serving Drivers Across Georgetown"
+                  : isToronto
+                  ? "Serving Drivers Across Toronto"
                   : `Serving ${city.name} Daily`}
               </h2>
               <p className="mt-4 text-sm leading-relaxed text-text-secondary">
-                {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown
+                {isMississauga || isVaughan || isWoodbridge || isMilton || isGeorgetown || isToronto
                   ? "Whether your vehicle is parked at home, at work, or at an agreed service location, you can arrange regular mobile tire services by appointment. Emergency roadside tire assistance is available 24/7."
                   : `Whether you are parked at home, at work, or on the road, our mobile tire units provide prompt on-site service.`}
               </p>
@@ -1820,6 +1992,71 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                     </div>
                   </div>
                 </div>
+              ) : isToronto ? (
+                <div className="mt-8 pt-6 border-t border-border space-y-4">
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-2">
+                      Key Toronto Destinations:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {city.localLandmarks.map((landmark) => (
+                        <span
+                          key={landmark}
+                          className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                        >
+                          📍 {landmark}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-2">
+                      Major Roads &amp; Transportation Corridors:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        "Gardiner Expressway",
+                        "Don Valley Parkway (DVP)",
+                        "Allen Road",
+                        "Yonge Street",
+                        "Bloor-Danforth Corridor",
+                        "Lakeshore Boulevard",
+                        "Eglinton Avenue",
+                        "Queen Street",
+                        "Dundas Street",
+                        "Bayview Avenue",
+                      ].map((corridor) => (
+                        <span
+                          key={corridor}
+                          className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                        >
+                          🚗 {corridor}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-2">
+                      Employment &amp; Business Areas:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        "Financial District",
+                        "Downtown Yonge Commercial Area",
+                        "Toronto Entertainment District",
+                        "Liberty Village Commercial Area",
+                        "Bloor-Yorkville Business District",
+                      ].map((area) => (
+                        <span
+                          key={area}
+                          className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700"
+                        >
+                          🏢 {area}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               ) : (
                 city.localLandmarks.length > 0 && (
                   <div className="mt-8 pt-6 border-t border-border">
@@ -1882,7 +2119,15 @@ export default async function CityLandingPage({ params }: CityPageProps) {
                     {faq.question}
                   </h3>
                   <p className="mt-2 text-xs sm:text-sm leading-relaxed text-text-secondary">
-                    {isGeorgetown && faq.question.includes("fleet tire services") ? (
+                    {isToronto && faq.question.includes("fleet tire services") ? (
+                      <>
+                        Businesses in Toronto can enquire about{" "}
+                        <Link href="/services/fleet-tire-service" className="text-primary font-semibold hover:underline">
+                          scheduled mobile fleet tire services
+                        </Link>
+                        . Contact HT Mobile Tire to discuss your service requirements and arrange an appointment at your facility.
+                      </>
+                    ) : isGeorgetown && faq.question.includes("fleet tire services") ? (
                       <>
                         Businesses in Georgetown can enquire about{" "}
                         <Link href="/services/fleet-tire-service" className="text-primary font-semibold hover:underline">
