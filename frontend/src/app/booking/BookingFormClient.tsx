@@ -310,7 +310,7 @@ export default function BookingFormClient({
           <div className="mx-auto max-w-3xl text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-blue-300 border border-primary/30">
               <Sparkles size={13} />
-              24/7 On-Demand Mobile Service
+              Mobile Tire Service by Appointment
             </span>
 
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
@@ -318,7 +318,7 @@ export default function BookingFormClient({
             </h1>
 
             <p className="mt-4 text-base text-slate-300 sm:text-lg">
-              No upfront payment required. We come directly to your home, workplace, or roadside location anytime 24/7.
+              No upfront payment required. Regular mobile tire services are arranged by scheduled appointment at your agreed vehicle location.
             </p>
           </div>
         </Container>
@@ -657,7 +657,7 @@ export default function BookingFormClient({
                       Touchless Rim Guarantee
                     </span>
                     <span>• Instant Service & Email Confirmation</span>
-                    <span>• 24/7 Mobile Service</span>
+                    <span>• Regular Service by Appointment</span>
                   </div>
               </div>
             </form>

@@ -199,7 +199,7 @@ export default function BookingHistorySection({
             </p>
             <p className="flex items-center gap-2">
               <Mail size={16} className="text-primary" />
-              dispatch@mobiletire.clinic
+              info@htmobiletire.com
             </p>
           </div>
           <Link

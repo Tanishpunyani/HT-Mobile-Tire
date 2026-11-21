@@ -384,7 +384,7 @@ export default function BookingTrackingPage() {
                 </h1>
 
                 <p className="mt-1 text-xs sm:text-sm text-slate-300">
-                  {booking.vehicle} • On-Demand 24/7 Service
+                  {booking.vehicle} • Mobile Tire Service
                 </p>
 
                 {formattedBookedAt && (
@@ -517,7 +517,7 @@ export default function BookingTrackingPage() {
                         Service Model
                       </span>
                       <span className="font-bold text-foreground">
-                        24/7 Mobile Service
+                        Mobile Tire Service
                       </span>
                     </div>
                   </div>

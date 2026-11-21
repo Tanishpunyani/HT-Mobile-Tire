@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, ShieldCheck, ArrowRight, Sparkles } from "lucide-react";
+import { Check, ArrowRight, Sparkles } from "lucide-react";
 import Container from "./Container";
 import SectionHeading from "./SectionHeading";
 
@@ -26,12 +26,11 @@ const TIERS = [
     tag: "Best Value",
     price: "Custom Quote",
     unit: "based on service needs",
-    description: "Full tire swap on or off your rims with dynamic laser wheel balancing.",
+    description: "Full seasonal tire swap on or off your rims with computerized wheel balancing.",
     features: [
-      "Touchless rim clamping (scratch-free)",
-      "Dynamic laser high-speed balancing",
+      "Careful mounting and dismounting",
+      "Computerized dynamic wheel balancing",
       "New rubber valve stems replacement",
-      "TPMS sensor reset & calibration",
       "Eco-friendly old tire recycling",
       "Torqued with calibrated torque wrench",
     ],
@@ -49,9 +48,7 @@ const TIERS = [
       "Scheduled after-hours or weekend visits",
       "Fleet tread depth & PSI audit reports",
       "Bulk tire supply (New & Certified Used)",
-      "Priority same-day emergency service",
       "Centralized corporate invoicing",
-      "Dedicated account manager",
     ],
     popular: false,
     cta: "Request Fleet Quote",
@@ -120,11 +117,6 @@ export default function PricingTable() {
                 >
                   {tier.cta} <ArrowRight size={16} />
                 </Link>
-
-                <p className="mt-3 text-center text-[11px] text-slate-400 flex items-center justify-center gap-1">
-                  <ShieldCheck size={13} className="text-green-600" />
-                  Includes touchless rim guarantee
-                </p>
               </div>
             </div>
           ))}

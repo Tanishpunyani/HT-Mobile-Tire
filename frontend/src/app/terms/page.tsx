@@ -58,7 +58,7 @@ export default function TermsPage() {
               Estimated quotes are provided upfront. You may cancel or reschedule a scheduled booking without fee up to 2 hours prior to the scheduled service window. Emergency roadside service requests are handled immediately upon submission.
             </p>
 
-            <h3 className="text-base font-bold text-foreground">3. Touchless Warranty & Workmanship Guarantee</h3>
+            <h3 className="text-base font-bold text-foreground">3. Workmanship and Service Terms</h3>
             <p>
               We warranty all mounting, balancing, and puncture repairs against workmanship defects. All wheel lugs are torqued with calibrated precision torque wrenches to vehicle manufacturer specifications.
             </p>
@@ -66,8 +66,8 @@ export default function TermsPage() {
             <h3 className="text-base font-bold text-foreground">4. Inquiries</h3>
             <p>
               For inquiries regarding service agreements or fleet contracts, reach us at{" "}
-              <a href="mailto:support@mobiletire.clinic" className="font-semibold text-primary underline">
-                support@mobiletire.clinic
+              <a href="mailto:info@htmobiletire.com" className="font-semibold text-primary underline">
+                info@htmobiletire.com
               </a>.
             </p>
           </div>

@@ -70,8 +70,8 @@ export default function PrivacyPage() {
             <h3 className="text-base font-bold text-foreground">4. Contact Us</h3>
             <p>
               If you have any questions regarding this Privacy Policy, please contact our team at{" "}
-              <a href="mailto:support@mobiletire.clinic" className="font-semibold text-primary underline">
-                support@mobiletire.clinic
+              <a href="mailto:info@htmobiletire.com" className="font-semibold text-primary underline">
+                info@htmobiletire.com
               </a>{" "}
               or call {BUSINESS_PHONE_DISPLAY}.
             </p>
